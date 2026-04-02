@@ -243,25 +243,10 @@ async function generarContenido() {
   hideSuccess();
 
   try {
-    // 1. Iniciar (rápido, devuelve jobId)
-    const inicio = await jsonpRequest('generar', payload, 15000);
-    
-    if (!inicio.ok) {
-      throw new Error(inicio.error);
-    }
-    
-    if (!inicio.procesando || !inicio.jobId) {
-      // Fallback: si ya está listo (caché), mostrar directo
-      mostrarResultado(inicio);
-      hideLoading();
-      return;
-    }
+    const resultado = await jsonpRequest('generar', payload, 60000);
 
-    // 2. Polling cada 5 segundos
-    showLoading('Generando imagen con IA... (30-60 segundos)');
-    
-    const resultado = await pollingEstado(inicio.jobId, 12); // 12 intentos = 60s max
-    
+mostrarResultado(resultado);
+hideLoading();
     mostrarResultado(resultado);
     hideLoading();
     
