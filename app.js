@@ -10,6 +10,38 @@ const CONFIG = {
 };
 
 // ============================================
+// HELPERS DOM
+// ============================================
+function $(...ids) {
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el) return el;
+  }
+  return null;
+}
+
+const UI = {
+  fileInput: $('fileInput', 'file'),
+  dropZone: $('dropZone', 'fileLabel'),
+  preview: $('preview'),
+  texto: $('texto'),
+  tipoNegocio: $('tipoNegocio'),
+  usuarioIG: $('usuarioIG'),
+  btnGenerar: $('btnGenerar'),
+  btnCopiar: $('btnCopiar'),
+  btnDescargar: $('btnDescargar'),
+  loading: $('loading'),
+  loadingText: $('loadingText'),
+  resultado: $('resultado'),
+  error: $('error'),
+  success: $('success'),
+  imgFinal: $('imgFinal', 'imagenFinal'),
+  caption: $('captionText', 'caption'),
+  frase: $('fraseText'),
+  creditos: $('creditos')
+};
+
+// ============================================
 // ESTADO GLOBAL
 // ============================================
 let currentImageUrl = null;
@@ -19,65 +51,59 @@ let userId = null;
 // ============================================
 // INICIALIZACIÓN
 // ============================================
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
   initUser();
   initEventListeners();
   loadCreditos();
+  disableGenerar(true);
+  console.log('App lista. User ID:', userId);
 });
 
 function initUser() {
   userId = localStorage.getItem('ig_user_id');
   if (!userId) {
-    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 11);
     localStorage.setItem('ig_user_id', userId);
   }
-  console.log('User ID:', userId);
 }
 
 function initEventListeners() {
-  // Upload de imagen
-  const fileInput = document.getElementById('fileInput');
-  const dropZone = document.getElementById('dropZone');
-  
-  if (fileInput) {
-    fileInput.addEventListener('change', handleFileSelect);
+  if (UI.fileInput) {
+    UI.fileInput.addEventListener('change', handleFileSelect);
   }
-  
-  if (dropZone) {
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => {
+
+  if (UI.dropZone && UI.fileInput) {
+    UI.dropZone.addEventListener('click', () => UI.fileInput.click());
+
+    UI.dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
-      dropZone.classList.add('dragover');
+      UI.dropZone.classList.add('dragover');
     });
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
+
+    UI.dropZone.addEventListener('dragleave', () => {
+      UI.dropZone.classList.remove('dragover');
     });
-    dropZone.addEventListener('drop', (e) => {
+
+    UI.dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
-      dropZone.classList.remove('dragover');
+      UI.dropZone.classList.remove('dragover');
       const files = e.dataTransfer.files;
-      if (files.length > 0) {
+      if (files && files.length > 0) {
         processFile(files[0]);
       }
     });
   }
-  
-  // Botón generar
-  const btnGenerar = document.getElementById('btnGenerar');
-  if (btnGenerar) {
-    btnGenerar.addEventListener('click', generarContenido);
+
+  if (UI.btnGenerar) {
+    UI.btnGenerar.addEventListener('click', generarContenido);
   }
-  
-  // Copiar caption
-  const btnCopiar = document.getElementById('btnCopiar');
-  if (btnCopiar) {
-    btnCopiar.addEventListener('click', copiarCaption);
+
+  if (UI.btnCopiar) {
+    UI.btnCopiar.addEventListener('click', copiarCaption);
   }
-  
-  // Descargar imagen
-  const btnDescargar = document.getElementById('btnDescargar');
-  if (btnDescargar) {
-    btnDescargar.addEventListener('click', descargarImagen);
+
+  if (UI.btnDescargar) {
+    UI.btnDescargar.addEventListener('click', descargarImagen);
   }
 }
 
@@ -85,84 +111,78 @@ function initEventListeners() {
 // MANEJO DE ARCHIVOS
 // ============================================
 function handleFileSelect(e) {
-  const file = e.target.files[0];
+  const file = e.target.files && e.target.files[0];
   if (file) {
     processFile(file);
   }
 }
 
 function processFile(file) {
-  // Validaciones
   if (!file.type.startsWith('image/')) {
-    showError('Por favor selecciona una imagen válida');
+    showError('Por favor seleccioná una imagen válida');
     return;
   }
-  
+
   if (file.size > CONFIG.MAX_FILE_SIZE) {
     showError('La imagen no debe superar los 10MB');
     return;
   }
-  
-  // Mostrar preview
+
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const preview = document.getElementById('preview');
-    const dropZone = document.getElementById('dropZone');
-    
-    if (preview) {
-      preview.src = e.target.result;
-      preview.style.display = 'block';
+  reader.onload = function (e) {
+    if (UI.preview) {
+      UI.preview.src = e.target.result;
+      UI.preview.style.display = 'block';
     }
-    
-    if (dropZone) {
-      dropZone.classList.add('has-image');
+
+    if (UI.dropZone) {
+      UI.dropZone.classList.add('has-image');
     }
-    
-    // Subir a Cloudinary
+
     uploadToCloudinary(file);
   };
   reader.readAsDataURL(file);
 }
 
 // ============================================
-// CLOUDINARY UPLOAD
+// SUBIDA A CLOUDINARY (SIN SECRETOS)
 // ============================================
 async function uploadToCloudinary(file) {
   showLoading('Subiendo imagen...');
-  
+  hideError();
+  hideSuccess();
+  disableGenerar(true);
+
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
   formData.append('folder', 'instagram_generator');
-  
+
   try {
-    console.log('📤 Subiendo a Cloudinary...');
-    
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD}/image/upload`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
+
     if (!response.ok) {
       throw new Error('Error en upload: ' + response.status);
     }
-    
+
     const data = await response.json();
-    console.log('✅ Cloudinary URL:', data.secure_url);
-    console.log('✅ Public ID:', data.public_id);
-    
+
     currentImageUrl = data.secure_url;
     currentPublicId = data.public_id;
-    
+
     hideLoading();
     showSuccess('Imagen lista para procesar');
-    
-    // Habilitar botón generar
-    const btnGenerar = document.getElementById('btnGenerar');
-    if (btnGenerar) {
-      btnGenerar.disabled = false;
-    }
-    
+    disableGenerar(false);
+
+    console.log('✅ Cloudinary URL:', currentImageUrl);
+    console.log('✅ Public ID:', currentPublicId);
+
   } catch (error) {
     console.error('Error Cloudinary:', error);
     hideLoading();
@@ -171,86 +191,69 @@ async function uploadToCloudinary(file) {
 }
 
 // ============================================
-// APPS SCRIPT - CRÉDITOS
+// APPS SCRIPT - CRÉDITOS (JSONP)
 // ============================================
 function loadCreditos() {
-  console.log('💳 Cargando créditos...');
-  
-  const script = document.createElement('script');
-  const callbackName = 'creditosCallback_' + Date.now();
-  
-  const params = new URLSearchParams({
-    action: 'creditos',
-    userId: userId,
-    callback: callbackName
-  });
-  
-  window[callbackName] = function(response) {
-    console.log('Respuesta créditos:', response);
-    
-    if (response && response.ok) {
-      updateCreditosUI(response.creditosDisponibles);
-    } else {
-      console.error('Error créditos:', response?.error);
+  jsonpRequest('creditos', {}, 15000)
+    .then((response) => {
+      if (response && response.ok) {
+        updateCreditosUI(
+          response.creditosDisponibles ?? response.creditos ?? '?'
+        );
+      } else {
+        updateCreditosUI('?');
+      }
+    })
+    .catch((err) => {
+      console.error('Error créditos:', err);
       updateCreditosUI('?');
-    }
-    
-    cleanupScript(script, callbackName);
-  };
-  
-  script.onerror = function() {
-    console.error('Error de conexión al cargar créditos');
-    updateCreditosUI('?');
-    cleanupScript(script, callbackName);
-  };
-  
-  script.src = `${CONFIG.SCRIPT_URL}?${params.toString()}`;
-  document.head.appendChild(script);
+    });
 }
 
 function updateCreditosUI(cantidad) {
-  const el = document.getElementById('creditos');
-  if (el) {
-    el.textContent = cantidad;
+  if (UI.creditos) {
+    UI.creditos.textContent = cantidad;
   }
 }
 
 // ============================================
-// APPS SCRIPT - GENERAR CONTENIDO
+// GENERAR CONTENIDO
 // ============================================
 async function generarContenido() {
   if (!currentImageUrl) {
-    showError('Primero sube una imagen');
+    showError('Primero subí una imagen');
     return;
   }
-  
-  const texto = document.getElementById('texto')?.value || '';
-  const tipoNegocio = document.getElementById('tipoNegocio')?.value || 'general';
-  const usuarioIG = document.getElementById('usuarioIG')?.value || CONFIG.DEFAULT_IG_USER;
-  
-  showLoading('Generando contenido con IA...');
-  
+
+  const texto = UI.texto ? UI.texto.value.trim() : '';
+  const tipoNegocio = UI.tipoNegocio ? UI.tipoNegocio.value : 'general';
+  const usuarioIG = (UI.usuarioIG && UI.usuarioIG.value.trim())
+    ? UI.usuarioIG.value.trim().replace(/^@/, '')
+    : CONFIG.DEFAULT_IG_USER;
+
+  showLoading('Generando flyer con IA...');
+  hideError();
+  hideSuccess();
+
   try {
-    const resultado = await llamarAppsScript('generar', {
+    const resultado = await jsonpRequest('generar', {
       imageUrl: currentImageUrl,
-      publicId: currentPublicId,
-      texto: texto,
-      tipoNegocio: tipoNegocio,
-      usuarioIG: usuarioIG
-    });
-    
+      publicId: currentPublicId || '',
+      texto,
+      tipoNegocio,
+      usuarioIG
+    }, 60000);
+
     console.log('✅ Resultado:', resultado);
-    
-    // Mostrar resultados
+
     mostrarResultado(resultado);
-    
-    // Actualizar créditos
+
     if (resultado.creditosRestantes !== undefined) {
       updateCreditosUI(resultado.creditosRestantes);
     }
-    
+
     hideLoading();
-    
+
   } catch (error) {
     console.error('Error generación:', error);
     hideLoading();
@@ -258,44 +261,46 @@ async function generarContenido() {
   }
 }
 
-function llamarAppsScript(action, params) {
+// ============================================
+// JSONP HELPER
+// ============================================
+function jsonpRequest(action, params = {}, timeoutMs = 30000) {
   return new Promise((resolve, reject) => {
-    const callbackName = 'igCallback_' + Date.now();
+    const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const script = document.createElement('script');
+
     const timeout = setTimeout(() => {
       cleanupScript(script, callbackName);
-      reject(new Error('Timeout del servidor (30s)'));
-    }, 30000);
-    
-    const script = document.createElement('script');
-    
-    const allParams = new URLSearchParams({
-      action: action,
-      userId: userId,
-      callback: callbackName,
-      ...params
-    });
-    
-    window[callbackName] = function(response) {
+      reject(new Error('Timeout del servidor'));
+    }, timeoutMs);
+
+    window[callbackName] = function (response) {
       clearTimeout(timeout);
       cleanupScript(script, callbackName);
-      
-      console.log('Respuesta Apps Script:', response);
-      
+
       if (response && response.ok) {
         resolve(response);
       } else {
         reject(new Error(response?.error || 'Error desconocido del servidor'));
       }
     };
-    
-    script.onerror = function() {
+
+    script.onerror = function () {
       clearTimeout(timeout);
       cleanupScript(script, callbackName);
       reject(new Error('Error de conexión con el servidor'));
     };
-    
+
+    const allParams = new URLSearchParams({
+      action,
+      userId,
+      callback: callbackName,
+      ...params
+    });
+
     const url = `${CONFIG.SCRIPT_URL}?${allParams.toString()}`;
-    console.log('📡 Llamando a:', url);
+    console.log('📡 JSONP:', url);
+
     script.src = url;
     document.head.appendChild(script);
   });
@@ -314,45 +319,62 @@ function cleanupScript(script, callbackName) {
 // MOSTRAR RESULTADOS
 // ============================================
 function mostrarResultado(data) {
-  // Imagen final
-  const imgFinal = document.getElementById('imgFinal');
-  if (imgFinal && data.image) {
-    imgFinal.src = data.image;
-    imgFinal.style.display = 'block';
+  if (UI.imgFinal && data.image) {
+    UI.imgFinal.src = data.image;
+    UI.imgFinal.style.display = 'block';
   }
-  
-  // Caption
-  const captionText = document.getElementById('captionText');
-  if (captionText) {
-    captionText.value = data.caption + '\n\n' + data.hashtags;
+
+  const textoFinal = [data.caption || '', data.hashtags || '']
+    .filter(Boolean)
+    .join('\n\n');
+
+  if (UI.caption) {
+    if ('value' in UI.caption) {
+      UI.caption.value = textoFinal;
+    } else {
+      UI.caption.textContent = textoFinal;
+    }
   }
-  
-  // Frase
-  const fraseText = document.getElementById('fraseText');
-  if (fraseText) {
-    fraseText.textContent = data.frase;
+
+  if (UI.frase) {
+    UI.frase.textContent = data.frase || '';
   }
-  
-  // Mostrar sección resultado
-  const resultado = document.getElementById('resultado');
-  if (resultado) {
-    resultado.style.display = 'block';
-    resultado.scrollIntoView({ behavior: 'smooth' });
+
+  if (UI.resultado) {
+    UI.resultado.style.display = 'block';
+    UI.resultado.classList.add('visible');
+    UI.resultado.scrollIntoView({ behavior: 'smooth' });
   }
-  
-  // Guardar URL para descarga
-  currentImageUrl = data.image;
+
+  currentImageUrl = data.image || currentImageUrl;
 }
 
 // ============================================
 // ACCIONES
 // ============================================
-function copiarCaption() {
-  const captionText = document.getElementById('captionText');
-  if (captionText) {
-    captionText.select();
-    document.execCommand('copy');
+async function copiarCaption() {
+  const texto = getCaptionText();
+
+  if (!texto) {
+    showError('No hay texto para copiar');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(texto);
     showSuccess('Caption copiado al portapapeles');
+  } catch (err) {
+    try {
+      if (UI.caption && 'select' in UI.caption) {
+        UI.caption.select();
+        document.execCommand('copy');
+        showSuccess('Caption copiado al portapapeles');
+      } else {
+        throw err;
+      }
+    } catch {
+      showError('No se pudo copiar el caption');
+    }
   }
 }
 
@@ -361,12 +383,12 @@ async function descargarImagen() {
     showError('No hay imagen para descargar');
     return;
   }
-  
+
   try {
     const response = await fetch(currentImageUrl);
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = 'instagram-post-' + Date.now() + '.jpg';
@@ -374,57 +396,67 @@ async function descargarImagen() {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    
+
     showSuccess('Imagen descargada');
   } catch (error) {
-    // Fallback: abrir en nueva pestaña
     window.open(currentImageUrl, '_blank');
   }
+}
+
+function getCaptionText() {
+  if (!UI.caption) return '';
+  return ('value' in UI.caption) ? UI.caption.value : UI.caption.textContent;
 }
 
 // ============================================
 // UI HELPERS
 // ============================================
 function showLoading(mensaje) {
-  const loading = document.getElementById('loading');
-  const loadingText = document.getElementById('loadingText');
-  
-  if (loading) loading.style.display = 'flex';
-  if (loadingText) loadingText.textContent = mensaje;
-  
-  const btnGenerar = document.getElementById('btnGenerar');
-  if (btnGenerar) btnGenerar.disabled = true;
+  if (UI.loading) UI.loading.style.display = 'flex';
+  if (UI.loadingText) UI.loadingText.textContent = mensaje;
+  disableGenerar(true);
 }
 
 function hideLoading() {
-  const loading = document.getElementById('loading');
-  if (loading) loading.style.display = 'none';
-  
-  const btnGenerar = document.getElementById('btnGenerar');
-  if (btnGenerar) btnGenerar.disabled = false;
+  if (UI.loading) UI.loading.style.display = 'none';
+  disableGenerar(!currentImageUrl);
+}
+
+function disableGenerar(disabled) {
+  if (UI.btnGenerar) UI.btnGenerar.disabled = disabled;
 }
 
 function showError(mensaje) {
   console.error('Error:', mensaje);
-  const errorDiv = document.getElementById('error');
-  if (errorDiv) {
-    errorDiv.textContent = mensaje;
-    errorDiv.style.display = 'block';
-    setTimeout(() => {
-      errorDiv.style.display = 'none';
-    }, 5000);
+
+  if (UI.error) {
+    UI.error.textContent = mensaje;
+    UI.error.style.display = 'block';
   }
-  alert('Error: ' + mensaje);
+}
+
+function hideError() {
+  if (UI.error) {
+    UI.error.style.display = 'none';
+    UI.error.textContent = '';
+  }
 }
 
 function showSuccess(mensaje) {
   console.log('Success:', mensaje);
-  const successDiv = document.getElementById('success');
-  if (successDiv) {
-    successDiv.textContent = mensaje;
-    successDiv.style.display = 'block';
+
+  if (UI.success) {
+    UI.success.textContent = mensaje;
+    UI.success.style.display = 'block';
     setTimeout(() => {
-      successDiv.style.display = 'none';
+      UI.success.style.display = 'none';
     }, 3000);
+  }
+}
+
+function hideSuccess() {
+  if (UI.success) {
+    UI.success.style.display = 'none';
+    UI.success.textContent = '';
   }
 }
