@@ -176,61 +176,7 @@ async function generar() {
       }
     }, 30000);
     
-    // Limpiar timeout si todo va bien
-    iframe.onload = function() {
-      clearTimeout(timeout);
-      // ... resto del código de onload arriba
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
-        
-        console.log('Respuesta raw:', bodyText);
-        
-        let data;
-        try {
-          data = JSON.parse(bodyText);
-        } catch (e) {
-          const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            data = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error('Respuesta no válida');
-          }
-        }
-        
-        if (data.ok) {
-          mostrarResultado(data);
-          actualizarCreditos(data.creditosRestantes);
-        } else {
-          throw new Error(data.error || 'Error del servidor');
-        }
-        
-        setTimeout(() => {
-          form.remove();
-          iframe.remove();
-        }, 1000);
-        
-      } catch (err) {
-        console.error('Error procesando respuesta:', err);
-        mostrarError('❌ Error: ' + err.message);
-        setLoading(false);
-        form.remove();
-        iframe.remove();
-      }
-    };
     
-    // Agregar al DOM y enviar
-    document.body.appendChild(iframe);
-    document.body.appendChild(form);
-    form.submit();
-    
-  } catch (err) {
-    console.error('Error:', err);
-    mostrarError('❌ ' + err.message);
-    setLoading(false);
-  }
-}
-
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================
