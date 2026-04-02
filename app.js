@@ -78,18 +78,18 @@ async function generar() {
 
   try {
     const base64 = await toBase64(file);
-    
+
     // Crear iframe único para esta petición
     const requestId = 'req_' + Date.now();
     const callbackName = 'callback_' + requestId;
-    
+
     // Crear formulario oculto
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = CONFIG.API_URL;
     form.target = requestId;
     form.style.display = 'none';
-    
+
     // Agregar campos
     const campos = {
       userId: CONFIG.USER_ID,
@@ -97,9 +97,9 @@ async function generar() {
       texto: texto,
       tipoNegocio: tipoNegocio,
       usuarioIG: usuarioIG,
-      callback: callbackName // Para respuesta JSONP si queremos
+      callback: callbackName
     };
-    
+
     Object.keys(campos).forEach(key => {
       const input = document.createElement('input');
       input.type = 'hidden';
@@ -107,27 +107,23 @@ async function generar() {
       input.value = campos[key];
       form.appendChild(input);
     });
-    
+
     // Crear iframe para recibir respuesta
     const iframe = document.createElement('iframe');
     iframe.name = requestId;
     iframe.id = requestId;
     iframe.style.display = 'none';
-    
+
     // Manejar respuesta
     iframe.onload = function() {
       try {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
-        
-        console.log('Respuesta raw:', bodyText);
-        
-        // Intentar parsear JSON
+
         let data;
         try {
           data = JSON.parse(bodyText);
         } catch (e) {
-          // Buscar JSON en la respuesta
           const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             data = JSON.parse(jsonMatch[0]);
@@ -135,37 +131,34 @@ async function generar() {
             throw new Error('Respuesta no válida');
           }
         }
-        
-        // Procesar respuesta
+
         if (data.ok) {
           mostrarResultado(data);
           actualizarCreditos(data.creditosRestantes);
         } else {
           throw new Error(data.error || 'Error del servidor');
         }
-        
-        // Limpiar
+
         setTimeout(() => {
           form.remove();
           iframe.remove();
         }, 1000);
-        
+
       } catch (err) {
-        console.error('Error procesando respuesta:', err);
         mostrarError('❌ Error: ' + err.message);
         setLoading(false);
         form.remove();
         iframe.remove();
       }
     };
-    
+
     iframe.onerror = function() {
       mostrarError('❌ Error de conexión');
       setLoading(false);
       form.remove();
       iframe.remove();
     };
-    
+
     // Timeout de seguridad
     const timeout = setTimeout(() => {
       if (elementos.btnGenerar.disabled) {
@@ -175,8 +168,17 @@ async function generar() {
         iframe.remove();
       }
     }, 30000);
-    
-    
+
+    // 🔹 Agregar al DOM y enviar
+    document.body.appendChild(form);
+    document.body.appendChild(iframe);
+    form.submit();
+
+  } catch (err) {
+    mostrarError('❌ Error: ' + err.message);
+    setLoading(false);
+  }
+}
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================
