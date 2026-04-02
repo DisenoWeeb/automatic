@@ -2,7 +2,13 @@
 // CONFIGURACIÓN
 // ============================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbzVWvluMf1eiPO6wRXTfo9iEEOKGJQJEp8kEKHhv29Y-N-Hh6pO5pObv4ESbjRyTY2exA/exec",
+  // Tu URL de Apps Script (la misma de antes)
+  API_URL: "https://script.google.com/macros/s/AKfycbzvUe0k-BiOUiyapzI_LsFC5Jp_CwlliT1qjjayeIm5VSO5qGcF2uwDlsERQg26PA7frw/exec",
+  
+  // Cloudinary config (pública, no hay problema mostrarla)
+  CLOUDINARY_CLOUD: "dwgwbdtud",
+  CLOUDINARY_PRESET: "web_upload",
+  
   USER_ID: localStorage.getItem('ig_generator_user') || generarUserId()
 };
 
@@ -13,7 +19,7 @@ function generarUserId() {
 }
 
 // ============================================
-// ELEMENTOS DEL DOM
+// ELEMENTOS DOM
 // ============================================
 const elementos = {
   file: document.getElementById('file'),
@@ -35,8 +41,7 @@ const elementos = {
 // EVENT LISTENERS
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('App lista. User ID:', CONFIG.USER_ID);
-  // Cargar créditos al iniciar
+  console.log('App lista. User:', CONFIG.USER_ID);
   verificarCreditos();
 });
 
@@ -44,8 +49,8 @@ elementos.file.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
   
-  if (file.size > 5 * 1024 * 1024) {
-    mostrarError('La imagen es muy grande. Máximo 5MB.');
+  if (file.size > 10 * 1024 * 1024) {
+    mostrarError('La imagen es muy grande. Máximo 10MB.');
     return;
   }
   
@@ -54,14 +59,14 @@ elementos.file.addEventListener('change', function(e) {
     elementos.preview.src = e.target.result;
     elementos.preview.style.display = 'block';
     elementos.fileLabel.classList.add('has-file');
-    elementos.fileLabel.innerHTML = `<div>✅ Imagen seleccionada</div><small>${file.name}</small>`;
+    elementos.fileLabel.innerHTML = `<div>✅ ${file.name}</div><small>${(file.size/1024/1024).toFixed(2)} MB</small>`;
   };
   reader.readAsDataURL(file);
   ocultarError();
 });
 
 // ============================================
-// FUNCIÓN PRINCIPAL - IFRAME CORREGIDO
+// FUNCIÓN PRINCIPAL: Subir a Cloudinary → Procesar en Apps Script
 // ============================================
 async function generar() {
   const file = elementos.file.files[0];
@@ -70,7 +75,7 @@ async function generar() {
   const usuarioIG = elementos.usuarioIG.value.trim() || "mitienda";
 
   if (!file) {
-    mostrarError('⚠️ Por favor selecciona una imagen');
+    mostrarError('⚠️ Seleccioná una imagen');
     return;
   }
 
@@ -79,182 +84,137 @@ async function generar() {
   ocultarResultado();
 
   try {
-    const base64 = await toBase64(file);
-    const requestId = 'req_' + Date.now();
+    // PASO 1: Subir imagen a Cloudinary directamente
+    console.log('📤 Subiendo a Cloudinary...');
+    const cloudinaryData = await subirACloudinary(file);
+    console.log('✅ Cloudinary URL:', cloudinaryData.secure_url);
     
-    // Crear iframe PRIMERO
-    const iframe = document.createElement('iframe');
-    iframe.name = requestId;
-    iframe.id = requestId;
-    iframe.style.display = 'none';
-    
-    // Crear formulario que apunte al iframe
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = CONFIG.API_URL;
-    form.target = requestId;
-    form.style.display = 'none';
-    
-    // Campos del formulario
-    const campos = {
+    // PASO 2: Llamar a Apps Script con la URL (GET, no POST, no base64)
+    console.log('🤖 Procesando en Apps Script...');
+    const resultado = await procesarEnAppsScript({
       userId: CONFIG.USER_ID,
-      image: base64,
+      imageUrl: cloudinaryData.secure_url,
+      publicId: cloudinaryData.public_id,
       texto: texto,
       tipoNegocio: tipoNegocio,
       usuarioIG: usuarioIG
-    };
-    
-    Object.keys(campos).forEach(key => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = campos[key];
-      form.appendChild(input);
     });
     
-    // Variable para controlar si se procesó la respuesta
-    let procesado = false;
-    
-    // Definir onload UNA SOLA VEZ
-    iframe.onload = function() {
-      if (procesado) return; // Evitar doble ejecución
-      procesado = true;
-      
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const bodyText = iframeDoc.body ? (iframeDoc.body.innerText || iframeDoc.body.textContent || '') : '';
-        
-        console.log('Respuesta raw:', bodyText.substring(0, 500));
-        
-        if (!bodyText || bodyText.trim() === '') {
-          throw new Error('Respuesta vacía del servidor');
-        }
-        
-        // Intentar parsear JSON directamente
-        let data;
-        try {
-          data = JSON.parse(bodyText);
-        } catch (e) {
-          // Buscar JSON en la respuesta (por si hay HTML alrededor)
-          const jsonMatch = bodyText.match(/\{[\s\S]*"ok"\s*:[\s\S]*\}/);
-          if (jsonMatch) {
-            try {
-              data = JSON.parse(jsonMatch[0]);
-            } catch (e2) {
-              throw new Error('No se pudo parsear la respuesta JSON');
-            }
-          } else {
-            // Si no hay JSON, mostrar parte de la respuesta para debug
-            const preview = bodyText.substring(0, 200).replace(/<[^>]*>/g, '');
-            throw new Error('Respuesta no válida. Preview: ' + preview);
-          }
-        }
-        
-        if (data.ok) {
-          mostrarResultado(data);
-          actualizarCreditos(data.creditosRestantes);
-        } else {
-          throw new Error(data.error || 'Error del servidor');
-        }
-        
-      } catch (err) {
-        console.error('Error procesando respuesta:', err);
-        mostrarError('❌ ' + err.message);
-        setLoading(false);
-      } finally {
-        // Limpiar DOM después de un momento
-        setTimeout(() => {
-          if (form.parentNode) form.remove();
-          if (iframe.parentNode) iframe.remove();
-        }, 1000);
-      }
-    };
-    
-    // Manejar errores del iframe
-    iframe.onerror = function() {
-      if (procesado) return;
-      procesado = true;
-      mostrarError('❌ Error de conexión con el servidor');
-      setLoading(false);
-      form.remove();
-      iframe.remove();
-    };
-    
-    // Timeout de seguridad
-    const timeout = setTimeout(() => {
-      if (!procesado) {
-        procesado = true;
-        mostrarError('⏱️ Tiempo de espera agotado (30s). Intentá de nuevo.');
-        setLoading(false);
-        try { form.remove(); } catch(e) {}
-        try { iframe.remove(); } catch(e) {}
-      }
-    }, 30000);
-    
-    // Agregar al DOM y enviar
-    document.body.appendChild(iframe);
-    document.body.appendChild(form);
-    
-    console.log('Enviando formulario...');
-    form.submit();
+    // Mostrar resultado
+    if (resultado.ok) {
+      mostrarResultado(resultado);
+      actualizarCreditos(resultado.creditosRestantes);
+    } else {
+      throw new Error(resultado.error || 'Error del servidor');
+    }
     
   } catch (err) {
-    console.error('Error en generar():', err);
+    console.error('Error:', err);
     mostrarError('❌ ' + err.message);
+  } finally {
     setLoading(false);
   }
 }
 
 // ============================================
-// VERIFICAR CRÉDITOS AL CARGAR
+// PASO 1: Subir archivo a Cloudinary (Unsigned Upload)
 // ============================================
-function verificarCreditos() {
-  const requestId = 'req_creditos_' + Date.now();
+async function subirACloudinary(file) {
+  const url = `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD}/image/upload`;
   
-  const iframe = document.createElement('iframe');
-  iframe.name = requestId;
-  iframe.style.display = 'none';
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CONFIG.CLOUDINARY_PRESET);
+  formData.append('folder', 'instagram_generator');
   
-  const form = document.createElement('form');
-  form.method = 'GET'; // GET para consulta
-  form.action = CONFIG.API_URL + '?action=creditos&userId=' + encodeURIComponent(CONFIG.USER_ID);
-  form.target = requestId;
-  form.style.display = 'none';
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData
+  });
   
-  let procesado = false;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error('Error subiendo a Cloudinary: ' + error);
+  }
   
-  iframe.onload = function() {
-    if (procesado) return;
-    procesado = true;
+  return await response.json();
+}
+
+// ============================================
+// PASO 2: Procesar en Apps Script (GET con URL corta)
+// ============================================
+async function procesarEnAppsScript(datos) {
+  // Construir URL con parámetros (GET, pequeño, no hay CORS issues con iframe)
+  const params = new URLSearchParams({
+    action: 'generar',
+    userId: datos.userId,
+    imageUrl: datos.imageUrl,
+    publicId: datos.publicId,
+    texto: datos.texto,
+    tipoNegocio: datos.tipoNegocio,
+    usuarioIG: datos.usuarioIG
+  });
+  
+  const url = `${CONFIG.API_URL}?${params.toString()}`;
+  
+  // Usar JSONP para evitar CORS
+  return new Promise((resolve, reject) => {
+    const callbackName = 'ig_callback_' + Date.now();
+    const script = document.createElement('script');
     
-    try {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      const bodyText = iframeDoc.body ? (iframeDoc.body.innerText || '') : '';
-      
-      let data;
-      try {
-        data = JSON.parse(bodyText);
-      } catch (e) {
-        const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) data = JSON.parse(jsonMatch[0]);
-      }
-      
-      if (data && data.ok) {
-        actualizarCreditos(data.creditosDisponibles);
-      }
-    } catch (e) {
-      console.log('No se pudo cargar créditos iniciales');
+    // Apps Script debe soportar callback parameter
+    script.src = url + '&callback=' + callbackName;
+    
+    // Timeout
+    const timeout = setTimeout(() => {
+      reject(new Error('Timeout esperando respuesta'));
+      cleanup();
+    }, 30000);
+    
+    // Callback global
+    window[callbackName] = function(data) {
+      clearTimeout(timeout);
+      resolve(data);
+      cleanup();
+    };
+    
+    // Error
+    script.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error('Error de conexión'));
+      cleanup();
+    };
+    
+    function cleanup() {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      delete window[callbackName];
     }
     
-    setTimeout(() => {
-      form.remove();
-      iframe.remove();
-    }, 500);
+    document.head.appendChild(script);
+  });
+}
+
+// ============================================
+// VERIFICAR CRÉDITOS (JSONP)
+// ============================================
+function verificarCreditos() {
+  const callbackName = 'creditos_cb_' + Date.now();
+  const script = document.createElement('script');
+  script.src = `${CONFIG.API_URL}?action=creditos&userId=${encodeURIComponent(CONFIG.USER_ID)}&callback=${callbackName}`;
+  
+  window[callbackName] = function(data) {
+    if (data && data.ok) {
+      actualizarCreditos(data.creditosDisponibles);
+    }
+    delete window[callbackName];
+    if (script.parentNode) script.parentNode.removeChild(script);
   };
   
-  document.body.appendChild(iframe);
-  document.body.appendChild(form);
-  form.submit();
+  script.onerror = () => {
+    delete window[callbackName];
+  };
+  
+  document.head.appendChild(script);
 }
 
 // ============================================
@@ -280,7 +240,6 @@ function mostrarResultado(data) {
   elementos.caption.textContent = data.caption + '\n\n' + data.hashtags;
   elementos.resultado.classList.add('visible');
   elementos.resultado.scrollIntoView({ behavior: 'smooth' });
-  setLoading(false);
 }
 
 function ocultarResultado() {
@@ -288,7 +247,7 @@ function ocultarResultado() {
 }
 
 function mostrarError(mensaje) {
-  elementos.error.textContent = mensaje;
+  elementos.error.innerHTML = mensaje;
   elementos.error.classList.add('visible');
   setLoading(false);
 }
@@ -299,52 +258,35 @@ function ocultarError() {
 
 function actualizarCreditos(cantidad) {
   elementos.creditos.textContent = cantidad;
-  if (cantidad <= 5) {
-    elementos.creditos.style.color = '#ff5252';
-  } else {
-    elementos.creditos.style.color = '';
-  }
+  elementos.creditos.style.color = cantidad <= 5 ? '#ff5252' : '';
 }
 
 function copiarTexto() {
   const texto = elementos.caption.textContent;
   navigator.clipboard.writeText(texto).then(() => {
     const btn = document.querySelector('.btn-copiar');
+    const original = btn.textContent;
     btn.textContent = '✅ ¡Copiado!';
-    btn.style.background = '#45a049';
-    setTimeout(() => {
-      btn.textContent = '📋 Copiar texto';
-      btn.style.background = '#4caf50';
-    }, 2000);
-  }).catch(() => {
-    // Fallback
-    const range = document.createRange();
-    range.selectNode(elementos.caption);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
+    setTimeout(() => btn.textContent = original, 2000);
   });
 }
 
 // Drag and drop
 const dropZone = elementos.fileLabel;
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.style.borderColor = '#667eea';
-  dropZone.style.background = '#f0f0ff';
-});
-dropZone.addEventListener('dragleave', (e) => {
-  e.preventDefault();
-  dropZone.style.borderColor = '#ddd';
-  dropZone.style.background = '#fafafa';
-});
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.style.borderColor = '#ddd';
-  dropZone.style.background = '#fafafa';
-  const files = e.dataTransfer.files;
-  if (files.length > 0) {
-    elementos.file.files = files;
-    elementos.file.dispatchEvent(new Event('change'));
-  }
+['dragover', 'dragleave', 'drop'].forEach(event => {
+  dropZone.addEventListener(event, (e) => {
+    e.preventDefault();
+    if (event === 'dragover') {
+      dropZone.style.cssText = 'border-color: #667eea; background: #f0f0ff;';
+    } else if (event === 'dragleave') {
+      dropZone.style.cssText = '';
+    } else {
+      dropZone.style.cssText = '';
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        elementos.file.files = files;
+        elementos.file.dispatchEvent(new Event('change'));
+      }
+    }
+  });
 });
