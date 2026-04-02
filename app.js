@@ -228,7 +228,15 @@ async function generarContenido() {
     return;
   }
 
-  const payload = { /* ... tus datos ... */ };
+ const payload = {
+  imageUrl: currentImageUrl,
+  titulo: UI.titulo ? UI.titulo.value.trim() : '',
+  precio: UI.precio ? UI.precio.value.trim() : '',
+  cta: UI.cta ? UI.cta.value.trim() : '',
+  usuarioIG: UI.usuarioIG ? UI.usuarioIG.value.trim() : '',
+  webSitio: UI.webSitio ? UI.webSitio.value.trim() : '',
+  whatsapp: '' // opcional si después lo agregás al UI
+};
 
   showLoading('Iniciando generación con IA...');
   hideError();
