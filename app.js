@@ -3,7 +3,7 @@
 // ============================================
 const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbzvUe0k-BiOUiyapzI_LsFC5Jp_CwlliT1qjjayeIm5VSO5qGcF2uwDlsERQg26PA7frw/exec",
-  USER_ID: "user_" + localStorage.getItem('ig_generator_user') || generarUserId()
+  USER_ID: localStorage.getItem('ig_generator_user') || generarUserId()
 };
 
 // Generar ID único para el usuario si no existe
@@ -64,16 +64,6 @@ elementos.file.addEventListener('change', function(e) {
   }
 });
 
-// Cargar créditos al iniciar
-// Comentá esta línea:
-// document.addEventListener('DOMContentLoaded', cargarCreditos);
-
-// Y dejá solo esto:
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('App lista');
-  // Los créditos se cargarán después del primer uso
-});
-
 // ============================================
 // FUNCIONES PRINCIPALES
 // ============================================
@@ -82,59 +72,135 @@ async function generar() {
   const file = elementos.file.files[0];
   const texto = elementos.texto.value.trim();
   const tipoNegocio = elementos.tipoNegocio.value;
-  const usuarioIG = elementos.usuarioIG.value.trim() || "mitienda"; // Valor por defecto si está vacío
-  
+  const usuarioIG = elementos.usuarioIG.value.trim() || "mitienda";
+
   // Validaciones
   if (!file) {
     mostrarError('⚠️ Por favor selecciona una imagen');
     return;
   }
-  
+
   // Mostrar loading
   setLoading(true);
   ocultarError();
   ocultarResultado();
-  
+
   try {
     // Convertir imagen a base64
     const base64 = await toBase64(file);
     
-    // Preparar datos
-    const payload = {
+    // Preparar parámetros para GET
+    const params = new URLSearchParams({
       userId: CONFIG.USER_ID,
       image: base64,
       texto: texto,
       tipoNegocio: tipoNegocio,
       usuarioIG: usuarioIG
-    };
-    
-    console.log('Enviando datos...', { ...payload, image: '...base64...' });
-    
-    // Enviar a Apps Script
-    const res = await fetch(CONFIG.API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json'
-      }
     });
+
+    const url = `${CONFIG.API_URL}?${params.toString()}`;
     
+    console.log('Enviando vía GET...');
+    console.log('URL length:', url.length);
+
+    // Si la URL es muy larga, usar POST con no-cors
+    if (url.length > 8000) {
+      console.log('URL muy larga, usando POST alternativo');
+      await enviarPostAlternativo(base64, texto, tipoNegocio, usuarioIG);
+      return;
+    }
+
+    // Enviar vía GET
+    const res = await fetch(url, {
+      method: "GET",
+      redirect: "follow"
+    });
+
     const data = await res.json();
     console.log('Respuesta:', data);
-    
+
     if (data.ok) {
       mostrarResultado(data);
       actualizarCreditos(data.creditosRestantes);
     } else {
       throw new Error(data.error || 'Error desconocido');
     }
-    
+
   } catch (err) {
     console.error('Error:', err);
     mostrarError('❌ ' + err.message);
   } finally {
     setLoading(false);
   }
+}
+
+// Alternativa POST si la imagen es muy grande
+async function enviarPostAlternativo(base64, texto, tipoNegocio, usuarioIG) {
+  // Crear formulario y enviar
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = CONFIG.API_URL;
+  form.target = 'hidden-iframe';
+  form.style.display = 'none';
+  
+  const createInput = (name, value) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    return input;
+  };
+  
+  form.appendChild(createInput('userId', CONFIG.USER_ID));
+  form.appendChild(createInput('image', base64));
+  form.appendChild(createInput('texto', texto));
+  form.appendChild(createInput('tipoNegocio', tipoNegocio));
+  form.appendChild(createInput('usuarioIG', usuarioIG));
+  
+  let iframe = document.getElementById('hidden-iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.name = 'hidden-iframe';
+    iframe.id = 'hidden-iframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+  
+  // Escuchar respuesta
+  const checkResponse = setInterval(() => {
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      const body = iframeDoc.body.innerText;
+      
+      if (body && body.includes('{')) {
+        clearInterval(checkResponse);
+        const data = JSON.parse(body);
+        
+        if (data.ok) {
+          mostrarResultado(data);
+          actualizarCreditos(data.creditosRestantes);
+        } else {
+          throw new Error(data.error);
+        }
+        
+        setLoading(false);
+        form.remove();
+      }
+    } catch (e) {
+      // Todavía no hay respuesta
+    }
+  }, 500);
+  
+  setTimeout(() => {
+    clearInterval(checkResponse);
+    if (elementos.btnGenerar.disabled) {
+      setLoading(false);
+      mostrarError('⏱️ Tiempo de espera agotado');
+    }
+  }, 30000);
+  
+  document.body.appendChild(form);
+  form.submit();
 }
 
 // ============================================
@@ -160,8 +226,6 @@ function mostrarResultado(data) {
   elementos.imagenFinal.src = data.image;
   elementos.caption.value = data.caption + '\n\n' + data.hashtags;
   elementos.resultado.classList.add('visible');
-  
-  // Scroll al resultado
   elementos.resultado.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -180,23 +244,8 @@ function ocultarError() {
 
 function actualizarCreditos(cantidad) {
   elementos.creditos.textContent = cantidad;
-  
-  // Animación si quedan pocos
   if (cantidad <= 5) {
     elementos.creditos.style.color = '#ff5252';
-  }
-}
-
-async function cargarCreditos() {
-  try {
-    const res = await fetch(`${CONFIG.API_URL}?action=creditos&userId=${CONFIG.USER_ID}`);
-    const data = await res.json();
-    
-    if (data.ok) {
-      actualizarCreditos(data.creditosDisponibles);
-    }
-  } catch (err) {
-    console.log('No se pudieron cargar los créditos');
   }
 }
 
@@ -214,16 +263,13 @@ function copiarTexto() {
       btn.style.background = '#4caf50';
     }, 2000);
   }).catch(() => {
-    // Fallback para navegadores antiguos
     elementos.caption.select();
     document.execCommand('copy');
-    alert('Texto copiado al portapapeles');
+    alert('Texto copiado');
   });
 }
 
-// ============================================
-// DRAG AND DROP (Opcional)
-// ============================================
+// Drag and drop
 const dropZone = elementos.fileLabel;
 
 dropZone.addEventListener('dragover', (e) => {
