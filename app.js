@@ -38,17 +38,17 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('App lista. User ID:', CONFIG.USER_ID);
 });
 
-elementos.file.addEventListener('change', (e) => {
+elementos.file.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
-
+  
   if (file.size > 5 * 1024 * 1024) {
     mostrarError('La imagen es muy grande. Máximo 5MB.');
     return;
   }
-
+  
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = function(e) {
     elementos.preview.src = e.target.result;
     elementos.preview.style.display = 'block';
     elementos.fileLabel.classList.add('has-file');
@@ -58,31 +58,8 @@ elementos.file.addEventListener('change', (e) => {
   ocultarError();
 });
 
-// Drag & Drop
-const dropZone = elementos.fileLabel;
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.style.borderColor = '#667eea';
-  dropZone.style.background = '#f0f0ff';
-});
-dropZone.addEventListener('dragleave', (e) => {
-  e.preventDefault();
-  dropZone.style.borderColor = '#ddd';
-  dropZone.style.background = '#fafafa';
-});
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.style.borderColor = '#ddd';
-  dropZone.style.background = '#fafafa';
-  const files = e.dataTransfer.files;
-  if (files.length > 0) {
-    elementos.file.files = files;
-    elementos.file.dispatchEvent(new Event('change'));
-  }
-});
-
 // ============================================
-// FUNCIÓN PRINCIPAL
+// FUNCIÓN PRINCIPAL - USAR IFRAME PARA EVITAR CORS
 // ============================================
 async function generar() {
   const file = elementos.file.files[0];
@@ -101,33 +78,155 @@ async function generar() {
 
   try {
     const base64 = await toBase64(file);
-
-    // Enviar al server
-    const response = await fetch(CONFIG.API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: CONFIG.USER_ID,
-        image: base64,
-        texto,
-        tipoNegocio,
-        usuarioIG
-      })
+    
+    // Crear iframe único para esta petición
+    const requestId = 'req_' + Date.now();
+    const callbackName = 'callback_' + requestId;
+    
+    // Crear formulario oculto
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = CONFIG.API_URL;
+    form.target = requestId;
+    form.style.display = 'none';
+    
+    // Agregar campos
+    const campos = {
+      userId: CONFIG.USER_ID,
+      image: base64,
+      texto: texto,
+      tipoNegocio: tipoNegocio,
+      usuarioIG: usuarioIG,
+      callback: callbackName // Para respuesta JSONP si queremos
+    };
+    
+    Object.keys(campos).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = campos[key];
+      form.appendChild(input);
     });
-
-    const data = await response.json();
-
-    if (data.ok) {
-      mostrarResultado(data);
-      actualizarCreditos(data.creditosRestantes);
-    } else {
-      throw new Error(data.error || 'Error del servidor');
-    }
-
+    
+    // Crear iframe para recibir respuesta
+    const iframe = document.createElement('iframe');
+    iframe.name = requestId;
+    iframe.id = requestId;
+    iframe.style.display = 'none';
+    
+    // Manejar respuesta
+    iframe.onload = function() {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
+        
+        console.log('Respuesta raw:', bodyText);
+        
+        // Intentar parsear JSON
+        let data;
+        try {
+          data = JSON.parse(bodyText);
+        } catch (e) {
+          // Buscar JSON en la respuesta
+          const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            data = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error('Respuesta no válida');
+          }
+        }
+        
+        // Procesar respuesta
+        if (data.ok) {
+          mostrarResultado(data);
+          actualizarCreditos(data.creditosRestantes);
+        } else {
+          throw new Error(data.error || 'Error del servidor');
+        }
+        
+        // Limpiar
+        setTimeout(() => {
+          form.remove();
+          iframe.remove();
+        }, 1000);
+        
+      } catch (err) {
+        console.error('Error procesando respuesta:', err);
+        mostrarError('❌ Error: ' + err.message);
+        setLoading(false);
+        form.remove();
+        iframe.remove();
+      }
+    };
+    
+    iframe.onerror = function() {
+      mostrarError('❌ Error de conexión');
+      setLoading(false);
+      form.remove();
+      iframe.remove();
+    };
+    
+    // Timeout de seguridad
+    const timeout = setTimeout(() => {
+      if (elementos.btnGenerar.disabled) {
+        mostrarError('⏱️ Tiempo de espera agotado. Intentá de nuevo.');
+        setLoading(false);
+        form.remove();
+        iframe.remove();
+      }
+    }, 30000);
+    
+    // Limpiar timeout si todo va bien
+    iframe.onload = function() {
+      clearTimeout(timeout);
+      // ... resto del código de onload arriba
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
+        
+        console.log('Respuesta raw:', bodyText);
+        
+        let data;
+        try {
+          data = JSON.parse(bodyText);
+        } catch (e) {
+          const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            data = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error('Respuesta no válida');
+          }
+        }
+        
+        if (data.ok) {
+          mostrarResultado(data);
+          actualizarCreditos(data.creditosRestantes);
+        } else {
+          throw new Error(data.error || 'Error del servidor');
+        }
+        
+        setTimeout(() => {
+          form.remove();
+          iframe.remove();
+        }, 1000);
+        
+      } catch (err) {
+        console.error('Error procesando respuesta:', err);
+        mostrarError('❌ Error: ' + err.message);
+        setLoading(false);
+        form.remove();
+        iframe.remove();
+      }
+    };
+    
+    // Agregar al DOM y enviar
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    form.submit();
+    
   } catch (err) {
-    console.error('Error generando post:', err);
+    console.error('Error:', err);
     mostrarError('❌ ' + err.message);
-  } finally {
     setLoading(false);
   }
 }
@@ -152,9 +251,10 @@ function setLoading(loading) {
 
 function mostrarResultado(data) {
   elementos.imagenFinal.src = data.image;
-  elementos.caption.textContent = data.caption + '\n\n' + data.hashtags;
+  elementos.caption.value = data.caption + '\n\n' + data.hashtags;
   elementos.resultado.classList.add('visible');
   elementos.resultado.scrollIntoView({ behavior: 'smooth' });
+  setLoading(false);
 }
 
 function ocultarResultado() {
@@ -164,6 +264,7 @@ function ocultarResultado() {
 function mostrarError(mensaje) {
   elementos.error.textContent = mensaje;
   elementos.error.classList.add('visible');
+  setLoading(false);
 }
 
 function ocultarError() {
@@ -172,11 +273,13 @@ function ocultarError() {
 
 function actualizarCreditos(cantidad) {
   elementos.creditos.textContent = cantidad;
-  elementos.creditos.style.color = cantidad <= 5 ? '#ff5252' : '';
+  if (cantidad <= 5) {
+    elementos.creditos.style.color = '#ff5252';
+  }
 }
 
 function copiarTexto() {
-  const texto = elementos.caption.textContent;
+  const texto = elementos.caption.value;
   navigator.clipboard.writeText(texto).then(() => {
     const btn = document.querySelector('.btn-copiar');
     btn.textContent = '✅ ¡Copiado!';
@@ -191,7 +294,25 @@ function copiarTexto() {
   });
 }
 
-// ============================================
-// BOTÓN GENERAR
-// ============================================
-elementos.btnGenerar.addEventListener('click', generar);
+// Drag and drop
+const dropZone = elementos.fileLabel;
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.style.borderColor = '#667eea';
+  dropZone.style.background = '#f0f0ff';
+});
+dropZone.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  dropZone.style.borderColor = '#ddd';
+  dropZone.style.background = '#fafafa';
+});
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.style.borderColor = '#ddd';
+  dropZone.style.background = '#fafafa';
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    elementos.file.files = files;
+    elementos.file.dispatchEvent(new Event('change'));
+  }
+});
