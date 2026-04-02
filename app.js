@@ -59,7 +59,7 @@ elementos.file.addEventListener('change', function(e) {
 });
 
 // ============================================
-// FUNCIÓN PRINCIPAL - USAR IFRAME PARA EVITAR CORS
+// FUNCIÓN PRINCIPAL - IFRAME CORREGIDO
 // ============================================
 async function generar() {
   const file = elementos.file.files[0];
@@ -78,26 +78,27 @@ async function generar() {
 
   try {
     const base64 = await toBase64(file);
-    
-    // Crear iframe único para esta petición
     const requestId = 'req_' + Date.now();
-    const callbackName = 'callback_' + requestId;
     
-    // Crear formulario oculto
+    // Crear iframe PRIMERO con name específico
+    const iframe = document.createElement('iframe');
+    iframe.name = requestId;
+    iframe.style.display = 'none';
+    
+    // Crear formulario que apunte al iframe
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = CONFIG.API_URL;
-    form.target = requestId;
+    form.target = requestId;  // ← Esto es clave: target = name del iframe
     form.style.display = 'none';
     
-    // Agregar campos
+    // Campos del formulario
     const campos = {
       userId: CONFIG.USER_ID,
       image: base64,
       texto: texto,
       tipoNegocio: tipoNegocio,
-      usuarioIG: usuarioIG,
-      callback: callbackName // Para respuesta JSONP si queremos
+      usuarioIG: usuarioIG
     };
     
     Object.keys(campos).forEach(key => {
@@ -108,35 +109,26 @@ async function generar() {
       form.appendChild(input);
     });
     
-    // Crear iframe para recibir respuesta
-    const iframe = document.createElement('iframe');
-    iframe.name = requestId;
-    iframe.id = requestId;
-    iframe.style.display = 'none';
-    
-    // Manejar respuesta
+    // IMPORTANTE: Definir onload ANTES de agregar al DOM
     iframe.onload = function() {
       try {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
         
-        console.log('Respuesta raw:', bodyText);
+        console.log('Respuesta:', bodyText);
         
-        // Intentar parsear JSON
         let data;
         try {
           data = JSON.parse(bodyText);
         } catch (e) {
-          // Buscar JSON en la respuesta
           const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             data = JSON.parse(jsonMatch[0]);
           } else {
-            throw new Error('Respuesta no válida');
+            throw new Error('Respuesta no válida del servidor');
           }
         }
         
-        // Procesar respuesta
         if (data.ok) {
           mostrarResultado(data);
           actualizarCreditos(data.creditosRestantes);
@@ -144,84 +136,39 @@ async function generar() {
           throw new Error(data.error || 'Error del servidor');
         }
         
-        // Limpiar
-        setTimeout(() => {
-          form.remove();
-          iframe.remove();
-        }, 1000);
-        
       } catch (err) {
-        console.error('Error procesando respuesta:', err);
-        mostrarError('❌ Error: ' + err.message);
+        console.error('Error:', err);
+        mostrarError('❌ ' + err.message);
         setLoading(false);
-        form.remove();
-        iframe.remove();
+      } finally {
+        // Limpiar siempre
+        setTimeout(() => {
+          if (form.parentNode) form.remove();
+          if (iframe.parentNode) iframe.remove();
+        }, 500);
       }
-    };
-    
-    iframe.onerror = function() {
-      mostrarError('❌ Error de conexión');
-      setLoading(false);
-      form.remove();
-      iframe.remove();
     };
     
     // Timeout de seguridad
     const timeout = setTimeout(() => {
-      if (elementos.btnGenerar.disabled) {
-        mostrarError('⏱️ Tiempo de espera agotado. Intentá de nuevo.');
-        setLoading(false);
-        form.remove();
-        iframe.remove();
-      }
+      mostrarError('⏱️ Tiempo agotado. Intentá de nuevo.');
+      setLoading(false);
+      form.remove();
+      iframe.remove();
     }, 30000);
     
-    // Limpiar timeout si todo va bien
+    // Limpiar timeout si carga bien
+    const originalOnload = iframe.onload;
     iframe.onload = function() {
       clearTimeout(timeout);
-      // ... resto del código de onload arriba
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
-        
-        console.log('Respuesta raw:', bodyText);
-        
-        let data;
-        try {
-          data = JSON.parse(bodyText);
-        } catch (e) {
-          const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            data = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error('Respuesta no válida');
-          }
-        }
-        
-        if (data.ok) {
-          mostrarResultado(data);
-          actualizarCreditos(data.creditosRestantes);
-        } else {
-          throw new Error(data.error || 'Error del servidor');
-        }
-        
-        setTimeout(() => {
-          form.remove();
-          iframe.remove();
-        }, 1000);
-        
-      } catch (err) {
-        console.error('Error procesando respuesta:', err);
-        mostrarError('❌ Error: ' + err.message);
-        setLoading(false);
-        form.remove();
-        iframe.remove();
-      }
+      originalOnload.call(this);
     };
     
     // Agregar al DOM y enviar
     document.body.appendChild(iframe);
     document.body.appendChild(form);
+    
+    // Enviar formulario - esto cargará la respuesta en el iframe, no redireccionará
     form.submit();
     
   } catch (err) {
@@ -230,7 +177,6 @@ async function generar() {
     setLoading(false);
   }
 }
-
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================
