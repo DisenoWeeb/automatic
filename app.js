@@ -6,7 +6,6 @@ const CONFIG = {
   USER_ID: localStorage.getItem('ig_generator_user') || generarUserId()
 };
 
-// Generar ID único para el usuario si no existe
 function generarUserId() {
   const id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   localStorage.setItem('ig_generator_user', id);
@@ -35,178 +34,206 @@ const elementos = {
 // ============================================
 // EVENT LISTENERS
 // ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('App lista. User ID:', CONFIG.USER_ID);
+});
 
-// Preview de imagen seleccionada
 elementos.file.addEventListener('change', function(e) {
   const file = e.target.files[0];
+  if (!file) return;
   
-  if (file) {
-    // Validar tamaño (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      mostrarError('La imagen es muy grande. Máximo 5MB.');
-      return;
-    }
-    
-    // Mostrar preview
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      elementos.preview.src = e.target.result;
-      elementos.preview.style.display = 'block';
-      elementos.fileLabel.classList.add('has-file');
-      elementos.fileLabel.innerHTML = `
-        <div>✅ Imagen seleccionada</div>
-        <small>${file.name}</small>
-      `;
-    };
-    reader.readAsDataURL(file);
-    
-    ocultarError();
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarError('La imagen es muy grande. Máximo 5MB.');
+    return;
   }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    elementos.preview.src = e.target.result;
+    elementos.preview.style.display = 'block';
+    elementos.fileLabel.classList.add('has-file');
+    elementos.fileLabel.innerHTML = `<div>✅ Imagen seleccionada</div><small>${file.name}</small>`;
+  };
+  reader.readAsDataURL(file);
+  ocultarError();
 });
 
 // ============================================
-// FUNCIONES PRINCIPALES
+// FUNCIÓN PRINCIPAL - USAR IFRAME PARA EVITAR CORS
 // ============================================
-
 async function generar() {
   const file = elementos.file.files[0];
   const texto = elementos.texto.value.trim();
   const tipoNegocio = elementos.tipoNegocio.value;
   const usuarioIG = elementos.usuarioIG.value.trim() || "mitienda";
 
-  // Validaciones
   if (!file) {
     mostrarError('⚠️ Por favor selecciona una imagen');
     return;
   }
 
-  // Mostrar loading
   setLoading(true);
   ocultarError();
   ocultarResultado();
 
   try {
-    // Convertir imagen a base64
     const base64 = await toBase64(file);
     
-    // Preparar parámetros para GET
-    const params = new URLSearchParams({
+    // Crear iframe único para esta petición
+    const requestId = 'req_' + Date.now();
+    const callbackName = 'callback_' + requestId;
+    
+    // Crear formulario oculto
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = CONFIG.API_URL;
+    form.target = requestId;
+    form.style.display = 'none';
+    
+    // Agregar campos
+    const campos = {
       userId: CONFIG.USER_ID,
       image: base64,
       texto: texto,
       tipoNegocio: tipoNegocio,
-      usuarioIG: usuarioIG
-    });
-
-    const url = `${CONFIG.API_URL}?${params.toString()}`;
+      usuarioIG: usuarioIG,
+      callback: callbackName // Para respuesta JSONP si queremos
+    };
     
-    console.log('Enviando vía GET...');
-    console.log('URL length:', url.length);
-
-    // Si la URL es muy larga, usar POST con no-cors
-    if (url.length > 8000) {
-      console.log('URL muy larga, usando POST alternativo');
-      await enviarPostAlternativo(base64, texto, tipoNegocio, usuarioIG);
-      return;
-    }
-
-    // Enviar vía GET
-    const res = await fetch(url, {
-      method: "GET",
-      redirect: "follow"
+    Object.keys(campos).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = campos[key];
+      form.appendChild(input);
     });
-
-    const data = await res.json();
-    console.log('Respuesta:', data);
-
-    if (data.ok) {
-      mostrarResultado(data);
-      actualizarCreditos(data.creditosRestantes);
-    } else {
-      throw new Error(data.error || 'Error desconocido');
-    }
-
-  } catch (err) {
-    console.error('Error:', err);
-    mostrarError('❌ ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-}
-
-// Alternativa POST si la imagen es muy grande
-async function enviarPostAlternativo(base64, texto, tipoNegocio, usuarioIG) {
-  // Crear formulario y enviar
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = CONFIG.API_URL;
-  form.target = 'hidden-iframe';
-  form.style.display = 'none';
-  
-  const createInput = (name, value) => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    return input;
-  };
-  
-  form.appendChild(createInput('userId', CONFIG.USER_ID));
-  form.appendChild(createInput('image', base64));
-  form.appendChild(createInput('texto', texto));
-  form.appendChild(createInput('tipoNegocio', tipoNegocio));
-  form.appendChild(createInput('usuarioIG', usuarioIG));
-  
-  let iframe = document.getElementById('hidden-iframe');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.name = 'hidden-iframe';
-    iframe.id = 'hidden-iframe';
+    
+    // Crear iframe para recibir respuesta
+    const iframe = document.createElement('iframe');
+    iframe.name = requestId;
+    iframe.id = requestId;
     iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-  }
-  
-  // Escuchar respuesta
-  const checkResponse = setInterval(() => {
-    try {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      const body = iframeDoc.body.innerText;
-      
-      if (body && body.includes('{')) {
-        clearInterval(checkResponse);
-        const data = JSON.parse(body);
+    
+    // Manejar respuesta
+    iframe.onload = function() {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
+        
+        console.log('Respuesta raw:', bodyText);
+        
+        // Intentar parsear JSON
+        let data;
+        try {
+          data = JSON.parse(bodyText);
+        } catch (e) {
+          // Buscar JSON en la respuesta
+          const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            data = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error('Respuesta no válida');
+          }
+        }
+        
+        // Procesar respuesta
+        if (data.ok) {
+          mostrarResultado(data);
+          actualizarCreditos(data.creditosRestantes);
+        } else {
+          throw new Error(data.error || 'Error del servidor');
+        }
+        
+        // Limpiar
+        setTimeout(() => {
+          form.remove();
+          iframe.remove();
+        }, 1000);
+        
+      } catch (err) {
+        console.error('Error procesando respuesta:', err);
+        mostrarError('❌ Error: ' + err.message);
+        setLoading(false);
+        form.remove();
+        iframe.remove();
+      }
+    };
+    
+    iframe.onerror = function() {
+      mostrarError('❌ Error de conexión');
+      setLoading(false);
+      form.remove();
+      iframe.remove();
+    };
+    
+    // Timeout de seguridad
+    const timeout = setTimeout(() => {
+      if (elementos.btnGenerar.disabled) {
+        mostrarError('⏱️ Tiempo de espera agotado. Intentá de nuevo.');
+        setLoading(false);
+        form.remove();
+        iframe.remove();
+      }
+    }, 30000);
+    
+    // Limpiar timeout si todo va bien
+    iframe.onload = function() {
+      clearTimeout(timeout);
+      // ... resto del código de onload arriba
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
+        
+        console.log('Respuesta raw:', bodyText);
+        
+        let data;
+        try {
+          data = JSON.parse(bodyText);
+        } catch (e) {
+          const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            data = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error('Respuesta no válida');
+          }
+        }
         
         if (data.ok) {
           mostrarResultado(data);
           actualizarCreditos(data.creditosRestantes);
         } else {
-          throw new Error(data.error);
+          throw new Error(data.error || 'Error del servidor');
         }
         
+        setTimeout(() => {
+          form.remove();
+          iframe.remove();
+        }, 1000);
+        
+      } catch (err) {
+        console.error('Error procesando respuesta:', err);
+        mostrarError('❌ Error: ' + err.message);
         setLoading(false);
         form.remove();
+        iframe.remove();
       }
-    } catch (e) {
-      // Todavía no hay respuesta
-    }
-  }, 500);
-  
-  setTimeout(() => {
-    clearInterval(checkResponse);
-    if (elementos.btnGenerar.disabled) {
-      setLoading(false);
-      mostrarError('⏱️ Tiempo de espera agotado');
-    }
-  }, 30000);
-  
-  document.body.appendChild(form);
-  form.submit();
+    };
+    
+    // Agregar al DOM y enviar
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    form.submit();
+    
+  } catch (err) {
+    console.error('Error:', err);
+    mostrarError('❌ ' + err.message);
+    setLoading(false);
+  }
 }
 
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================
-
 function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -227,6 +254,7 @@ function mostrarResultado(data) {
   elementos.caption.value = data.caption + '\n\n' + data.hashtags;
   elementos.resultado.classList.add('visible');
   elementos.resultado.scrollIntoView({ behavior: 'smooth' });
+  setLoading(false);
 }
 
 function ocultarResultado() {
@@ -236,6 +264,7 @@ function ocultarResultado() {
 function mostrarError(mensaje) {
   elementos.error.textContent = mensaje;
   elementos.error.classList.add('visible');
+  setLoading(false);
 }
 
 function ocultarError() {
@@ -251,44 +280,36 @@ function actualizarCreditos(cantidad) {
 
 function copiarTexto() {
   const texto = elementos.caption.value;
-  
   navigator.clipboard.writeText(texto).then(() => {
     const btn = document.querySelector('.btn-copiar');
-    const textoOriginal = btn.textContent;
     btn.textContent = '✅ ¡Copiado!';
     btn.style.background = '#45a049';
-    
     setTimeout(() => {
-      btn.textContent = textoOriginal;
+      btn.textContent = '📋 Copiar texto';
       btn.style.background = '#4caf50';
     }, 2000);
   }).catch(() => {
     elementos.caption.select();
     document.execCommand('copy');
-    alert('Texto copiado');
   });
 }
 
 // Drag and drop
 const dropZone = elementos.fileLabel;
-
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropZone.style.borderColor = '#667eea';
   dropZone.style.background = '#f0f0ff';
 });
-
 dropZone.addEventListener('dragleave', (e) => {
   e.preventDefault();
   dropZone.style.borderColor = '#ddd';
   dropZone.style.background = '#fafafa';
 });
-
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropZone.style.borderColor = '#ddd';
   dropZone.style.background = '#fafafa';
-  
   const files = e.dataTransfer.files;
   if (files.length > 0) {
     elementos.file.files = files;
