@@ -2,7 +2,7 @@
 // CONFIGURACIÓN
 // ============================================
 const CONFIG = {
-  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzVWvluMf1eiPO6wRXTfo9iEEOKGJQJEp8kEKHhv29Y-N-Hh6pO5pObv4ESbjRyTY2exA/exec',
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxYDuT215tlMq4W_jXVFPZqhjkp9GsQX2ymNtPQoyqYppxkYZ_oTPPoTB1sVS_4w3dcRA/exec',
   CLOUDINARY_CLOUD: 'dwgwbdtud',
   CLOUDINARY_UPLOAD_PRESET: 'web_upload',
   DEFAULT_IG_USER: 'drabruzera',
