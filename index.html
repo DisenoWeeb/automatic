@@ -1,325 +1,112 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instagram Generator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador básico IA</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 40px auto;
       padding: 20px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.08);
     }
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
+
     h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 10px;
+      margin-top: 0;
+      font-size: 28px;
     }
-    .creditos {
-      text-align: center;
-      color: #666;
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
-    #dropZone {
-      border: 2px dashed #ccc;
-      border-radius: 8px;
-      padding: 40px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: #fafafa;
-    }
-    #dropZone:hover, #dropZone.dragover {
-      border-color: #667eea;
-      background: #f0f4ff;
-    }
-    #dropZone.has-image {
-      padding: 10px;
-    }
-    #preview {
-      max-width: 100%;
-      border-radius: 8px;
-      display: none;
-    }
-    #fileInput {
-      display: none;
-    }
-    .form-group {
-      margin: 15px 0;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 640px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      color: #555;
-      font-weight: 500;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      background: white;
-    }
+
     textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-    input[type="checkbox"] {
-      width: auto;
-      margin-right: 10px;
-      transform: scale(1.1);
-    }
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      color: #333;
-      font-size: 14px;
-    }
-    .helper {
-      display: block;
-      margin-top: 5px;
-      color: #777;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover:not(:disabled) {
-      background: #5568d3;
-    }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    #resultado {
-      display: none;
-      margin-top: 30px;
-      padding-top: 30px;
-      border-top: 1px solid #eee;
-    }
-    #imgFinal {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    #captionText {
       width: 100%;
       min-height: 120px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-    .actions {
-      display: flex;
-      gap: 10px;
-    }
-    .actions button {
-      flex: 1;
-    }
-    #btnCopiar {
-      background: #48bb78;
-    }
-    #btnDescargar {
-      background: #ed8936;
-    }
-    #loading {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 1000;
-    }
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #fff;
-      border-top-color: #667eea;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    #loadingText {
-      color: white;
-      margin-top: 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 14px;
       font-size: 16px;
-      text-align: center;
-      padding: 0 20px;
+      box-sizing: border-box;
+      resize: vertical;
     }
-    #error, #success {
+
+    button {
+      margin-top: 14px;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .95;
+    }
+
+    #loading {
+      margin-top: 18px;
       display: none;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
+      color: #0d6efd;
+      font-weight: bold;
     }
+
     #error {
-      background: #fed7d7;
-      color: #c53030;
+      margin-top: 18px;
+      display: none;
+      background: #ffe5e5;
+      color: #b00020;
+      padding: 12px;
+      border-radius: 10px;
     }
-    #success {
-      background: #c6f6d5;
-      color: #22543d;
+
+    #resultado {
+      display: none;
+      margin-top: 24px;
     }
-    .section-title {
-      margin-top: 22px;
-      margin-bottom: 8px;
-      font-size: 15px;
-      font-weight: 700;
-      color: #333;
+
+    #imgFinal {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 12px;
+      display: none;
+      border: 1px solid #ddd;
+    }
+
+    #promptUsado {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #555;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
-  <div id="loading">
-    <div class="spinner"></div>
-    <div id="loadingText">Cargando...</div>
-  </div>
+  <div class="wrap">
+    <h1>Generador básico con IA</h1>
 
-  <div class="container">
-    <h1>🚀 Instagram Generator</h1>
-    <div class="creditos">Créditos disponibles: <span id="creditos">...</span></div>
+    <textarea
+      id="prompt"
+      placeholder="Ejemplo: un perro veterinario feliz en una clínica moderna, estilo publicitario profesional">
+    </textarea>
 
+    <button id="btnGenerar">Generar imagen</button>
+
+    <div id="loading">Generando imagen, esperá un momento...</div>
     <div id="error"></div>
-    <div id="success"></div>
-
-    <div id="dropZone">
-      <img id="preview" alt="Preview">
-      <div class="upload-text">
-        <p>📷 Arrastra una imagen o haz clic para subir</p>
-        <small>Máximo 10MB</small>
-      </div>
-    </div>
-    <input type="file" id="fileInput" accept="image/*">
-
-    <div class="form-group">
-      <label for="texto">Descripción del contenido</label>
-      <textarea id="texto" placeholder="Ej: primer vacuna de Pepo, oferta de pipetas, feliz día del veterinario, control general de Luna..."></textarea>
-      <small class="helper">Describí qué querés comunicar. Mientras más claro, mejor decide el sistema.</small>
-    </div>
-
-    <div class="form-group">
-      <label for="tipoPieza">Tipo de contenido</label>
-      <select id="tipoPieza">
-        <option value="auto">Automático (IA decide)</option>
-        <option value="promo">🎉 Promoción / Oferta</option>
-        <option value="mascota">🐾 Mascota / Paciente</option>
-        <option value="institucional">🏥 Institucional</option>
-      </select>
-      <small class="helper">Esto ayuda a decidir si el diseño debe ser comercial, emocional o informativo.</small>
-    </div>
-
-    <div class="grid-2">
-      <div class="form-group">
-        <label for="titulo">Título principal</label>
-        <input type="text" id="titulo" placeholder="Ej: Primer vacuna de Pepo">
-      </div>
-
-      <div class="form-group">
-        <label for="precio">Precio / Promoción</label>
-        <input type="text" id="precio" placeholder="Ej: 1 por $500 - 2x $750">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="cta">Llamado a la acción</label>
-      <input type="text" id="cta" placeholder="Ej: Pedilo por WhatsApp / Sacá turno / Consultanos">
-    </div>
-
-    <div class="form-group">
-      <label for="estiloVisual">Estilo visual</label>
-      <select id="estiloVisual">
-        <option value="auto">Automático</option>
-        <option value="premium">Premium / elegante</option>
-        <option value="tierno">Tierno / emocional</option>
-        <option value="promo_fuerte">Promo fuerte / vendedor</option>
-        <option value="limpio">Limpio / profesional</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label class="checkbox-row">
-        <input type="checkbox" id="preservarImagen" checked>
-        Mantener imagen original (no alterar caras, mascotas o productos)
-      </label>
-      <small class="helper">Recomendado para fotos reales, pacientes, personas y productos con packaging.</small>
-    </div>
-
-    <div class="section-title">Datos del negocio</div>
-
-    <div class="form-group">
-      <label for="tipoNegocio">Tipo de negocio</label>
-      <select id="tipoNegocio">
-        <option value="general">General</option>
-        <option value="tienda">Tienda / Productos</option>
-        <option value="veterinaria">Veterinaria / Mascotas</option>
-        <option value="servicios">Servicios Profesionales</option>
-      </select>
-    </div>
-
-    <div class="grid-2">
-      <div class="form-group">
-        <label for="usuarioIG">Usuario de Instagram</label>
-        <input type="text" id="usuarioIG" placeholder="drabruzera" value="drabruzera">
-      </div>
-
-      <div class="form-group">
-        <label for="webSitio">Sitio web</label>
-        <input type="text" id="webSitio" placeholder="drabruzera.com.ar" value="drabruzera.com.ar">
-      </div>
-    </div>
-
-    <button id="btnGenerar" disabled>✨ Generar Post para Instagram</button>
 
     <div id="resultado">
-      <h3>🎉 ¡Tu post está listo!</h3>
-      <img id="imgFinal" alt="Resultado">
-      <p id="fraseText" style="font-style: italic; color: #666; margin-bottom: 10px;"></p>
-      <textarea id="captionText" readonly></textarea>
-      <div class="actions">
-        <button id="btnCopiar">📋 Copiar Caption</button>
-        <button id="btnDescargar">⬇️ Descargar Imagen</button>
-      </div>
+      <img id="imgFinal" alt="Imagen generada" />
+      <div id="promptUsado"></div>
     </div>
   </div>
 
