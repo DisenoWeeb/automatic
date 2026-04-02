@@ -6,27 +6,31 @@ const CONFIG = {
   CLOUDINARY_CLOUD: 'dwgwbdtud',
   CLOUDINARY_UPLOAD_PRESET: 'web_upload',
   DEFAULT_IG_USER: 'drabruzera',
-  MAX_FILE_SIZE: 10 * 1024 * 1024 // 10MB
+  DEFAULT_WEB_URL: 'drabruzera.com.ar',
+  MAX_FILE_SIZE: 10 * 1024 * 1024
 };
 
 // ============================================
 // HELPERS DOM
 // ============================================
-function $(...ids) {
-  for (const id of ids) {
-    const el = document.getElementById(id);
-    if (el) return el;
-  }
-  return null;
+function $(id) {
+  return document.getElementById(id);
 }
 
 const UI = {
-  fileInput: $('fileInput', 'file'),
-  dropZone: $('dropZone', 'fileLabel'),
+  fileInput: $('fileInput'),
+  dropZone: $('dropZone'),
   preview: $('preview'),
   texto: $('texto'),
+  tipoPieza: $('tipoPieza'),
+  titulo: $('titulo'),
+  precio: $('precio'),
+  cta: $('cta'),
+  estiloVisual: $('estiloVisual'),
+  preservarImagen: $('preservarImagen'),
   tipoNegocio: $('tipoNegocio'),
   usuarioIG: $('usuarioIG'),
+  webSitio: $('webSitio'),
   btnGenerar: $('btnGenerar'),
   btnCopiar: $('btnCopiar'),
   btnDescargar: $('btnDescargar'),
@@ -35,8 +39,8 @@ const UI = {
   resultado: $('resultado'),
   error: $('error'),
   success: $('success'),
-  imgFinal: $('imgFinal', 'imagenFinal'),
-  caption: $('captionText', 'caption'),
+  imgFinal: $('imgFinal'),
+  caption: $('captionText'),
   frase: $('fraseText'),
   creditos: $('creditos')
 };
@@ -145,7 +149,7 @@ function processFile(file) {
 }
 
 // ============================================
-// SUBIDA A CLOUDINARY (SIN SECRETOS)
+// SUBIDA A CLOUDINARY
 // ============================================
 async function uploadToCloudinary(file) {
   showLoading('Subiendo imagen...');
@@ -172,7 +176,6 @@ async function uploadToCloudinary(file) {
     }
 
     const data = await response.json();
-
     currentImageUrl = data.secure_url;
     currentPublicId = data.public_id;
 
@@ -191,7 +194,7 @@ async function uploadToCloudinary(file) {
 }
 
 // ============================================
-// APPS SCRIPT - CRÉDITOS (JSONP)
+// CARGAR CRÉDITOS
 // ============================================
 function loadCreditos() {
   jsonpRequest('creditos', {}, 15000)
@@ -225,27 +228,33 @@ async function generarContenido() {
     return;
   }
 
-  const texto = UI.texto ? UI.texto.value.trim() : '';
-  const tipoNegocio = UI.tipoNegocio ? UI.tipoNegocio.value : 'general';
-  const usuarioIG = (UI.usuarioIG && UI.usuarioIG.value.trim())
-    ? UI.usuarioIG.value.trim().replace(/^@/, '')
-    : CONFIG.DEFAULT_IG_USER;
+  const payload = {
+    imageUrl: currentImageUrl,
+    publicId: currentPublicId || '',
+    texto: UI.texto ? UI.texto.value.trim() : '',
+    tipoPieza: UI.tipoPieza ? UI.tipoPieza.value : 'auto',
+    titulo: UI.titulo ? UI.titulo.value.trim() : '',
+    precio: UI.precio ? UI.precio.value.trim() : '',
+    cta: UI.cta ? UI.cta.value.trim() : '',
+    estiloVisual: UI.estiloVisual ? UI.estiloVisual.value : 'auto',
+    preservarImagen: UI.preservarImagen ? UI.preservarImagen.checked : true,
+    tipoNegocio: UI.tipoNegocio ? UI.tipoNegocio.value : 'general',
+    usuarioIG: (UI.usuarioIG && UI.usuarioIG.value.trim())
+      ? UI.usuarioIG.value.trim().replace(/^@/, '')
+      : CONFIG.DEFAULT_IG_USER,
+    webSitio: (UI.webSitio && UI.webSitio.value.trim())
+      ? UI.webSitio.value.trim()
+      : CONFIG.DEFAULT_WEB_URL
+  };
 
   showLoading('Generando flyer con IA...');
   hideError();
   hideSuccess();
 
   try {
-    const resultado = await jsonpRequest('generar', {
-      imageUrl: currentImageUrl,
-      publicId: currentPublicId || '',
-      texto,
-      tipoNegocio,
-      usuarioIG
-    }, 60000);
+    const resultado = await jsonpRequest('generar', payload, 60000);
 
     console.log('✅ Resultado:', resultado);
-
     mostrarResultado(resultado);
 
     if (resultado.creditosRestantes !== undefined) {
@@ -262,7 +271,7 @@ async function generarContenido() {
 }
 
 // ============================================
-// JSONP HELPER
+// JSONP
 // ============================================
 function jsonpRequest(action, params = {}, timeoutMs = 30000) {
   return new Promise((resolve, reject) => {
@@ -295,7 +304,7 @@ function jsonpRequest(action, params = {}, timeoutMs = 30000) {
       action,
       userId,
       callback: callbackName,
-      ...params
+      ...normalizeParams(params)
     });
 
     const url = `${CONFIG.SCRIPT_URL}?${allParams.toString()}`;
@@ -304,6 +313,24 @@ function jsonpRequest(action, params = {}, timeoutMs = 30000) {
     script.src = url;
     document.head.appendChild(script);
   });
+}
+
+function normalizeParams(params) {
+  const normalized = {};
+
+  Object.keys(params).forEach((key) => {
+    const value = params[key];
+
+    if (typeof value === 'boolean') {
+      normalized[key] = value ? 'true' : 'false';
+    } else if (value === null || value === undefined) {
+      normalized[key] = '';
+    } else {
+      normalized[key] = String(value);
+    }
+  });
+
+  return normalized;
 }
 
 function cleanupScript(script, callbackName) {
@@ -329,11 +356,7 @@ function mostrarResultado(data) {
     .join('\n\n');
 
   if (UI.caption) {
-    if ('value' in UI.caption) {
-      UI.caption.value = textoFinal;
-    } else {
-      UI.caption.textContent = textoFinal;
-    }
+    UI.caption.value = textoFinal;
   }
 
   if (UI.frase) {
@@ -342,7 +365,6 @@ function mostrarResultado(data) {
 
   if (UI.resultado) {
     UI.resultado.style.display = 'block';
-    UI.resultado.classList.add('visible');
     UI.resultado.scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -353,7 +375,7 @@ function mostrarResultado(data) {
 // ACCIONES
 // ============================================
 async function copiarCaption() {
-  const texto = getCaptionText();
+  const texto = UI.caption ? UI.caption.value : '';
 
   if (!texto) {
     showError('No hay texto para copiar');
@@ -365,13 +387,9 @@ async function copiarCaption() {
     showSuccess('Caption copiado al portapapeles');
   } catch (err) {
     try {
-      if (UI.caption && 'select' in UI.caption) {
-        UI.caption.select();
-        document.execCommand('copy');
-        showSuccess('Caption copiado al portapapeles');
-      } else {
-        throw err;
-      }
+      UI.caption.select();
+      document.execCommand('copy');
+      showSuccess('Caption copiado al portapapeles');
     } catch {
       showError('No se pudo copiar el caption');
     }
@@ -403,11 +421,6 @@ async function descargarImagen() {
   }
 }
 
-function getCaptionText() {
-  if (!UI.caption) return '';
-  return ('value' in UI.caption) ? UI.caption.value : UI.caption.textContent;
-}
-
 // ============================================
 // UI HELPERS
 // ============================================
@@ -428,7 +441,6 @@ function disableGenerar(disabled) {
 
 function showError(mensaje) {
   console.error('Error:', mensaje);
-
   if (UI.error) {
     UI.error.textContent = mensaje;
     UI.error.style.display = 'block';
@@ -444,7 +456,6 @@ function hideError() {
 
 function showSuccess(mensaje) {
   console.log('Success:', mensaje);
-
   if (UI.success) {
     UI.success.textContent = mensaje;
     UI.success.style.display = 'block';
