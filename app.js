@@ -67,10 +67,7 @@ async function generar() {
   const tipoNegocio = elementos.tipoNegocio.value;
   const usuarioIG = elementos.usuarioIG.value.trim() || "mitienda";
 
-  if (!file) {
-    mostrarError('⚠️ Por favor selecciona una imagen');
-    return;
-  }
+  if (!file) return mostrarError('⚠️ Por favor selecciona una imagen');
 
   setLoading(true);
   ocultarError();
@@ -79,7 +76,6 @@ async function generar() {
   try {
     const base64 = await toBase64(file);
 
-    // Crear iframe único para esta petición
     const requestId = 'req_' + Date.now();
     const callbackName = 'callback_' + requestId;
 
@@ -90,16 +86,8 @@ async function generar() {
     form.target = requestId;
     form.style.display = 'none';
 
-    // Agregar campos
-    const campos = {
-      userId: CONFIG.USER_ID,
-      image: base64,
-      texto: texto,
-      tipoNegocio: tipoNegocio,
-      usuarioIG: usuarioIG,
-      callback: callbackName
-    };
-
+    // Campos del formulario
+    const campos = { userId: CONFIG.USER_ID, image: base64, texto, tipoNegocio, usuarioIG, callback: callbackName };
     Object.keys(campos).forEach(key => {
       const input = document.createElement('input');
       input.type = 'hidden';
@@ -114,22 +102,20 @@ async function generar() {
     iframe.id = requestId;
     iframe.style.display = 'none';
 
-    // Manejar respuesta
-    iframe.onload = function() {
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const bodyText = iframeDoc.body.innerText || iframeDoc.body.textContent;
+    // Append antes de submit
+    document.body.appendChild(form);
+    document.body.appendChild(iframe);
 
+    // Manejar respuesta
+    iframe.onload = function () {
+      try {
+        const bodyText = iframe.contentDocument.body.innerText || iframe.contentDocument.body.textContent;
         let data;
-        try {
-          data = JSON.parse(bodyText);
-        } catch (e) {
+        try { data = JSON.parse(bodyText); } 
+        catch (e) {
           const jsonMatch = bodyText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            data = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error('Respuesta no válida');
-          }
+          if (jsonMatch) data = JSON.parse(jsonMatch[0]);
+          else throw new Error('Respuesta no válida');
         }
 
         if (data.ok) {
@@ -139,43 +125,36 @@ async function generar() {
           throw new Error(data.error || 'Error del servidor');
         }
 
-        setTimeout(() => {
-          form.remove();
-          iframe.remove();
-        }, 1000);
+        setTimeout(() => { form.remove(); iframe.remove(); }, 1000);
 
       } catch (err) {
+        console.error('Error procesando respuesta:', err);
         mostrarError('❌ Error: ' + err.message);
         setLoading(false);
-        form.remove();
-        iframe.remove();
+        form.remove(); iframe.remove();
       }
     };
 
-    iframe.onerror = function() {
+    iframe.onerror = function () {
       mostrarError('❌ Error de conexión');
       setLoading(false);
-      form.remove();
-      iframe.remove();
+      form.remove(); iframe.remove();
     };
 
     // Timeout de seguridad
-    const timeout = setTimeout(() => {
+    setTimeout(() => {
       if (elementos.btnGenerar.disabled) {
         mostrarError('⏱️ Tiempo de espera agotado. Intentá de nuevo.');
         setLoading(false);
-        form.remove();
-        iframe.remove();
+        form.remove(); iframe.remove();
       }
     }, 30000);
 
-    // 🔹 Agregar al DOM y enviar
-    document.body.appendChild(form);
-    document.body.appendChild(iframe);
+    // Finalmente submit
     form.submit();
 
   } catch (err) {
-    mostrarError('❌ Error: ' + err.message);
+    mostrarError('❌ Error inesperado: ' + err.message);
     setLoading(false);
   }
 }
