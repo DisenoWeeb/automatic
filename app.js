@@ -228,48 +228,66 @@ async function generarContenido() {
     return;
   }
 
-  const payload = {
-    imageUrl: currentImageUrl,
-    publicId: currentPublicId || '',
-    texto: UI.texto ? UI.texto.value.trim() : '',
-    tipoPieza: UI.tipoPieza ? UI.tipoPieza.value : 'auto',
-    titulo: UI.titulo ? UI.titulo.value.trim() : '',
-    precio: UI.precio ? UI.precio.value.trim() : '',
-    cta: UI.cta ? UI.cta.value.trim() : '',
-    estiloVisual: UI.estiloVisual ? UI.estiloVisual.value : 'auto',
-    preservarImagen: UI.preservarImagen ? UI.preservarImagen.checked : true,
-    tipoNegocio: UI.tipoNegocio ? UI.tipoNegocio.value : 'general',
-    usuarioIG: (UI.usuarioIG && UI.usuarioIG.value.trim())
-      ? UI.usuarioIG.value.trim().replace(/^@/, '')
-      : CONFIG.DEFAULT_IG_USER,
-    webSitio: (UI.webSitio && UI.webSitio.value.trim())
-      ? UI.webSitio.value.trim()
-      : CONFIG.DEFAULT_WEB_URL
-  };
+  const payload = { /* ... tus datos ... */ };
 
-  showLoading('Generando flyer con IA...');
+  showLoading('Iniciando generación con IA...');
   hideError();
   hideSuccess();
 
   try {
-    const resultado = await jsonpRequest('generar', payload, 60000);
+    // 1. Iniciar (rápido, devuelve jobId)
+    const inicio = await jsonpRequest('generar', payload, 15000);
+    
+    if (!inicio.ok) {
+      throw new Error(inicio.error);
+    }
+    
+    if (!inicio.procesando || !inicio.jobId) {
+      // Fallback: si ya está listo (caché), mostrar directo
+      mostrarResultado(inicio);
+      hideLoading();
+      return;
+    }
 
-    console.log('✅ Resultado:', resultado);
+    // 2. Polling cada 5 segundos
+    showLoading('Generando imagen con IA... (30-60 segundos)');
+    
+    const resultado = await pollingEstado(inicio.jobId, 12); // 12 intentos = 60s max
+    
     mostrarResultado(resultado);
-
+    hideLoading();
+    
     if (resultado.creditosRestantes !== undefined) {
       updateCreditosUI(resultado.creditosRestantes);
     }
 
-    hideLoading();
-
   } catch (error) {
-    console.error('Error generación:', error);
+    console.error('Error:', error);
     hideLoading();
     showError('Error: ' + error.message);
   }
 }
 
+async function pollingEstado(jobId, maxIntentos) {
+  for (let i = 0; i < maxIntentos; i++) {
+    await new Promise(r => setTimeout(r, 5000)); // Esperar 5s
+    
+    const estado = await jsonpRequest('estado', { jobId }, 10000);
+    
+    if (estado.listo) {
+      return estado;
+    }
+    
+    if (estado.error) {
+      throw new Error(estado.error);
+    }
+    
+    // Sigue procesando, actualizar mensaje
+    showLoading(`Generando... (${(i + 1) * 5}s)`);
+  }
+  
+  throw new Error('Timeout: la generación está tardando demasiado. Intentá de nuevo en un minuto.');
+}
 // ============================================
 // JSONP
 // ============================================
