@@ -65,7 +65,14 @@ elementos.file.addEventListener('change', function(e) {
 });
 
 // Cargar créditos al iniciar
-document.addEventListener('DOMContentLoaded', cargarCreditos);
+// Comentá esta línea:
+// document.addEventListener('DOMContentLoaded', cargarCreditos);
+
+// Y dejá solo esto:
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('App lista');
+  // Los créditos se cargarán después del primer uso
+});
 
 // ============================================
 // FUNCIONES PRINCIPALES
