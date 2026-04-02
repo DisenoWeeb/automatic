@@ -289,13 +289,17 @@ function jsonpRequest(action, params = {}, timeoutMs = 30000) {
     const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     const script = document.createElement('script');
 
-    const timeout = setTimeout(() => {
-      cleanupScript(script, callbackName);
-      reject(new Error('Timeout del servidor'));
-    }, timeoutMs);
+  let timeout;
+
+if (timeoutMs && timeoutMs > 0) {
+  timeout = setTimeout(() => {
+    cleanupScript(script, callbackName);
+    reject(new Error('Timeout del servidor'));
+  }, timeoutMs);
+}
 
     window[callbackName] = function (response) {
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       cleanupScript(script, callbackName);
 
       if (response && response.ok) {
