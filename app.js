@@ -141,10 +141,10 @@ async function subirACloudinary(file) {
 }
 
 // ============================================
-// PASO 2: Procesar en Apps Script (GET con URL corta)
+// PASO 2: Procesar en Apps Script (JSONP - FUNCIONA!)
 // ============================================
 async function procesarEnAppsScript(datos) {
-  // Construir URL con parámetros (GET, pequeño, no hay CORS issues con iframe)
+  // Construir URL con parámetros
   const params = new URLSearchParams({
     action: 'generar',
     userId: datos.userId,
@@ -156,35 +156,37 @@ async function procesarEnAppsScript(datos) {
   });
   
   const url = `${CONFIG.API_URL}?${params.toString()}`;
+  console.log('📡 Llamando a:', url.substring(0, 100) + '...');
   
-  // Usar JSONP para evitar CORS
+  // Usar JSONP (funciona con CORS)
   return new Promise((resolve, reject) => {
-    const callbackName = 'ig_callback_' + Date.now();
+    const callbackName = 'ig_cb_' + Date.now();
     const script = document.createElement('script');
     
-    // Apps Script debe soportar callback parameter
     script.src = url + '&callback=' + callbackName;
     
-    // Timeout
+    // Timeout de seguridad
     const timeout = setTimeout(() => {
-      reject(new Error('Timeout esperando respuesta'));
+      reject(new Error('Timeout - el servidor no respondió a tiempo'));
       cleanup();
     }, 30000);
     
-    // Callback global
+    // Callback global que ejecutará Apps Script
     window[callbackName] = function(data) {
       clearTimeout(timeout);
+      console.log('✅ Respuesta Apps Script:', data);
       resolve(data);
       cleanup();
     };
     
-    // Error
+    // Error de carga
     script.onerror = () => {
       clearTimeout(timeout);
-      reject(new Error('Error de conexión'));
+      reject(new Error('Error de conexión con el servidor'));
       cleanup();
     };
     
+    // Limpiar
     function cleanup() {
       if (script.parentNode) script.parentNode.removeChild(script);
       delete window[callbackName];
@@ -200,23 +202,25 @@ async function procesarEnAppsScript(datos) {
 function verificarCreditos() {
   const callbackName = 'creditos_cb_' + Date.now();
   const script = document.createElement('script');
+  
   script.src = `${CONFIG.API_URL}?action=creditos&userId=${encodeURIComponent(CONFIG.USER_ID)}&callback=${callbackName}`;
   
   window[callbackName] = function(data) {
     if (data && data.ok) {
       actualizarCreditos(data.creditosDisponibles);
+      console.log('💰 Créditos:', data.creditosDisponibles);
     }
     delete window[callbackName];
     if (script.parentNode) script.parentNode.removeChild(script);
   };
   
   script.onerror = () => {
+    console.log('No se pudo cargar créditos');
     delete window[callbackName];
   };
   
   document.head.appendChild(script);
 }
-
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================
