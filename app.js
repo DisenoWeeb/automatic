@@ -243,7 +243,7 @@ async function generarContenido() {
   hideSuccess();
 
   try {
-    const resultado = await jsonpRequest('generar', payload, 60000);
+    const resultado = await jsonpRequest('generar', payload, 180000);
 
 mostrarResultado(resultado);
 hideLoading();
@@ -284,22 +284,25 @@ async function pollingEstado(jobId, maxIntentos) {
 // ============================================
 // JSONP
 // ============================================
-function jsonpRequest(action, params = {}, timeoutMs = 30000) {
+function jsonpRequest(action, params = {}, timeoutMs = 0) {
   return new Promise((resolve, reject) => {
     const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     const script = document.createElement('script');
 
-  let timeout;
+    let timeout = null;
 
-if (timeoutMs && timeoutMs > 0) {
-  timeout = setTimeout(() => {
-    cleanupScript(script, callbackName);
-    reject(new Error('Timeout del servidor'));
-  }, timeoutMs);
-}
+    if (timeoutMs > 0) {
+      timeout = setTimeout(() => {
+        cleanupScript(script, callbackName);
+        reject(new Error('Timeout del servidor'));
+      }, timeoutMs);
+    }
 
     window[callbackName] = function (response) {
-      if (timeout) clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
       cleanupScript(script, callbackName);
 
       if (response && response.ok) {
@@ -310,7 +313,10 @@ if (timeoutMs && timeoutMs > 0) {
     };
 
     script.onerror = function () {
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
       cleanupScript(script, callbackName);
       reject(new Error('Error de conexión con el servidor'));
     };
@@ -352,11 +358,15 @@ function cleanupScript(script, callbackName) {
   if (script && script.parentNode) {
     script.parentNode.removeChild(script);
   }
+
   if (callbackName && window[callbackName]) {
-    delete window[callbackName];
+    try {
+      delete window[callbackName];
+    } catch (e) {
+      window[callbackName] = undefined;
+    }
   }
 }
-
 // ============================================
 // MOSTRAR RESULTADOS
 // ============================================
