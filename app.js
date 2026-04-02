@@ -2,7 +2,7 @@
 // CONFIGURACIÓN
 // ============================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbzvUe0k-BiOUiyapzI_LsFC5Jp_CwlliT1qjjayeIm5VSO5qGcF2uwDlsERQg26PA7frw/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbzVWvluMf1eiPO6wRXTfo9iEEOKGJQJEp8kEKHhv29Y-N-Hh6pO5pObv4ESbjRyTY2exA/exec",
   USER_ID: localStorage.getItem('ig_generator_user') || generarUserId()
 };
 
