@@ -442,6 +442,20 @@ const FlyerGenerator = {
         ctx.fillText('AI', x, y);
     }
 };
+drawTitleSmart: function(text) {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 60px Arial";
+        ctx.textAlign = "left";
+
+        const padding = 60;
+
+        ctx.fillText(text, padding, padding + 40);
+    } 
+
+};
 
 // ==========================================
 // UI
@@ -607,17 +621,3 @@ const UI = {
     }
 };
 
-drawTitleSmart: function(text) {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 60px Arial";
-        ctx.textAlign = "left";
-
-        const padding = 60;
-
-        ctx.fillText(text, padding, padding + 40);
-    } 
-
-};
