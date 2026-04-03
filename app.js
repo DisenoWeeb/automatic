@@ -301,7 +301,7 @@ const FlyerGenerator = {
             const img = new Image();
             img.onload = () => {
                 const ctx = this.ctx;
-                const size = 65;
+                const size = 90;
                 const padding = 30;
                 const yPos = 37;
                 
