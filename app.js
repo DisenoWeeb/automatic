@@ -143,7 +143,7 @@ const PollinationsAI = {
         const encodedPrompt = encodeURIComponent(prompt);
         const encodedImage = encodeURIComponent(imageUrl);
         
-        let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.40`;
+        let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.15`;
         
         if (CONFIG.POLLINATIONS_API_KEY) {
             url += `&key=${CONFIG.POLLINATIONS_API_KEY}`;
