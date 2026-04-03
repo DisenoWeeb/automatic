@@ -25,13 +25,18 @@ const JSONP = {
     request: function(url, params, callback) {
         const callbackName = 'jsonp_callback_' + (++this.counter);
         const script = document.createElement('script');
+        let finished = false;
+
         const cleanup = () => {
             if (script.parentNode) script.parentNode.removeChild(script);
             delete this.callbacks[callbackName];
-            delete window[callbackName] = function() {};
+            window[callbackName] = function() {};
         };
 
-        window[callbackName] = function() {}; = (data) => {
+        window[callbackName] = (data) => {
+            if (finished) return;
+            finished = true;
+
             clearTimeout(timeoutId);
             cleanup();
             callback(null, data);
@@ -45,18 +50,26 @@ const JSONP = {
                 paramsArray.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
             }
         }
+
         paramsArray.push('callback=' + callbackName);
-        
+
         const fullUrl = url + (url.indexOf('?') >= 0 ? '&' : '?') + paramsArray.join('&');
-        
+
         script.src = fullUrl;
+
         script.onerror = () => {
+            if (finished) return;
+            finished = true;
+
             clearTimeout(timeoutId);
             cleanup();
             callback(new Error('Error JSONP'));
         };
 
         const timeoutId = setTimeout(() => {
+            if (finished) return;
+            finished = true;
+
             cleanup();
             callback(new Error('Timeout'));
         }, this.timeout);
