@@ -384,12 +384,18 @@ const FlyerGenerator = {
         });
     },
 
-    drawFooter: function() {
+   drawFooter: function() {
         const ctx = this.ctx;
         const canvas = this.canvas;
 
         const footerHeight = 180;
         const y = canvas.height - footerHeight;
+
+        // ── SOMBRA DEL ZÓCALO ──────────────────────────────────────────
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 32;
+        ctx.shadowOffsetY = -8;
 
         ctx.beginPath();
         ctx.moveTo(0, y + 40);
@@ -400,48 +406,159 @@ const FlyerGenerator = {
 
         const gradient = ctx.createLinearGradient(0, y, 0, canvas.height);
         gradient.addColorStop(0, '#2a4a6f');
-        gradient.addColorStop(1, '#1e3a5f');
+        gradient.addColorStop(1, '#1a3050');
         ctx.fillStyle = gradient;
         ctx.fill();
+        ctx.restore();
 
+        // ── LÍNEAS MAGENTA ENTRELAZADAS ────────────────────────────────
+        // Línea 1 — gruesa, arco principal (va de izq-abajo a der-arriba)
         ctx.beginPath();
-        ctx.moveTo(0, y + 35);
-        ctx.bezierCurveTo(canvas.width * 0.25, y - 15, canvas.width * 0.75, y + 50, canvas.width, y + 15);
-        ctx.strokeStyle = '#d81b60';
-        ctx.lineWidth = 3;
+        ctx.moveTo(0, y + 50);
+        ctx.bezierCurveTo(canvas.width * 0.3, y - 20, canvas.width * 0.7, y + 60, canvas.width, y + 10);
+        ctx.strokeStyle = 'rgba(216, 27, 96, 0.9)';
+        ctx.lineWidth = 4;
         ctx.stroke();
 
-        const baseY = y + 125;
-        const leftX = canvas.width * 0.18;
-        const centerX = canvas.width * 0.50;
-        const rightX = canvas.width * 0.82;
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '700 28px Montserrat, Arial, sans-serif';
-
-        ctx.fillText('@DraBruzera', leftX, baseY);
-        ctx.fillText('www.bruzera.turnox.pro.com', centerX, baseY);
-        ctx.fillText('343 5303848', rightX, baseY);
-    },
-
-    drawIAMark: function() {
-        const ctx = this.ctx;
-        const x = this.canvas.width - 50;
-        const y = this.canvas.height - 30;
-
+        // Línea 2 — delgada, arco invertido (va de izq-arriba a der-abajo, cruza línea 1)
         ctx.beginPath();
-        ctx.arc(x, y, 10, 0, Math.PI * 2);
-        ctx.fillStyle = '#d81b60';
-        ctx.fill();
+        ctx.moveTo(0, y + 15);
+        ctx.bezierCurveTo(canvas.width * 0.25, y + 70, canvas.width * 0.65, y - 5, canvas.width, y + 45);
+        ctx.strokeStyle = 'rgba(216, 27, 96, 0.55)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 8px Montserrat';
+        // Línea 3 — media, arco suave que cruza entre las dos anteriores
+        ctx.beginPath();
+        ctx.moveTo(0, y + 30);
+        ctx.bezierCurveTo(canvas.width * 0.4, y + 55, canvas.width * 0.6, y - 10, canvas.width, y + 28);
+        ctx.strokeStyle = 'rgba(216, 27, 96, 0.35)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // ── DATOS DE CONTACTO CON ICONOS ───────────────────────────────
+        const baseY = y + 118;
+        const leftX   = canvas.width * 0.18;
+        const centerX = canvas.width * 0.50;
+        const rightX  = canvas.width * 0.82;
+        const iconSize = 22;
+        const iconY = baseY - 36;
+        const textFont = '600 22px Montserrat, Arial, sans-serif';
+
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('AI', x, y);
-    }
+        ctx.fillStyle = '#ffffff';
+
+        // ── Icono Instagram (cámara redondeada) ──
+        const drawInstagramIcon = (cx, cy, s) => {
+            const r = s * 0.38;
+            const x = cx - s / 2;
+            const yy = cy - s / 2;
+
+            ctx.save();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
+            ctx.fillStyle = 'transparent';
+
+            // cuerpo
+            ctx.beginPath();
+            ctx.roundRect(x, yy, s, s, s * 0.22);
+            ctx.stroke();
+
+            // lente
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // punto superior derecho
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(x + s * 0.78, yy + s * 0.22, s * 0.07, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        };
+
+        // ── Icono Web (globo) ──
+        const drawWebIcon = (cx, cy, s) => {
+            const r = s * 0.46;
+            ctx.save();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
+
+            // círculo exterior
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // elipse horizontal (líneas de latitud)
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, r * 0.52, r, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // línea horizontal central
+            ctx.beginPath();
+            ctx.moveTo(cx - r, cy);
+            ctx.lineTo(cx + r, cy);
+            ctx.stroke();
+
+            // línea vertical central
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - r);
+            ctx.lineTo(cx, cy + r);
+            ctx.stroke();
+
+            ctx.restore();
+        };
+
+        // ── Icono Teléfono ──
+        const drawPhoneIcon = (cx, cy, s) => {
+            ctx.save();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            const w = s * 0.55;
+            const h = s * 0.9;
+            const x = cx - w / 2;
+            const yy = cy - h / 2;
+            const rr = s * 0.12;
+
+            // cuerpo del teléfono
+            ctx.beginPath();
+            ctx.roundRect(x, yy, w, h, rr);
+            ctx.stroke();
+
+            // pantalla
+            ctx.beginPath();
+            ctx.roundRect(x + s * 0.08, yy + s * 0.1, w - s * 0.16, h - s * 0.28, rr * 0.5);
+            ctx.stroke();
+
+            // botón home
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(cx, yy + h - s * 0.1, s * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        };
+
+        // Dibujar iconos
+        drawInstagramIcon(leftX,   iconY, iconSize);
+        drawWebIcon(centerX,       iconY, iconSize);
+        drawPhoneIcon(rightX,      iconY, iconSize);
+
+        // Textos
+        ctx.fillStyle = '#ffffff';
+        ctx.font = textFont;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        ctx.fillText('@dra.bruzera',        leftX,   baseY);
+        ctx.fillText('www.drabruzera.com',  centerX, baseY);
+        ctx.fillText('11-XXXX-XXXX',        rightX,  baseY);
+    },
 
 }; // cierra FlyerGenerator
 
