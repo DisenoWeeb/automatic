@@ -490,13 +490,13 @@ const FlyerGenerator = {
         ctx.textAlign = 'center';
         const centerY = y + 85;
         ctx.font = '700 26px Montserrat';
-        ctx.fillText('@dra.bruzera', this.canvas.width / 2, centerY);
+        ctx.fillText('@DraBruzera', this.canvas.width / 2, centerY);
         ctx.font = '500 20px Montserrat';
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText('www.drabruzera.com', this.canvas.width / 2, centerY + 30);
+        ctx.fillText('www.bruzera.turnox.pro/', this.canvas.width / 2, centerY + 30);
         ctx.font = '600 22px Montserrat';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText('WhatsApp: 11-XXXX-XXXX', this.canvas.width / 2, centerY + 58);
+        ctx.fillText('WhatsApp: 3435 303848', this.canvas.width / 2, centerY + 58);
     },
 
     drawIAMark: function() {
