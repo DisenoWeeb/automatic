@@ -207,15 +207,16 @@ const FlyerGenerator = {
         this.ctx = this.canvas.getContext('2d');
     },
 
-    generate: async function(mainImageData, logoData, text, enhancedImageUrl) {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-        const iaUsed = enhancedImageUrl !== mainImageData;
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 1. Fondo
-        await this.drawBackground(mainImageData);
+    generate: async function(mainImageData, logoData, text, enhancedImageUrl, mainUrl) {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    const iaUsed = enhancedImageUrl !== mainUrl;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 1. Fondo
+    await this.drawBackground(mainImageData);
         
         // 2. Marca de agua
         this.drawWatermark();
@@ -546,7 +547,7 @@ const UI = {
             
             Backend.registrarUso('imagen', text, 1, () => {});
             
-            const result = await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text, enhancedUrl);
+            const result = await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text, enhancedUrl, mainUrl);
             
             const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
             const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
