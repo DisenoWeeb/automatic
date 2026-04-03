@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dra. Bruzera - Generador de Flyers</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(180deg, #fff7fb 0%, #f8fafc 100%);
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 14px 30px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #8b1e5a;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 0.98rem;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      border: 1px solid rgba(139, 30, 90, 0.08);
+    }
+
+    .form-section {
+      padding: 18px;
+      position: sticky;
+      top: 14px;
+    }
+
+    .result-section {
+      padding: 18px;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .file-input {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      background: #fff;
+      font-size: 0.95rem;
+    }
+
+    .preview-container {
+      margin-top: 10px;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      border-radius: 18px;
+      border: 2px dashed #e5c5d7;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-container.logo-preview {
+      aspect-ratio: 2.4 / 1;
+      background: #fcfcfc;
+    }
+
+    .preview-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .preview-placeholder {
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      padding: 14px;
+      line-height: 1.4;
+    }
+
+    .text-input {
+      width: 100%;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px 15px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .text-input:focus {
+      border-color: #d9468d;
+      box-shadow: 0 0 0 4px rgba(217, 70, 141, 0.08);
+    }
+
+    .word-count {
+      display: block;
+      text-align: right;
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: #6b7280;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.985);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, #d9468d, #8b1e5a);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(217, 70, 141, 0.24);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #fff;
+    }
+
+    .btn-new {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 120px;
+      border-radius: 18px;
+      background: #fff7fb;
+      border: 1px dashed #f2bfd8;
+      text-align: center;
+      padding: 18px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .spinner {
+      width: 46px;
+      height: 46px;
+      border: 4px solid #f3f4f6;
+      border-top-color: #d9468d;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader p {
+      font-weight: 700;
+      color: #8b1e5a;
+    }
+
+    .loader-sub {
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .result-header {
+      text-align: center;
+    }
+
+    .result-header h2 {
+      font-size: 1.2rem;
+      color: #8b1e5a;
+      margin-bottom: 4px;
+    }
+
+    .result-header p {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .ia-status {
+      text-align: center;
+      font-size: 0.88rem;
+      color: #6b7280;
+      min-height: 20px;
+    }
+
+    .compare-wrapper {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 620px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #111827;
+      touch-action: none;
+      user-select: none;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.14);
+    }
+
+    .compare-base,
+    .compare-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .compare-base img,
+    .compare-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #111827;
+      display: block;
+    }
+
+    .compare-overlay {
+      width: 50%;
+      overflow: hidden;
+      border-right: 2px solid rgba(255,255,255,0.95);
+    }
+
+    .compare-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .compare-handle::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -1px;
+      width: 2px;
+      background: #fff;
+    }
+
+    .compare-knob {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #d9468d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #8b1e5a;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+    }
+
+    .compare-label {
+      position: absolute;
+      top: 14px;
+      z-index: 25;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(17, 24, 39, 0.66);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 800;
+      backdrop-filter: blur(4px);
+    }
+
+    .label-before { left: 14px; }
+    .label-after  { right: 14px; }
+
+    .canvas-hidden {
+      display: none;
+    }
+
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #9ca3af;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 900px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      .form-section {
+        position: static;
+      }
+
+      .result-section {
+        min-height: auto;
+      }
+
+      .compare-wrapper {
+        min-height: 70vh;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 14px 10px 24px;
+      }
+
+      .header h1 {
+        font-size: 1.6rem;
+      }
+
+      .form-section,
+      .result-section {
+        padding: 14px;
+      }
+
+      .compare-wrapper {
+        min-height: 62vh;
+        border-radius: 20px;
+      }
+
+      .compare-knob {
+        width: 50px;
+        height: 50px;
+      }
+
+      .result-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Dra. Bruzera</h1>
+      <p>Subí imagen y logo, generá el flyer y compará antes / después</p>
+    </header>
+
+    <main class="main-content">
+      <!-- FORMULARIO -->
+      <section class="panel form-section">
+        <div class="input-group">
+          <label for="mainImage">Imagen Principal *</label>
+          <input type="file" id="mainImage" class="file-input" accept="image/*" required>
+          <div class="preview-container" id="mainImagePreview">
+            <span class="preview-placeholder" id="mainImagePlaceholder">Vista previa de imagen principal</span>
+            <img id="mainImagePreviewImg" class="hidden" alt="Vista previa imagen principal">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="logoImage">Logo (opcional)</label>
+          <input type="file" id="logoImage" class="file-input" accept="image/*">
+          <div class="preview-container logo-preview" id="logoPreview">
+            <span class="preview-placeholder" id="logoPlaceholder">Vista previa del logo</span>
+            <img id="logoPreviewImg" class="hidden" alt="Vista previa del logo">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="flyerText">Texto del Flyer * (máx. 6 palabras)</label>
+          <input
+            type="text"
+            id="flyerText"
+            class="text-input"
+            maxlength="40"
+            placeholder="Ej: Cuidamos a tu mejor amigo"
+            required
+          >
+          <span class="word-count" id="wordCount">0 palabras</span>
+        </div>
+
+        <button id="generateBtn" class="btn btn-generate" disabled>
+          Generar Flyer
+        </button>
+
+        <div id="loader" class="loader hidden" style="margin-top:16px;">
+          <div class="spinner"></div>
+          <p>Procesando imagen...</p>
+          <p class="loader-sub">Esto puede tomar unos segundos</p>
+        </div>
+      </section>
+
+      <!-- RESULTADO -->
+      <section class="panel result-section">
+        <div class="result-header">
+          <h2>Resultado</h2>
+          <p>Deslizá para ver antes y después</p>
+        </div>
+
+        <div id="iaStatus" class="ia-status"></div>
+
+        <div class="compare-wrapper" id="compareWrapper">
+          <div class="compare-label label-before">Antes</div>
+          <div class="compare-label label-after">Después</div>
+
+          <div class="compare-base">
+            <img id="beforeImage" alt="Imagen original">
+          </div>
+
+          <div class="compare-overlay" id="compareOverlay">
+            <img id="afterImage" alt="Flyer generado">
+          </div>
+
+          <div class="compare-handle" id="compareHandle">
+            <div class="compare-knob">↔</div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button id="downloadBtn" class="btn btn-download" disabled>Descargar Resultado</button>
+          <button id="newFlyerBtn" class="btn btn-new">Crear Nuevo</button>
+        </div>
+
+        <!-- Canvas oculto para seguir generando como siempre -->
+        <div class="canvas-hidden">
+          <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; 2026 Dra. Bruzera - Veterinaria</p>
+    </footer>
+  </div>
+
+  <script>
+    const App = {
+      elements: {
+        mainImage: document.getElementById('mainImage'),
+        logoImage: document.getElementById('logoImage'),
+        flyerText: document.getElementById('flyerText'),
+        generateBtn: document.getElementById('generateBtn'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        newFlyerBtn: document.getElementById('newFlyerBtn'),
+
+        mainImagePreviewImg: document.getElementById('mainImagePreviewImg'),
+        mainImagePlaceholder: document.getElementById('mainImagePlaceholder'),
+        logoPreviewImg: document.getElementById('logoPreviewImg'),
+        logoPlaceholder: document.getElementById('logoPlaceholder'),
+        wordCount: document.getElementById('wordCount'),
+
+        loader: document.getElementById('loader'),
+        iaStatus: document.getElementById('iaStatus'),
+
+        flyerCanvas: document.getElementById('flyerCanvas'),
+
+        beforeImage: document.getElementById('beforeImage'),
+        afterImage: document.getElementById('afterImage'),
+        compareWrapper: document.getElementById('compareWrapper'),
+        compareOverlay: document.getElementById('compareOverlay'),
+        compareHandle: document.getElementById('compareHandle')
+      },
+
+      mainImageData: null,
+      logoImageData: null,
+      finalFlyerData: null,
+      isDragging: false,
+
+      init() {
+        this.bindEvents();
+        this.setComparePosition(50);
+        this.updateWordCount();
+        this.updateGenerateButton();
+      },
+
+      bindEvents() {
+        const e = this.elements;
+
+        e.mainImage.addEventListener('change', (ev) => this.handleMainImage(ev));
+        e.logoImage.addEventListener('change', (ev) => this.handleLogoImage(ev));
+        e.flyerText.addEventListener('input', () => {
+          this.updateWordCount();
+          this.updateGenerateButton();
+        });
+
+        e.generateBtn.addEventListener('click', () => this.generateFlyer());
+        e.downloadBtn.addEventListener('click', () => this.downloadFlyer());
+        e.newFlyerBtn.addEventListener('click', () => this.resetApp());
+
+        e.compareWrapper.addEventListener('mousedown', (ev) => this.startDrag(ev));
+        window.addEventListener('mousemove', (ev) => this.moveDrag(ev));
+        window.addEventListener('mouseup', () => this.endDrag());
+
+        e.compareWrapper.addEventListener('touchstart', (ev) => this.startDrag(ev), { passive: true });
+        e.compareWrapper.addEventListener('touchmove', (ev) => this.moveDrag(ev), { passive: true });
+        window.addEventListener('touchend', () => this.endDrag());
+      },
+
+      updateGenerateButton() {
+        const hasMainImage = !!this.mainImageData;
+        const hasText = this.elements.flyerText.value.trim().length > 0;
+        this.elements.generateBtn.disabled = !(hasMainImage && hasText);
+      },
+
+      updateWordCount() {
+        const text = this.elements.flyerText.value.trim();
+        const count = text ? text.split(/\s+/).length : 0;
+        this.elements.wordCount.textContent = `${count} palabra${count === 1 ? '' : 's'}`;
+      },
+
+      fileToDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      },
+
+      async handleMainImage(ev) {
+        const file = ev.target.files[0];
+        if (!file) return;
+
+        this.mainImageData = await this.fileToDataURL(file);
+        this.elements.mainImagePreviewImg.src = this.mainImageData;
+        this.elements.mainImagePreviewImg.classList.remove('hidden');
+        this.elements.mainImagePlaceholder.classList.add('hidden');
+
+        this.elements.beforeImage.src = this.mainImageData;
+        this.updateGenerateButton();
+      },
+
+      async handleLogoImage(ev) {
+        const file = ev.target.files[0];
+        if (!file) {
+          this.logoImageData = null;
+          this.elements.logoPreviewImg.src = '';
+          this.elements.logoPreviewImg.classList.add('hidden');
+          this.elements.logoPlaceholder.classList.remove('hidden');
+          return;
+        }
+
+        this.logoImageData = await this.fileToDataURL(file);
+        this.elements.logoPreviewImg.src = this.logoImageData;
+        this.elements.logoPreviewImg.classList.remove('hidden');
+        this.elements.logoPlaceholder.classList.add('hidden');
+      },
+
+      loadImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+      },
+
+      async drawFlyerOnCanvas() {
+        const canvas = this.elements.flyerCanvas;
+        const ctx = canvas.getContext('2d');
+
+        const W = canvas.width;
+        const H = canvas.height;
+
+        ctx.clearRect(0, 0, W, H);
+
+        const baseImg = await this.loadImage(this.mainImageData);
+
+        const baseRatio = baseImg.width / baseImg.height;
+        const canvasRatio = W / H;
+
+        let drawW, drawH, drawX, drawY;
+
+        if (baseRatio > canvasRatio) {
+          drawH = H;
+          drawW = H * baseRatio;
+          drawX = (W - drawW) / 2;
+          drawY = 0;
+        } else {
+          drawW = W;
+          drawH = W / baseRatio;
+          drawX = 0;
+          drawY = (H - drawH) / 2;
+        }
+
+        ctx.drawImage(baseImg, drawX, drawY, drawW, drawH);
+
+        // sombreado inferior
+        const gradient = ctx.createLinearGradient(0, H * 0.58, 0, H);
+        gradient.addColorStop(0, 'rgba(0,0,0,0)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0.68)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, W, H);
+
+        // zócalo
+        const zocaloH = 220;
+        ctx.fillStyle = 'rgba(139, 30, 90, 0.92)';
+        ctx.fillRect(0, H - zocaloH, W, zocaloH);
+
+        // texto
+        const text = this.elements.flyerText.value.trim();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 74px Montserrat, sans-serif';
+
+        this.wrapText(ctx, text, W / 2, H - zocaloH + 90, 860, 84);
+
+        // subtítulo ejemplo
+        ctx.font = '600 34px Montserrat, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        ctx.fillText('Dra. Bruzera - Veterinaria', W / 2, H - 52);
+
+        // logo
+        if (this.logoImageData) {
+          try {
+            const logo = await this.loadImage(this.logoImageData);
+            const logoMaxW = 250;
+            const logoMaxH = 130;
+
+            const ratio = Math.min(logoMaxW / logo.width, logoMaxH / logo.height);
+            const logoW = logo.width * ratio;
+            const logoH = logo.height * ratio;
+
+            const logoX = (W - logoW) / 2;
+            const logoY = H - zocaloH - (logoH / 2);
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.18)';
+            ctx.shadowBlur = 16;
+            ctx.drawImage(logo, logoX, logoY, logoW, logoH);
+            ctx.restore();
+          } catch (err) {
+            console.warn('No se pudo dibujar el logo:', err);
+          }
+        }
+      },
+
+      wrapText(ctx, text, x, startY, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        const lines = [];
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = line + words[i] + ' ';
+          const testWidth = ctx.measureText(testLine).width;
+
+          if (testWidth > maxWidth && i > 0) {
+            lines.push(line.trim());
+            line = words[i] + ' ';
+          } else {
+            line = testLine;
+          }
+        }
+        lines.push(line.trim());
+
+        const totalHeight = (lines.length - 1) * lineHeight;
+        let y = startY - totalHeight / 2;
+
+        lines.forEach((ln) => {
+          ctx.fillText(ln, x, y);
+          y += lineHeight;
+        });
+      },
+
+      async generateFlyer() {
+        const e = this.elements;
+
+        if (!this.mainImageData || !e.flyerText.value.trim()) return;
+
+        e.loader.classList.remove('hidden');
+        e.generateBtn.disabled = true;
+        e.downloadBtn.disabled = true;
+        e.iaStatus.textContent = '';
+
+        try {
+          /*
+            ACÁ enchufás tu lógica real si ya la tenés.
+            Mientras tanto, dejamos armado el flyer en canvas local.
+            Si vos ya generás una imagen final desde backend, podés reemplazar:
+            this.finalFlyerData = e.flyerCanvas.toDataURL('image/jpeg', 0.95);
+            por la URL final que te devuelva tu sistema.
+          */
+
+          await this.drawFlyerOnCanvas();
+
+          this.finalFlyerData = e.flyerCanvas.toDataURL('image/jpeg', 0.95);
+
+          e.beforeImage.src = this.mainImageData;
+          e.afterImage.src = this.finalFlyerData;
+
+          this.setComparePosition(50);
+
+          e.downloadBtn.disabled = false;
+          e.iaStatus.textContent = 'Flyer generado correctamente.';
+        } catch (error) {
+          console.error(error);
+          e.iaStatus.textContent = 'Hubo un error al generar el flyer.';
+          alert('Hubo un error al generar el flyer.');
+        } finally {
+          e.loader.classList.add('hidden');
+          this.updateGenerateButton();
+        }
+      },
+
+      downloadFlyer() {
+        if (!this.finalFlyerData) return;
+
+        const link = document.createElement('a');
+        link.href = this.finalFlyerData;
+        link.download = `flyer-dra-bruzera-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      },
+
+      resetApp() {
+        this.mainImageData = null;
+        this.logoImageData = null;
+        this.finalFlyerData = null;
+
+        const e = this.elements;
+
+        e.mainImage.value = '';
+        e.logoImage.value = '';
+        e.flyerText.value = '';
+
+        e.mainImagePreviewImg.src = '';
+        e.mainImagePreviewImg.classList.add('hidden');
+        e.mainImagePlaceholder.classList.remove('hidden');
+
+        e.logoPreviewImg.src = '';
+        e.logoPreviewImg.classList.add('hidden');
+        e.logoPlaceholder.classList.remove('hidden');
+
+        e.beforeImage.src = '';
+        e.afterImage.src = '';
+        e.iaStatus.textContent = '';
+        e.downloadBtn.disabled = true;
+
+        const ctx = e.flyerCanvas.getContext('2d');
+        ctx.clearRect(0, 0, e.flyerCanvas.width, e.flyerCanvas.height);
+
+        this.setComparePosition(50);
+        this.updateWordCount();
+        this.updateGenerateButton();
+      },
+
+      setComparePosition(percent) {
+        const safe = Math.max(0, Math.min(100, percent));
+        this.elements.compareOverlay.style.width = `${safe}%`;
+        this.elements.compareHandle.style.left = `${safe}%`;
+      },
+
+      updateSlider(clientX) {
+        const rect = this.elements.compareWrapper.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const percent = (x / rect.width) * 100;
+        this.setComparePosition(percent);
+      },
+
+      startDrag(ev) {
+        this.isDragging = true;
+        const point = ev.touches ? ev.touches[0] : ev;
+        this.updateSlider(point.clientX);
+      },
+
+      moveDrag(ev) {
+        if (!this.isDragging) return;
+        const point = ev.touches ? ev.touches[0] : ev;
+        this.updateSlider(point.clientX);
+      },
+
+      endDrag() {
+        this.isDragging = false;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      App.init();
+    });
+  </script>
+</body>
+</html>
