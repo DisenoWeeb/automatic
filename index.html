@@ -2,114 +2,209 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Generador básico IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bruzera Flyer Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
       margin: 0;
-      padding: 0;
-      color: #222;
+      font-family: 'Montserrat', sans-serif;
+      background: #f4f6f8;
     }
 
     .wrap {
-      max-width: 760px;
-      margin: 40px auto;
-      padding: 20px;
+      max-width: 800px;
+      margin: 30px auto;
       background: #fff;
+      padding: 20px;
       border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.08);
+      box-shadow: 0 10px 25px rgba(0,0,0,.1);
     }
 
     h1 {
       margin-top: 0;
-      font-size: 28px;
     }
 
-    textarea {
+    input, textarea {
       width: 100%;
-      min-height: 120px;
-      border: 1px solid #ccc;
+      padding: 12px;
+      margin-top: 10px;
       border-radius: 10px;
-      padding: 14px;
-      font-size: 16px;
+      border: 1px solid #ccc;
+      font-family: 'Montserrat';
       box-sizing: border-box;
-      resize: vertical;
     }
 
     button {
-      margin-top: 14px;
-      background: #0d6efd;
-      color: white;
+      margin-top: 15px;
+      padding: 12px;
       border: none;
       border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 16px;
+      background: #0d6efd;
+      color: white;
+      font-weight: 600;
       cursor: pointer;
     }
 
-    button:hover {
-      opacity: .95;
-    }
-
-    #loading {
-      margin-top: 18px;
-      display: none;
-      color: #0d6efd;
-      font-weight: bold;
-    }
-
-    #error {
-      margin-top: 18px;
-      display: none;
-      background: #ffe5e5;
-      color: #b00020;
-      padding: 12px;
-      border-radius: 10px;
-    }
-
-    #resultado {
-      display: none;
-      margin-top: 24px;
-    }
-
-    #imgFinal {
+    canvas {
+      margin-top: 20px;
       width: 100%;
-      max-width: 100%;
       border-radius: 12px;
-      display: none;
       border: 1px solid #ddd;
-    }
-
-    #promptUsado {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #555;
-      word-break: break-word;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Generador básico con IA</h1>
+    <h1>Generador Bruzera</h1>
 
-    <textarea
-      id="prompt"
-      placeholder="Ejemplo: un perro veterinario feliz en una clínica moderna, estilo publicitario profesional">
-    </textarea>
+    <input type="file" id="fileInput" accept="image/*">
+    <textarea id="texto" placeholder="Ej: Hoy visita Papu"></textarea>
 
-    <button id="btnGenerar">Generar imagen</button>
+    <button id="btnGenerar">Generar Flyer</button>
+    <button id="btnDescargar">Descargar</button>
 
-    <div id="loading">Generando imagen, esperá un momento...</div>
-    <div id="error"></div>
-
-    <div id="resultado">
-      <img id="imgFinal" alt="Imagen generada" />
-      <div id="promptUsado"></div>
-    </div>
+    <canvas id="canvas" width="1080" height="1350"></canvas>
   </div>
 
-  <script src="app.js"></script>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const fileInput = document.getElementById('fileInput');
+const textoInput = document.getElementById('texto');
+const btnGenerar = document.getElementById('btnGenerar');
+const btnDescargar = document.getElementById('btnDescargar');
+
+let baseImage = null;
+
+// CONFIG BRUZERA
+const BRAND = {
+  magenta: '#d81b60',
+  azul: '#1e3a5f',
+  blanco: '#ffffff',
+  instagram: '@drabruzera',
+  web: 'drabruzera.com.ar',
+  whatsapp: '5493435303848'
+};
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    baseImage = new Image();
+    baseImage.onload = () => {};
+    baseImage.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+btnGenerar.addEventListener('click', () => {
+  if (!baseImage) return alert('Subí una imagen');
+
+  const texto = textoInput.value || '';
+
+  // LIMPIAR
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // FONDO BLANCO
+  ctx.fillStyle = BRAND.blanco;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // DIBUJAR IMAGEN BASE
+  drawCoverImage(baseImage);
+
+  // OVERLAY AZUL TRANSPARENTE
+  ctx.fillStyle = 'rgba(30,58,95,0.25)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // LOGO FONDO (simulado)
+  drawBackgroundLogo();
+
+  // TEXTO PRINCIPAL
+  drawMainText(texto);
+
+  // FOOTER
+  drawFooter();
+});
+
+btnDescargar.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = 'flyer-bruzera.jpg';
+  link.href = canvas.toDataURL('image/jpeg', 0.95);
+  link.click();
+});
+
+function drawCoverImage(img) {
+  const ratio = Math.max(canvas.width / img.width, canvas.height / img.height);
+  const w = img.width * ratio;
+  const h = img.height * ratio;
+  const x = (canvas.width - w) / 2;
+  const y = (canvas.height - h) / 2;
+
+  ctx.drawImage(img, x, y, w, h);
+}
+
+function drawMainText(texto) {
+  ctx.fillStyle = BRAND.blanco;
+  ctx.textAlign = 'center';
+
+  ctx.font = '700 60px Montserrat';
+  wrapText(texto, canvas.width / 2, 200, 900, 70);
+}
+
+function drawFooter() {
+  const footerHeight = 180;
+
+  // FONDO FOOTER
+  ctx.fillStyle = BRAND.azul;
+  ctx.fillRect(0, canvas.height - footerHeight, canvas.width, footerHeight);
+
+  ctx.fillStyle = BRAND.blanco;
+  ctx.font = '600 32px Montserrat';
+  ctx.textAlign = 'center';
+
+  const y = canvas.height - 90;
+
+  ctx.fillText(BRAND.instagram, canvas.width * 0.2, y);
+  ctx.fillText(BRAND.web, canvas.width * 0.5, y);
+  ctx.fillText(BRAND.whatsapp, canvas.width * 0.8, y);
+}
+
+function drawBackgroundLogo() {
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+
+  ctx.fillStyle = BRAND.magenta;
+  ctx.beginPath();
+  ctx.arc(canvas.width / 2, canvas.height / 2, 300, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function wrapText(text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+
+  ctx.fillText(line, x, y);
+}
+</script>
 </body>
 </html>
