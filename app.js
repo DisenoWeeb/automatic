@@ -258,6 +258,83 @@ const FlyerGenerator = {
 
     ctx.fillText(text, padding, padding + 40);
 },
+    drawTitleSmart: function(text) {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    if (!text) return;
+
+    const paddingX = 60;
+    const topY = 95;
+    const maxWidth = canvas.width * 0.42;
+
+    let fontSize = 64;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 3;
+
+    const lines = [];
+    const words = text.toUpperCase().split(/\s+/).filter(Boolean);
+
+    const buildLines = () => {
+        lines.length = 0;
+        let currentLine = '';
+
+        for (const word of words) {
+            const testLine = currentLine ? currentLine + ' ' + word : word;
+            const width = ctx.measureText(testLine).width;
+
+            if (width <= maxWidth) {
+                currentLine = testLine;
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+
+        if (currentLine) lines.push(currentLine);
+    };
+
+    do {
+        ctx.font = `bold ${fontSize}px Montserrat, Arial, sans-serif`;
+        buildLines();
+        fontSize -= 2;
+    } while ((lines.length > 3 || lines.some(line => ctx.measureText(line).width > maxWidth)) && fontSize > 34);
+
+    ctx.font = `bold ${fontSize}px Montserrat, Arial, sans-serif`;
+
+    const lineHeight = fontSize * 1.08;
+    const blockHeight = lines.length * lineHeight;
+
+    // prueba primero arriba izquierda
+    const leftX = paddingX;
+    const rightX = canvas.width - paddingX - maxWidth;
+
+    // como el sujeto está bastante centrado, elegimos derecha por defecto
+    // si querés, podés invertir esta prioridad
+    const preferredX = rightX;
+
+    // fondo sutil detrás del texto para legibilidad
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath();
+    ctx.roundRect(preferredX - 18, topY - 12, maxWidth + 36, blockHeight + 24, 18);
+    ctx.fill();
+
+    // texto
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], preferredX, topY + i * lineHeight);
+    }
+
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+},
     drawBackground: function(imageData) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -369,7 +446,7 @@ const FlyerGenerator = {
             img.onload = () => {
                 const ctx = this.ctx;
                 const size = 120; // Un poco más grande
-                const x = 30;    // Margen izquierdo
+                const x = -30;    // Margen izquierdo
                 const y = 30;    // Margen superior (dentro de los 140px de banda)
                 
                 // Fondo blanco circular con borde
