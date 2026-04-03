@@ -128,6 +128,13 @@ const Backend = {
             titulo: titulo,
             creditos: creditos
         }, callback);
+    },
+
+    enhanceImage: function(imageUrl, callback) {
+        JSONP.request(CONFIG.GAS_URL, {
+            action: 'enhanceOpenAI',
+            imageUrl: imageUrl
+        }, callback);
     }
 };
 
@@ -519,7 +526,17 @@ const UI = {
             const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
             const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
             
-            const enhancedUrl = await PollinationsAI.processImage(mainUrl);
+           const enhancedUrl = await new Promise((resolve) => {
+    Backend.enhanceImage(mainUrl, (err, res) => {
+        if (err || !res || !res.success) {
+            console.log('⚠️ OpenAI fallback');
+            resolve(mainUrl);
+        } else {
+            console.log('🤖 OpenAI OK');
+            resolve(res.enhancedUrl);
+        }
+    });
+});
             
             let logoUrl = null;
             if (this.logoImageData) {
