@@ -14,7 +14,7 @@ const CONFIG = {
 };
 
 // ==========================================
-// UTILIDADES JSONP ROBUSTO
+// JSONP
 // ==========================================
 const JSONP = {
     callbacks: {},
@@ -52,12 +52,12 @@ const JSONP = {
         script.onerror = () => {
             clearTimeout(timeoutId);
             cleanup();
-            callback(new Error('Error cargando script JSONP'));
+            callback(new Error('Error JSONP'));
         };
 
         const timeoutId = setTimeout(() => {
             cleanup();
-            callback(new Error('Timeout en request JSONP'));
+            callback(new Error('Timeout'));
         }, this.timeout);
 
         document.head.appendChild(script);
@@ -65,7 +65,7 @@ const JSONP = {
 };
 
 // ==========================================
-// UTILIDADES DE USUARIO
+// USER
 // ==========================================
 const UserManager = {
     getUserId: function() {
@@ -79,7 +79,7 @@ const UserManager = {
 };
 
 // ==========================================
-// CLOUDINARY UPLOAD
+// CLOUDINARY
 // ==========================================
 const CloudinaryUpload = {
     upload: function(file, folder = 'dra_bruzera') {
@@ -98,18 +98,61 @@ const CloudinaryUpload = {
                     const response = JSON.parse(xhr.responseText);
                     resolve(response.secure_url);
                 } else {
-                    reject(new Error('Error subiendo a Cloudinary'));
+                    reject(new Error('Error Cloudinary'));
                 }
             };
             
-            xhr.onerror = () => reject(new Error('Error de red en Cloudinary'));
+            xhr.onerror = () => reject(new Error('Error red'));
             xhr.send(formData);
         });
     }
 };
 
 // ==========================================
-// GENERADOR DE FLYER - CORREGIDO
+// POLLINATIONS IA
+// ==========================================
+const PollinationsAI = {
+    // Mejorar imagen y extraer sujeto con fondo transparente/blur
+    enhanceSubject: function(imageUrl) {
+        const prompt = 'professional veterinary photo, subject isolation, clean edges, enhanced lighting, high contrast, sharp focus, professional color grading, remove distracting background, keep subject realistic and detailed';
+        
+        const encodedPrompt = encodeURIComponent(prompt);
+        const encodedImage = encodeURIComponent(imageUrl);
+        
+        // Usar reference para mantener la imagen base + strength bajo para no inventar
+        return `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.25&negative_prompt=blurry,low quality,distorted,extra limbs,mutated`;
+    },
+
+    // Procesar imagen y devolver URL mejorada
+    processImage: function(imageUrl) {
+        return new Promise((resolve) => {
+            // Crear imagen para verificar carga
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            const pollinationUrl = this.enhanceSubject(imageUrl);
+            
+            img.onload = () => resolve(pollinationUrl);
+            img.onerror = () => {
+                // Fallback a imagen original si Pollinations falla
+                console.log('Pollinations falló, usando original');
+                resolve(imageUrl);
+            };
+            
+            // Timeout de seguridad
+            setTimeout(() => {
+                if (!img.complete) {
+                    resolve(imageUrl);
+                }
+            }, 15000);
+            
+            img.src = pollinationUrl;
+        });
+    }
+};
+
+// ==========================================
+// GENERADOR FLYER
 // ==========================================
 const FlyerGenerator = {
     canvas: null,
@@ -120,31 +163,30 @@ const FlyerGenerator = {
         this.ctx = this.canvas.getContext('2d');
     },
 
-    generate: async function(mainImageData, logoData, text) {
+    generate: async function(mainImageData, logoData, text, enhancedImageUrl) {
         const ctx = this.ctx;
         const canvas = this.canvas;
         
-        // Limpiar canvas completamente
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 1. Dibujar fondo borroso/oscurecido (la imagen original como fondo)
+        // 1. Fondo con blur
         await this.drawBackground(mainImageData);
         
-        // 2. Logo grande marca de agua (detrás del sujeto)
+        // 2. Marca de agua
         this.drawWatermark();
         
-        // 3. Sujeto principal recortado (SOLO UNA VEZ, en el centro)
-        await this.drawSubject(mainImageData);
+        // 3. Sujeto mejorado por IA (o original si falló)
+        await this.drawSubject(enhancedImageUrl || mainImageData);
         
-        // 4. Logo chico arriba izquierda
+        // 4. Logo
         if (logoData) {
             await this.drawSmallLogo(logoData);
         }
         
-        // 5. Banda magenta superior con texto (AL FRENTE DE TODO)
+        // 5. Banda magenta con texto (al frente)
         this.drawHeaderBand(text);
         
-        // 6. Zócalo inferior
+        // 6. Footer
         this.drawFooter();
         
         return canvas.toDataURL('image/jpeg', 0.95);
@@ -157,21 +199,20 @@ const FlyerGenerator = {
                 const ctx = this.ctx;
                 const canvas = this.canvas;
                 
-                // Dibujar imagen como fondo con blur y oscurecido
                 const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
                 const x = (canvas.width / 2) - (img.width / 2) * scale;
                 const y = (canvas.height / 2) - (img.height / 2) * scale;
                 
-                // Filtro de blur para el fondo
-                ctx.filter = 'blur(8px) brightness(0.7)';
+                // Blur y oscurecer fondo
+                ctx.filter = 'blur(12px) brightness(0.6)';
                 ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
                 ctx.filter = 'none';
                 
-                // Overlay azul adicional para legibilidad
+                // Overlay azul
                 const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                gradient.addColorStop(0, 'rgba(30, 58, 95, 0.4)');
-                gradient.addColorStop(0.5, 'rgba(30, 58, 95, 0.2)');
-                gradient.addColorStop(1, 'rgba(30, 58, 95, 0.5)');
+                gradient.addColorStop(0, 'rgba(30, 58, 95, 0.5)');
+                gradient.addColorStop(0.5, 'rgba(30, 58, 95, 0.3)');
+                gradient.addColorStop(1, 'rgba(30, 58, 95, 0.6)');
                 
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -192,9 +233,8 @@ const FlyerGenerator = {
         ctx.translate(centerX, centerY);
         ctx.rotate(-Math.PI / 12);
         
-        // Texto marca de agua más sutil
         ctx.font = 'bold 100px Montserrat';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('DRA. BRUZERA', 0, 0);
@@ -202,73 +242,63 @@ const FlyerGenerator = {
         ctx.restore();
     },
 
-    drawSubject: function(imageData) {
-        return new Promise((resolve, reject) => {
+    drawSubject: function(imageUrl) {
+        return new Promise((resolve) => {
             const img = new Image();
+            img.crossOrigin = 'anonymous';
             img.onload = () => {
                 const ctx = this.ctx;
                 const canvas = this.canvas;
                 
-                // Calcular dimensiones para que el sujeto ocupe el centro
-                // Dejar espacio arriba para la banda magenta y abajo para el footer
-                const availableHeight = canvas.height - 320; // 140 banda + 180 footer + margen
+                // Espacio disponible: entre banda (140) y footer (160)
+                const availableHeight = canvas.height - 320;
                 const scale = Math.min(
-                    (canvas.width * 0.85) / img.width,
+                    (canvas.width * 0.8) / img.width,
                     availableHeight / img.height
                 );
                 
                 const width = img.width * scale;
                 const height = img.height * scale;
-                
-                // Centrar horizontalmente, posicionar verticalmente entre banda y footer
                 const x = (canvas.width - width) / 2;
-                const y = 160 + (availableHeight - height) / 2; // 160 = debajo de la banda magenta
+                const y = 150 + (availableHeight - height) / 2;
                 
-                // Sombra suave
-                ctx.shadowColor = 'rgba(0,0,0,0.4)';
-                ctx.shadowBlur = 40;
-                ctx.shadowOffsetY = 15;
+                // Sombra
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 50;
+                ctx.shadowOffsetY = 20;
                 
-                // Recorte circular/ovalado suave opcional (efecto moderno)
+                // Recorte suave
                 ctx.save();
                 ctx.beginPath();
-                ctx.roundRect(x - 10, y - 10, width + 20, height + 20, 20);
+                ctx.roundRect(x - 5, y - 5, width + 10, height + 10, 15);
                 ctx.clip();
-                
                 ctx.drawImage(img, x, y, width, height);
                 ctx.restore();
                 
-                // Reset shadow
                 ctx.shadowColor = 'transparent';
-                
                 resolve();
             };
-            img.onerror = () => resolve(); // Continuar sin sujeto si falla
-            img.src = imageData;
+            img.onerror = () => resolve();
+            img.src = imageUrl;
         });
     },
 
     drawSmallLogo: function(logoData) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
                 const ctx = this.ctx;
-                const size = 70;
-                const padding = 25;
-                const yPos = 35; // Dentro de la banda magenta
+                const size = 65;
+                const padding = 30;
+                const yPos = 37;
                 
-                // Fondo circular blanco
+                // Fondo circular
                 ctx.beginPath();
-                ctx.arc(padding + size/2, yPos + size/2, size/2 + 3, 0, Math.PI * 2);
+                ctx.arc(padding + size/2, yPos + size/2, size/2 + 2, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255,255,255,0.95)';
                 ctx.fill();
                 
-                // Borde sutil
-                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Logo con recorte circular
+                // Logo circular
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(padding + size/2, yPos + size/2, size/2, 0, Math.PI * 2);
@@ -285,37 +315,33 @@ const FlyerGenerator = {
 
     drawHeaderBand: function(text) {
         const ctx = this.ctx;
-        
-        // Banda magenta superior - DIBUJAR AL FINAL PARA QUE ESTÉ AL FRENTE
         const bandHeight = 140;
         
-        // Fondo sólido magenta
+        // Fondo magenta
         ctx.fillStyle = '#d81b60';
         ctx.fillRect(0, 0, this.canvas.width, bandHeight);
         
-        // Sombra sutil debajo de la banda
+        // Sombra
         const shadowGradient = ctx.createLinearGradient(0, bandHeight, 0, bandHeight + 15);
         shadowGradient.addColorStop(0, 'rgba(0,0,0,0.2)');
         shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = shadowGradient;
         ctx.fillRect(0, bandHeight, this.canvas.width, 15);
         
-        // Texto centrado en la banda
+        // Texto
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Ajustar tamaño de fuente según longitud
         let fontSize = 48;
         ctx.font = `bold ${fontSize}px Montserrat`;
         
-        const maxWidth = this.canvas.width - 100;
+        const maxWidth = this.canvas.width - 120;
         while (ctx.measureText(text.toUpperCase()).width > maxWidth && fontSize > 24) {
             fontSize -= 2;
             ctx.font = `bold ${fontSize}px Montserrat`;
         }
         
-        // Dibujar texto centrado verticalmente en la banda
         ctx.fillText(text.toUpperCase(), this.canvas.width / 2, bandHeight / 2);
     },
 
@@ -324,7 +350,7 @@ const FlyerGenerator = {
         const footerHeight = 160;
         const y = this.canvas.height - footerHeight;
         
-        // Forma de onda moderna
+        // Onda
         ctx.beginPath();
         ctx.moveTo(0, y + 50);
         ctx.bezierCurveTo(
@@ -343,7 +369,7 @@ const FlyerGenerator = {
         ctx.fillStyle = gradient;
         ctx.fill();
         
-        // Línea decorativa magenta
+        // Línea magenta decorativa
         ctx.beginPath();
         ctx.moveTo(0, y + 45);
         ctx.bezierCurveTo(
@@ -355,45 +381,40 @@ const FlyerGenerator = {
         ctx.lineWidth = 3;
         ctx.stroke();
         
-        // Información de contacto
+        // Contacto
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         
-        const centerY = y + 90;
+        const centerY = y + 85;
         
-        // Instagram
-        ctx.font = '700 28px Montserrat';
+        ctx.font = '700 26px Montserrat';
         ctx.fillText('@dra.bruzera', this.canvas.width / 2, centerY);
         
-        // Web
-        ctx.font = '500 22px Montserrat';
+        ctx.font = '500 20px Montserrat';
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText('www.drabruzera.com', this.canvas.width / 2, centerY + 32);
+        ctx.fillText('www.drabruzera.com', this.canvas.width / 2, centerY + 30);
         
-        // WhatsApp
-        ctx.font = '600 24px Montserrat';
+        ctx.font = '600 22px Montserrat';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText('WhatsApp: 11-XXXX-XXXX', this.canvas.width / 2, centerY + 62);
+        ctx.fillText('WhatsApp: 11-XXXX-XXXX', this.canvas.width / 2, centerY + 58);
     }
 };
 
 // ==========================================
-// GOOGLE APPS SCRIPT BACKEND
+// BACKEND
 // ==========================================
 const Backend = {
     init: function(callback) {
-        const userId = UserManager.getUserId();
         JSONP.request(CONFIG.GAS_URL, {
             action: 'init',
-            userId: userId
+            userId: UserManager.getUserId()
         }, callback);
     },
 
     registrarUso: function(tipo, titulo, creditos, callback) {
-        const userId = UserManager.getUserId();
         JSONP.request(CONFIG.GAS_URL, {
             action: 'registrar',
-            userId: userId,
+            userId: UserManager.getUserId(),
             tipo: tipo,
             titulo: titulo,
             creditos: creditos
@@ -402,7 +423,7 @@ const Backend = {
 };
 
 // ==========================================
-// UI CONTROLLER
+// UI
 // ==========================================
 const UI = {
     elements: {},
@@ -430,8 +451,7 @@ const UI = {
         FlyerGenerator.init();
         
         Backend.init((err, data) => {
-            if (err) console.log('Error init backend:', err);
-            else console.log('Usuario inicializado:', data);
+            if (err) console.log('Error init:', err);
         });
     },
 
@@ -490,31 +510,33 @@ const UI = {
         try {
             const text = e.flyerText.value.trim();
             
-            // Subir imagen original
+            // 1. Subir imagen original a Cloudinary (para tener URL pública)
             const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
             const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
             
-            // Subir logo si existe
+            // 2. PROCESAR CON IA (Pollinations)
+            console.log('Procesando con IA...');
+            const enhancedUrl = await PollinationsAI.processImage(mainUrl);
+            
+            // 3. Subir logo si existe
             let logoUrl = null;
             if (this.logoImageData) {
                 const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
                 logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
             }
             
-            // Registrar uso
-            Backend.registrarUso('imagen', text, 1, (err, data) => {
-                if (err) console.log('Error registrando uso:', err);
-            });
+            // 4. Registrar uso
+            Backend.registrarUso('imagen', text, 1, () => {});
             
-            // Generar flyer usando los Data URLs locales (más rápido y confiable)
-            await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text);
+            // 5. Generar flyer con imagen mejorada
+            await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text, enhancedUrl);
             
-            // Subir resultado final
+            // 6. Subir resultado final
             const finalDataUrl = e.canvas.toDataURL('image/jpeg', 0.95);
             const finalFile = await this.dataURLtoFile(finalDataUrl, 'flyer.jpg');
             const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
             
-            console.log('Flyer final:', finalUrl);
+            console.log('Final:', finalUrl);
             
             e.loader.classList.add('hidden');
             e.resultSection.classList.remove('hidden');
@@ -522,7 +544,7 @@ const UI = {
             
         } catch (error) {
             console.error('Error:', error);
-            alert('Error generando el flyer. Intentá de nuevo.');
+            alert('Error generando flyer. Intentá de nuevo.');
             e.loader.classList.add('hidden');
         }
     },
@@ -534,9 +556,7 @@ const UI = {
             const bstr = atob(arr[1]);
             let n = bstr.length;
             const u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
             resolve(new File([u8arr], filename, { type: mime }));
         });
     },
@@ -553,8 +573,8 @@ const UI = {
         e.mainImage.value = '';
         e.logoImage.value = '';
         e.flyerText.value = '';
-        e.mainImagePreview.innerHTML = '<span class="preview-placeholder">Vista previa de imagen principal</span>';
-        e.logoPreview.innerHTML = '<span class="preview-placeholder">Vista previa del logo</span>';
+        e.mainImagePreview.innerHTML = '<span class="preview-placeholder">Vista previa</span>';
+        e.logoPreview.innerHTML = '<span class="preview-placeholder">Vista previa</span>';
         e.wordCount.textContent = '0 palabras';
         e.resultSection.classList.add('hidden');
         this.mainImageData = null;
