@@ -246,20 +246,7 @@ const FlyerGenerator = {
             iaUsed: iaUsed
         };
     },
-    drawTitleSmart: function(text) {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 60px Arial";
-    ctx.textAlign = "left";
-
-    const padding = 60;
-
-    ctx.fillText(text, padding, padding + 40);
-} // 👈 SIN coma si es la última
-
-}; // 👈 ACA CERRÁS EL OBJETO
+  
     drawBackground: function(imageData) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -402,6 +389,19 @@ const FlyerGenerator = {
             img.src = logoData;
         });
     },
+  drawTitleSmart: function(text) {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 60px Arial";
+    ctx.textAlign = "left";
+
+    const padding = 60;
+
+    ctx.fillText(text, padding, padding + 40);
+} // 👈 SIN coma si es la última
+
 
     drawFooter: function() {
         const ctx = this.ctx;
