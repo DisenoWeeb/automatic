@@ -3,7 +3,7 @@
 // ==========================================
 const CONFIG = {
     // Google Apps Script Web App URL
-    GAS_URL: 'https://script.google.com/macros/s/AKfycbxCJBHyutOZrL9zPvUrhb5V1f0yddX-sRfdR6Z7_O-uEVCbHJSSW6gUYyLjb08kESQa/exec',
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbwT-4xkewjxQbjiACRR0qyr3_jO4XE1T-es8pO14ivKtan_dakviXsZAjZvov3nvP4-Lg/exec',
     
     // Cloudinary
     CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
