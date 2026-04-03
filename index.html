@@ -1,210 +1,76 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bruzera Flyer Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: #f4f6f8;
-    }
-
-    .wrap {
-      max-width: 800px;
-      margin: 30px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.1);
-    }
-
-    h1 {
-      margin-top: 0;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-family: 'Montserrat';
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: #0d6efd;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    canvas {
-      margin-top: 20px;
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid #ddd;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dra. Bruzera - Generador de Flyers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrap">
-    <h1>Generador Bruzera</h1>
+    <div class="container">
+        <header class="header">
+            <h1>Dra. Bruzera</h1>
+            <p>Generador de Flyers Profesionales</p>
+        </header>
 
-    <input type="file" id="fileInput" accept="image/*">
-    <textarea id="texto" placeholder="Ej: Hoy visita Papu"></textarea>
+        <main class="main-content">
+            <!-- Formulario -->
+            <section class="form-section">
+                <div class="input-group">
+                    <label for="mainImage">Imagen Principal *</label>
+                    <input type="file" id="mainImage" accept="image/*" required>
+                    <div class="preview-container" id="mainImagePreview">
+                        <span class="preview-placeholder">Vista previa de imagen principal</span>
+                    </div>
+                </div>
 
-    <button id="btnGenerar">Generar Flyer</button>
-    <button id="btnDescargar">Descargar</button>
+                <div class="input-group">
+                    <label for="logoImage">Logo (opcional)</label>
+                    <input type="file" id="logoImage" accept="image/*">
+                    <div class="preview-container" id="logoPreview">
+                        <span class="preview-placeholder">Vista previa del logo</span>
+                    </div>
+                </div>
 
-    <canvas id="canvas" width="1080" height="1350"></canvas>
-  </div>
+                <div class="input-group">
+                    <label for="flyerText">Texto del Flyer * (máx. 6 palabras)</label>
+                    <input type="text" id="flyerText" maxlength="40" placeholder="Ej: Cuidamos a tu mejor amigo" required>
+                    <span class="word-count" id="wordCount">0 palabras</span>
+                </div>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+                <button id="generateBtn" class="btn-generate" disabled>
+                    Generar Flyer
+                </button>
+            </section>
 
-const fileInput = document.getElementById('fileInput');
-const textoInput = document.getElementById('texto');
-const btnGenerar = document.getElementById('btnGenerar');
-const btnDescargar = document.getElementById('btnDescargar');
+            <!-- Loader -->
+            <div id="loader" class="loader hidden">
+                <div class="spinner"></div>
+                <p>Procesando imagen...</p>
+                <p class="loader-sub">Esto puede tomar unos segundos</p>
+            </div>
 
-let baseImage = null;
+            <!-- Resultado -->
+            <section id="resultSection" class="result-section hidden">
+                <h2>¡Flyer Generado!</h2>
+                <div class="canvas-container">
+                    <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+                </div>
+                <div class="result-actions">
+                    <button id="downloadBtn" class="btn-download">Descargar Flyer</button>
+                    <button id="newFlyerBtn" class="btn-new">Crear Nuevo</button>
+                </div>
+            </section>
+        </main>
 
-// CONFIG BRUZERA
-const BRAND = {
-  magenta: '#d81b60',
-  azul: '#1e3a5f',
-  blanco: '#ffffff',
-  instagram: '@drabruzera',
-  web: 'drabruzera.com.ar',
-  whatsapp: '5493435303848'
-};
+        <footer class="footer">
+            <p>&copy; 2024 Dra. Bruzera - Veterinaria</p>
+        </footer>
+    </div>
 
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    baseImage = new Image();
-    baseImage.onload = () => {};
-    baseImage.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-btnGenerar.addEventListener('click', () => {
-  if (!baseImage) return alert('Subí una imagen');
-
-  const texto = textoInput.value || '';
-
-  // LIMPIAR
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // FONDO BLANCO
-  ctx.fillStyle = BRAND.blanco;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // DIBUJAR IMAGEN BASE
-  drawCoverImage(baseImage);
-
-  // OVERLAY AZUL TRANSPARENTE
-  ctx.fillStyle = 'rgba(30,58,95,0.25)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // LOGO FONDO (simulado)
-  drawBackgroundLogo();
-
-  // TEXTO PRINCIPAL
-  drawMainText(texto);
-
-  // FOOTER
-  drawFooter();
-});
-
-btnDescargar.addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = 'flyer-bruzera.jpg';
-  link.href = canvas.toDataURL('image/jpeg', 0.95);
-  link.click();
-});
-
-function drawCoverImage(img) {
-  const ratio = Math.max(canvas.width / img.width, canvas.height / img.height);
-  const w = img.width * ratio;
-  const h = img.height * ratio;
-  const x = (canvas.width - w) / 2;
-  const y = (canvas.height - h) / 2;
-
-  ctx.drawImage(img, x, y, w, h);
-}
-
-function drawMainText(texto) {
-  ctx.fillStyle = BRAND.blanco;
-  ctx.textAlign = 'center';
-
-  ctx.font = '700 60px Montserrat';
-  wrapText(texto, canvas.width / 2, 200, 900, 70);
-}
-
-function drawFooter() {
-  const footerHeight = 180;
-
-  // FONDO FOOTER
-  ctx.fillStyle = BRAND.azul;
-  ctx.fillRect(0, canvas.height - footerHeight, canvas.width, footerHeight);
-
-  ctx.fillStyle = BRAND.blanco;
-  ctx.font = '600 32px Montserrat';
-  ctx.textAlign = 'center';
-
-  const y = canvas.height - 90;
-
-  ctx.fillText(BRAND.instagram, canvas.width * 0.2, y);
-  ctx.fillText(BRAND.web, canvas.width * 0.5, y);
-  ctx.fillText(BRAND.whatsapp, canvas.width * 0.8, y);
-}
-
-function drawBackgroundLogo() {
-  ctx.save();
-  ctx.globalAlpha = 0.08;
-
-  ctx.fillStyle = BRAND.magenta;
-  ctx.beginPath();
-  ctx.arc(canvas.width / 2, canvas.height / 2, 300, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function wrapText(text, x, y, maxWidth, lineHeight) {
-  const words = text.split(' ');
-  let line = '';
-
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
-    const metrics = ctx.measureText(testLine);
-    const testWidth = metrics.width;
-
-    if (testWidth > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
-      line = words[n] + ' ';
-      y += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-
-  ctx.fillText(line, x, y);
-}
-</script>
+    <script src="app.js"></script>
 </body>
 </html>
