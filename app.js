@@ -132,50 +132,59 @@ const Backend = {
 };
 
 // ==========================================
-// POLLINATIONS IA CON API KEY CORRECTA
+// POLLINATIONS IA
 // ==========================================
 const PollinationsAI = {
     lastUsed: false,
+    lastUrl: null,
 
-    processImage: async function(imageUrl) {
-        console.log('🤖 IA: Iniciando con API key...');
-        const startTime = Date.now();
-        
-        const prompt = 'professional veterinary photo, subject isolation, clean edges, enhanced lighting, high contrast, sharp focus, detailed fur, clean background';
+    enhanceSubject: function(imageUrl) {
+        const prompt = 'professional veterinary photo, subject isolation, clean edges, enhanced lighting, high contrast, sharp focus';
         const encodedPrompt = encodeURIComponent(prompt);
         const encodedImage = encodeURIComponent(imageUrl);
         
-        const url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.6`;
+        let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.25`;
         
-        try {
-            // FETCH con header de autorización (la key correcta)
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${CONFIG.POLLINATIONS_API_KEY}`
-                }
-            });
-            
-            if (!response.ok) {
-                if (response.status === 429) {
-                    throw new Error('Rate limit - esperando...');
-                }
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            // Convertir blob a URL local
-            const blob = await response.blob();
-            const localUrl = URL.createObjectURL(blob);
-            
-            console.log(`✅ IA: OK en ${Date.now() - startTime}ms`);
-            this.lastUsed = true;
-            return localUrl;
-            
-        } catch (error) {
-            console.log('❌ IA:', error.message);
-            this.lastUsed = false;
-            return imageUrl; // fallback
+        if (CONFIG.POLLINATIONS_API_KEY) {
+            url += `&key=${CONFIG.POLLINATIONS_API_KEY}`;
         }
+        
+        this.lastUrl = url;
+        return url;
+    },
+
+    processImage: async function(imageUrl) {
+        console.log('🤖 IA: Iniciando...');
+        const startTime = Date.now();
+        
+        const pollinationUrl = this.enhanceSubject(imageUrl);
+        
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                console.log(`✅ IA: OK en ${Date.now() - startTime}ms`);
+                this.lastUsed = true;
+                resolve(pollinationUrl);
+            };
+            
+            img.onerror = () => {
+                console.log('❌ IA: Falló');
+                this.lastUsed = false;
+                resolve(imageUrl);
+            };
+            
+            setTimeout(() => {
+                if (!img.complete) {
+                    console.log('⏱️ IA: Timeout');
+                    this.lastUsed = false;
+                    resolve(imageUrl);
+                }
+            }, 20000);
+            
+            img.src = pollinationUrl;
+        });
     }
 };
 
