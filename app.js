@@ -529,14 +529,18 @@ const UI = {
             
            const enhancedUrl = await new Promise((resolve) => {
     Backend.enhanceImage(mainUrl, (err, res) => {
-        if (err || !res || !res.success) {
-            console.log('⚠️ OpenAI fallback');
-            resolve(mainUrl);
-        } else {
-            console.log('🤖 OpenAI OK');
-            resolve(res.enhancedUrl);
-        }
-    });
+    console.log('📦 enhanceImage -> err:', err);
+    console.log('📦 enhanceImage -> res:', res);
+
+    if (err || !res || !res.success || !res.enhancedUrl) {
+        console.log('⚠️ OpenAI fallback');
+        resolve(mainUrl);
+        return;
+    }
+
+    console.log('🤖 OpenAI OK');
+    resolve(res.enhancedUrl);
+});
 });
             
             let logoUrl = null;
