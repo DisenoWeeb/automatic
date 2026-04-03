@@ -448,46 +448,48 @@ drawTitleSmart: function(text) {
 
     drawFooter: function() {
     const ctx = this.ctx;
+    const canvas = this.canvas;
+
     const footerHeight = 180;
-    const y = this.canvas.height - footerHeight;
-    
+    const y = canvas.height - footerHeight;
+
+    // zócalo
     ctx.beginPath();
-    ctx.moveTo(0, y + 50);
-    ctx.bezierCurveTo(this.canvas.width * 0.25, y - 10, this.canvas.width * 0.75, y + 70, this.canvas.width, y + 30);
-    ctx.lineTo(this.canvas.width, this.canvas.height);
-    ctx.lineTo(0, this.canvas.height);
+    ctx.moveTo(0, y + 40);
+    ctx.bezierCurveTo(canvas.width * 0.25, y - 10, canvas.width * 0.75, y + 55, canvas.width, y + 20);
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.lineTo(0, canvas.height);
     ctx.closePath();
-    
-    const gradient = ctx.createLinearGradient(0, y, 0, this.canvas.height);
+
+    const gradient = ctx.createLinearGradient(0, y, 0, canvas.height);
     gradient.addColorStop(0, '#2a4a6f');
     gradient.addColorStop(1, '#1e3a5f');
     ctx.fillStyle = gradient;
     ctx.fill();
-    
+
+    // línea superior rosa
     ctx.beginPath();
-    ctx.moveTo(0, y + 45);
-    ctx.bezierCurveTo(this.canvas.width * 0.25, y - 15, this.canvas.width * 0.75, y + 65, this.canvas.width, y + 25);
+    ctx.moveTo(0, y + 35);
+    ctx.bezierCurveTo(canvas.width * 0.25, y - 15, canvas.width * 0.75, y + 50, canvas.width, y + 15);
     ctx.strokeStyle = '#d81b60';
     ctx.lineWidth = 3;
     ctx.stroke();
-    
-    ctx.fillStyle = '#ffffff';
+
+    // fila única
+    const baseY = y + 108;
+    const leftX = canvas.width * 0.18;
+    const centerX = canvas.width * 0.50;
+    const rightX = canvas.width * 0.82;
+
     ctx.textAlign = 'center';
-
-    const centerY = y + 62; // más arriba
-
-    ctx.font = '700 24px Montserrat';
-    ctx.fillText('@DraBruzera', this.canvas.width / 2, centerY);
-
-    ctx.font = '500 18px Montserrat';
-    ctx.fillStyle = 'rgba(255,255,255,0.92)';
-    ctx.fillText('www.bruzera.turnox.com', this.canvas.width / 2, centerY + 28);
-
-    ctx.font = '600 20px Montserrat';
+    ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText('WhatsApp: 343 5303848', this.canvas.width / 2, centerY + 54);
-    } // cierra drawFooter
+    ctx.font = '700 28px Montserrat, Arial, sans-serif';
 
+    ctx.fillText('@dra.bruzera', leftX, baseY);
+    ctx.fillText('www.drabruzera.com', centerX, baseY);
+    ctx.fillText('11-XXXX-XXXX', rightX, baseY);
+    },
 }; // 🔥 cierra TODO FlyerGenerator
 
 // ==========================================
