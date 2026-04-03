@@ -236,7 +236,7 @@ const FlyerGenerator = {
         }
 
         // 6. Marca IA
-        if (iaUsed) this.drawIAMark();
+        //if (iaUsed) this.drawIAMark();
 
         return {
             dataUrl: canvas.toDataURL('image/jpeg', 0.95),
