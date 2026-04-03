@@ -20,7 +20,7 @@ const CONFIG = {
 const JSONP = {
     callbacks: {},
     counter: 0,
-    timeout: 30000,
+    timeout: 180000,
 
     request: function(url, params, callback) {
         const callbackName = 'jsonp_callback_' + (++this.counter);
