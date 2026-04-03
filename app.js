@@ -218,31 +218,22 @@ const FlyerGenerator = {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 1. Fondo
-    //await this.drawBackground(mainImageData);
-        
-        // 2. Marca de agua
-        this.drawWatermark();
-        
-        // 3. Sujeto
-        await this.drawSubject(enhancedImageUrl);
-        
-        // 4. BANDA MAGENTA (antes del logo para que el logo esté ENCIMA)
-       // this.drawHeaderBand(text);
-        this.drawTitleSmart(text);
-        // 5. Logo chico (AHORA DESPUÉS DE LA BANDA, visible)
-        //if (logoData) {
-           // await this.drawSmallLogo(logoData);
-        }
-        
-        // 6. Footer
-        this.drawFooter();
-        if (logoData) {
+    // 1 fondo
+await this.drawBackground(mainImageData);
+
+// 2 sujeto
+await this.drawSubject(enhancedImageUrl);
+
+// 3 texto
+this.drawTitleSmart(text);
+
+// 4 footer
+this.drawFooter();
+
+// 5 logo (SIEMPRE AL FINAL)
+if (logoData) {
     await this.drawLogoCenter(logoData);
-}
-        // 7. Marca IA
-        //if (iaUsed) this.drawIAMark();
-        
+}        
         return {
             dataUrl: canvas.toDataURL('image/jpeg', 0.95),
             iaUsed: iaUsed
