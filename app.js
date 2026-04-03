@@ -13,8 +13,126 @@ const CONFIG = {
     POLLINATIONS_API_KEY: 'sk_ra2ebNYzZbwxPSGKUA2FEFZjFJnpr152',
     POLLINATIONS_URL: 'https://image.pollinations.ai/prompt'
 };
+
 // ==========================================
-// POLLINATIONS IA CON LOGGING
+// JSONP
+// ==========================================
+const JSONP = {
+    callbacks: {},
+    counter: 0,
+    timeout: 30000,
+
+    request: function(url, params, callback) {
+        const callbackName = 'jsonp_callback_' + (++this.counter);
+        const script = document.createElement('script');
+        const cleanup = () => {
+            if (script.parentNode) script.parentNode.removeChild(script);
+            delete this.callbacks[callbackName];
+            delete window[callbackName];
+        };
+
+        window[callbackName] = (data) => {
+            clearTimeout(timeoutId);
+            cleanup();
+            callback(null, data);
+        };
+
+        this.callbacks[callbackName] = true;
+
+        const paramsArray = [];
+        for (const key in params) {
+            if (params[key] !== undefined && params[key] !== null) {
+                paramsArray.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+            }
+        }
+        paramsArray.push('callback=' + callbackName);
+        
+        const fullUrl = url + (url.indexOf('?') >= 0 ? '&' : '?') + paramsArray.join('&');
+        
+        script.src = fullUrl;
+        script.onerror = () => {
+            clearTimeout(timeoutId);
+            cleanup();
+            callback(new Error('Error JSONP'));
+        };
+
+        const timeoutId = setTimeout(() => {
+            cleanup();
+            callback(new Error('Timeout'));
+        }, this.timeout);
+
+        document.head.appendChild(script);
+    }
+};
+
+// ==========================================
+// USER
+// ==========================================
+const UserManager = {
+    getUserId: function() {
+        let userId = localStorage.getItem('dra_bruzera_userid');
+        if (!userId) {
+            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('dra_bruzera_userid', userId);
+        }
+        return userId;
+    }
+};
+
+// ==========================================
+// CLOUDINARY
+// ==========================================
+const CloudinaryUpload = {
+    upload: function(file, folder = 'dra_bruzera') {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
+            formData.append('cloud_name', CONFIG.CLOUDINARY_CLOUD_NAME);
+            formData.append('folder', folder);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload`, true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    resolve(response.secure_url);
+                } else {
+                    reject(new Error('Error Cloudinary'));
+                }
+            };
+            
+            xhr.onerror = () => reject(new Error('Error red'));
+            xhr.send(formData);
+        });
+    }
+};
+
+// ==========================================
+// BACKEND (GOOGLE APPS SCRIPT)
+// ==========================================
+const Backend = {
+    init: function(callback) {
+        JSONP.request(CONFIG.GAS_URL, {
+            action: 'init',
+            userId: UserManager.getUserId()
+        }, callback);
+    },
+
+    registrarUso: function(tipo, titulo, creditos, callback) {
+        JSONP.request(CONFIG.GAS_URL, {
+            action: 'registrar',
+            userId: UserManager.getUserId(),
+            tipo: tipo,
+            titulo: titulo,
+            creditos: creditos
+        }, callback);
+    }
+};
+
+// ==========================================
+// POLLINATIONS IA
 // ==========================================
 const PollinationsAI = {
     lastUsed: false,
@@ -27,7 +145,6 @@ const PollinationsAI = {
         
         let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.25`;
         
-        // Agregar API key si existe (como query param alternativo)
         if (CONFIG.POLLINATIONS_API_KEY) {
             url += `&key=${CONFIG.POLLINATIONS_API_KEY}`;
         }
@@ -37,7 +154,7 @@ const PollinationsAI = {
     },
 
     processImage: async function(imageUrl) {
-        console.log('🤖 IA: Iniciando procesamiento...');
+        console.log('🤖 IA: Iniciando...');
         const startTime = Date.now();
         
         const pollinationUrl = this.enhanceSubject(imageUrl);
@@ -47,23 +164,20 @@ const PollinationsAI = {
             img.crossOrigin = 'anonymous';
             
             img.onload = () => {
-                const duration = Date.now() - startTime;
-                console.log(`✅ IA: Imagen procesada en ${duration}ms`);
-                console.log('🔗 URL IA:', pollinationUrl);
+                console.log(`✅ IA: OK en ${Date.now() - startTime}ms`);
                 this.lastUsed = true;
                 resolve(pollinationUrl);
             };
             
             img.onerror = () => {
-                console.log('❌ IA: Falló, usando original');
+                console.log('❌ IA: Falló');
                 this.lastUsed = false;
                 resolve(imageUrl);
             };
             
-            // Timeout 20s
             setTimeout(() => {
                 if (!img.complete) {
-                    console.log('⏱️ IA: Timeout, usando original');
+                    console.log('⏱️ IA: Timeout');
                     this.lastUsed = false;
                     resolve(imageUrl);
                 }
@@ -71,18 +185,11 @@ const PollinationsAI = {
             
             img.src = pollinationUrl;
         });
-    },
-
-    getStatus: function() {
-        return {
-            used: this.lastUsed,
-            url: this.lastUrl
-        };
     }
 };
 
 // ==========================================
-// GENERADOR FLYER CON MARCA IA
+// GENERADOR FLYER
 // ==========================================
 const FlyerGenerator = {
     canvas: null,
@@ -100,56 +207,20 @@ const FlyerGenerator = {
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 1. Fondo
         await this.drawBackground(mainImageData);
-        
-        // 2. Marca de agua
         this.drawWatermark();
-        
-        // 3. Sujeto (IA o original)
         await this.drawSubject(enhancedImageUrl);
-        
-        // 4. Logo
         if (logoData) await this.drawSmallLogo(logoData);
-        
-        // 5. Banda magenta
         this.drawHeaderBand(text);
-        
-        // 6. Footer
         this.drawFooter();
-        
-        // 7. INDICADOR IA (esquina inferior derecha, sutil)
-        if (iaUsed) {
-            this.drawIAMark();
-        }
+        if (iaUsed) this.drawIAMark();
         
         return {
             dataUrl: canvas.toDataURL('image/jpeg', 0.95),
-            iaUsed: iaUsed,
-            iaUrl: enhancedImageUrl
+            iaUsed: iaUsed
         };
     },
 
-    drawIAMark: function() {
-        const ctx = this.ctx;
-        const x = this.canvas.width - 80;
-        const y = this.canvas.height - 40;
-        
-        // Círculo indicador
-        ctx.beginPath();
-        ctx.arc(x, y, 12, 0, Math.PI * 2);
-        ctx.fillStyle = '#d81b60';
-        ctx.fill();
-        
-        // Texto "AI"
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px Montserrat';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('AI', x, y);
-    },
-
-    // ... resto de métodos draw iguales ...
     drawBackground: function(imageData) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -314,11 +385,28 @@ const FlyerGenerator = {
         ctx.font = '600 22px Montserrat';
         ctx.fillStyle = '#ffffff';
         ctx.fillText('WhatsApp: 11-XXXX-XXXX', this.canvas.width / 2, centerY + 58);
+    },
+
+    drawIAMark: function() {
+        const ctx = this.ctx;
+        const x = this.canvas.width - 50;
+        const y = this.canvas.height - 30;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#d81b60';
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px Montserrat';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('AI', x, y);
     }
 };
 
 // ==========================================
-// UI CON STATUS IA
+// UI
 // ==========================================
 const UI = {
     elements: {},
@@ -338,8 +426,7 @@ const UI = {
             resultSection: document.getElementById('resultSection'),
             canvas: document.getElementById('flyerCanvas'),
             downloadBtn: document.getElementById('downloadBtn'),
-            newFlyerBtn: document.getElementById('newFlyerBtn'),
-            iaStatus: document.getElementById('iaStatus') // nuevo elemento
+            newFlyerBtn: document.getElementById('newFlyerBtn')
         };
         
         this.bindEvents();
@@ -389,9 +476,7 @@ const UI = {
 
     checkFormValidity: function() {
         const e = this.elements;
-        const hasImage = this.mainImageData && this.mainImageData.length > 0;
-        const hasText = e.flyerText.value.trim().length > 0;
-        e.generateBtn.disabled = !(hasImage && hasText);
+        e.generateBtn.disabled = !(this.mainImageData && e.flyerText.value.trim().length > 0);
     },
 
     generateFlyer: async function() {
@@ -403,36 +488,26 @@ const UI = {
         try {
             const text = e.flyerText.value.trim();
             
-            // Subir original
             const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
             const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
             
-            // PROCESAR CON IA
-            console.log('🚀 Iniciando IA...');
             const enhancedUrl = await PollinationsAI.processImage(mainUrl);
             
-            // Logo
             let logoUrl = null;
             if (this.logoImageData) {
                 const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
                 logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
             }
             
-            // Registrar
             Backend.registrarUso('imagen', text, 1, () => {});
             
-            // Generar
             const result = await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text, enhancedUrl);
             
-            // Subir final
             const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
             const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
             
-            // MOSTRAR STATUS IA
-            this.showIAStatus(result.iaUsed, result.iaUrl);
-            
-            console.log('✅ Flyer completo:', finalUrl);
-            console.log('🤖 IA usada:', result.iaUsed);
+            console.log('✅ IA usada:', result.iaUsed);
+            console.log('🔗 Final:', finalUrl);
             
             e.loader.classList.add('hidden');
             e.resultSection.classList.remove('hidden');
@@ -442,28 +517,6 @@ const UI = {
             console.error('❌ Error:', error);
             alert('Error generando flyer.');
             e.loader.classList.add('hidden');
-        }
-    },
-
-    showIAStatus: function(used, url) {
-        const e = this.elements;
-        if (!e.iaStatus) return;
-        
-        if (used) {
-            e.iaStatus.innerHTML = `
-                <div class="ia-badge success">
-                    <span>✨ Procesado con IA</span>
-                    <a href="${url}" target="_blank">Ver imagen IA</a>
-                </div>
-            `;
-            e.iaStatus.classList.remove('hidden');
-        } else {
-            e.iaStatus.innerHTML = `
-                <div class="ia-badge fallback">
-                    <span>📷 Imagen original (IA no disponible)</span>
-                </div>
-            `;
-            e.iaStatus.classList.remove('hidden');
         }
     },
 
@@ -495,7 +548,6 @@ const UI = {
         e.logoPreview.innerHTML = '<span class="preview-placeholder">Vista previa</span>';
         e.wordCount.textContent = '0 palabras';
         e.resultSection.classList.add('hidden');
-        if (e.iaStatus) e.iaStatus.classList.add('hidden');
         this.mainImageData = null;
         this.logoImageData = null;
         this.checkFormValidity();
@@ -503,7 +555,6 @@ const UI = {
     }
 };
 
-// Inicializar
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
 });
