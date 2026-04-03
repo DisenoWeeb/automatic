@@ -544,7 +544,7 @@ const UI = {
     console.log('🤖 OpenAI OK');
     resolve(res.enhancedUrl);
 });
-
+});
             
             let logoUrl = null;
             if (this.logoImageData) {
