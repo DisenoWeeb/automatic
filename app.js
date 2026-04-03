@@ -307,6 +307,38 @@ const FlyerGenerator = {
         ctx.fillText(text, x, y);
     },
 
+    drawTitleSmart: function(text) {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        if (!text) return;
+
+        const footerHeight = 180;
+        const x = canvas.width / 2;
+        const y = canvas.height - (footerHeight / 2);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.font = '500 22px Montserrat, Arial, sans-serif';
+        ctx.fillText(text, x, y);
+    },
+
+    drawWatermark: function() {
+        const ctx = this.ctx;
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(-Math.PI / 12);
+        ctx.font = 'bold 100px Montserrat';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('DRA. BRUZERA', 0, 0);
+        ctx.restore();
+    },
+
     drawLogoCenterRect: function(logoData) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -410,207 +442,8 @@ const FlyerGenerator = {
         ctx.textBaseline = 'middle';
         ctx.fillText('AI', x, y);
     }
-};
- 
-drawTitleSmart: function(text) {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
 
-    if (!text) return;
-
-    const footerHeight = 180;
-
-    const x = canvas.width / 2;
-    const y = canvas.height - (footerHeight / 2);
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    ctx.fillStyle = 'rgba(255,255,255,0.15)'; // casi invisible
-    ctx.font = '500 22px Montserrat, Arial, sans-serif';
-
-    ctx.fillText(text, x, y);
-},
-
-    
-    drawWatermark: function() {
-        const ctx = this.ctx;
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(-Math.PI / 12);
-        ctx.font = 'bold 100px Montserrat';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('DRA. BRUZERA', 0, 0);
-        ctx.restore();
-    },
-
-   drawSubject: function(imageUrl) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        img.onload = () => {
-            const ctx = this.ctx;
-            const canvas = this.canvas;
-
-            const footerHeight = 170;
-            const targetX = 0;
-            const targetY = 0;
-            const targetW = canvas.width;
-            const targetH = canvas.height - footerHeight;
-
-            const scale = Math.max(targetW / img.width, targetH / img.height);
-            const drawW = img.width * scale;
-            const drawH = img.height * scale;
-            const drawX = targetX + (targetW - drawW) / 2;
-            const drawY = targetY + (targetH - drawH) / 2;
-
-            ctx.save();
-            ctx.drawImage(img, drawX, drawY, drawW, drawH);
-            ctx.restore();
-
-            resolve();
-        };
-
-        img.onerror = () => resolve();
-        img.src = imageUrl;
-    });
-},
-   
-    drawLogoCenter: function(logoData) {
-    return new Promise((resolve) => {
-        const img = new Image();
-
-        img.onload = () => {
-            const ctx = this.ctx;
-            const canvas = this.canvas;
-
-            const size = 160; // 🔥 más grande
-
-            const footerHeight = 200;
-
-            const x = (canvas.width / 2) - (size / 2);
-            const y = canvas.height - footerHeight - (size / 2) + 10;
-            // 🔥 esto lo hace "encimar"
-
-            ctx.save();
-
-            // sombra pro
-            ctx.shadowColor = 'rgba(0,0,0,0.35)';
-            ctx.shadowBlur = 25;
-
-            ctx.beginPath();
-            ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-
-            ctx.drawImage(img, x, y, size, size);
-
-            ctx.restore();
-
-            resolve();
-        };
-
-        img.src = logoData;
-    });
-},
-    drawLogoCenterRect: function(logoData) {
-    return new Promise((resolve) => {
-        const img = new Image();
-
-        img.onload = () => {
-            const ctx = this.ctx;
-            const canvas = this.canvas;
-
-            const footerHeight = 210;
-
-            const boxW = 180;
-            const boxH = 180;
-            const x = (canvas.width - boxW) / 2;
-            const y = canvas.height - footerHeight - 70;
-
-            // tarjeta blanca suave
-            ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.25)';
-            ctx.shadowBlur = 24;
-            ctx.shadowOffsetY = 6;
-
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.roundRect(x, y, boxW, boxH, 22);
-            ctx.fill();
-
-            // calcular contain sin recorte
-            const padding = 14;
-            const maxW = boxW - padding * 2;
-            const maxH = boxH - padding * 2;
-            const scale = Math.min(maxW / img.width, maxH / img.height);
-
-            const drawW = img.width * scale;
-            const drawH = img.height * scale;
-            const drawX = x + (boxW - drawW) / 2;
-            const drawY = y + (boxH - drawH) / 2;
-
-            ctx.drawImage(img, drawX, drawY, drawW, drawH);
-            ctx.restore();
-
-            resolve();
-        };
-
-        img.onerror = () => resolve();
-        img.src = logoData;
-    });
-},
-
-    drawFooter: function() {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
-
-    const footerHeight = 180;
-    const y = canvas.height - footerHeight;
-
-    // zócalo
-    ctx.beginPath();
-    ctx.moveTo(0, y + 40);
-    ctx.bezierCurveTo(canvas.width * 0.25, y - 10, canvas.width * 0.75, y + 55, canvas.width, y + 20);
-    ctx.lineTo(canvas.width, canvas.height);
-    ctx.lineTo(0, canvas.height);
-    ctx.closePath();
-
-    const gradient = ctx.createLinearGradient(0, y, 0, canvas.height);
-    gradient.addColorStop(0, '#2a4a6f');
-    gradient.addColorStop(1, '#1e3a5f');
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    // línea superior rosa
-    ctx.beginPath();
-    ctx.moveTo(0, y + 35);
-    ctx.bezierCurveTo(canvas.width * 0.25, y - 15, canvas.width * 0.75, y + 50, canvas.width, y + 15);
-    ctx.strokeStyle = '#d81b60';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // fila única
-    const baseY = y + 108;
-    const leftX = canvas.width * 0.18;
-    const centerX = canvas.width * 0.50;
-    const rightX = canvas.width * 0.82;
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 28px Montserrat, Arial, sans-serif';
-
-    ctx.fillText('@DraBruzera', leftX, baseY);
-    ctx.fillText('www.bruzera.turnox.pro', centerX, baseY);
-    ctx.fillText('343 5303848', rightX, baseY);
-},
-}; // 🔥 cierra TODO FlyerGenerator
+}; // cierra FlyerGenerator
 
 // ==========================================
 // UI
@@ -619,7 +452,7 @@ const UI = {
     elements: {},
     mainImageData: null,
     logoImageData: null,
-    
+
     init: function() {
         this.elements = {
             mainImage: document.getElementById('mainImage'),
@@ -635,7 +468,7 @@ const UI = {
             downloadBtn: document.getElementById('downloadBtn'),
             newFlyerBtn: document.getElementById('newFlyerBtn')
         };
-        
+
         this.bindEvents();
         this.checkFormValidity();
         FlyerGenerator.init();
@@ -644,21 +477,21 @@ const UI = {
 
     bindEvents: function() {
         const e = this.elements;
-        
+
         e.mainImage.addEventListener('change', (ev) => {
             this.handleFileSelect(ev, e.mainImagePreview, 'main');
         });
-        
+
         e.logoImage.addEventListener('change', (ev) => {
             this.handleFileSelect(ev, e.logoPreview, 'logo');
         });
-        
+
         e.flyerText.addEventListener('input', () => {
             const words = e.flyerText.value.trim().split(/\s+/).filter(w => w.length > 0);
             e.wordCount.textContent = words.length + ' palabra' + (words.length !== 1 ? 's' : '');
             this.checkFormValidity();
         });
-        
+
         e.generateBtn.addEventListener('click', () => this.generateFlyer());
         e.downloadBtn.addEventListener('click', () => this.downloadFlyer());
         e.newFlyerBtn.addEventListener('click', () => this.resetForm());
@@ -667,7 +500,7 @@ const UI = {
     handleFileSelect: function(event, previewContainer, type) {
         const file = event.target.files[0];
         if (!file) return;
-        
+
         const reader = new FileReader();
         reader.onload = (e) => {
             previewContainer.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
@@ -688,52 +521,52 @@ const UI = {
 
     generateFlyer: async function() {
         const e = this.elements;
-        
+
         e.loader.classList.remove('hidden');
         e.resultSection.classList.add('hidden');
-        
+
         try {
             const text = e.flyerText.value.trim();
-            
+
             const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
             const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
-            
-           const enhancedUrl = await new Promise((resolve) => {
-    Backend.enhanceImage(mainUrl, text, (err, res) => {
-    console.log('📦 enhanceImage -> err:', err);
-    console.log('📦 enhanceImage -> res:', res);
 
-    if (err || !res || !res.success || !res.enhancedUrl) {
-        console.log('⚠️ OpenAI fallback');
-        resolve(mainUrl);
-        return;
-    }
+            const enhancedUrl = await new Promise((resolve) => {
+                Backend.enhanceImage(mainUrl, text, (err, res) => {
+                    console.log('📦 enhanceImage -> err:', err);
+                    console.log('📦 enhanceImage -> res:', res);
 
-    console.log('🤖 OpenAI OK');
-    resolve(res.enhancedUrl);
-});
-});
-            
+                    if (err || !res || !res.success || !res.enhancedUrl) {
+                        console.log('⚠️ OpenAI fallback');
+                        resolve(mainUrl);
+                        return;
+                    }
+
+                    console.log('🤖 OpenAI OK');
+                    resolve(res.enhancedUrl);
+                });
+            });
+
             let logoUrl = null;
             if (this.logoImageData) {
                 const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
                 logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
             }
-            
+
             Backend.registrarUso('imagen', text, 1, () => {});
-            
+
             const result = await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text, enhancedUrl, mainUrl);
-            
+
             const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
             const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
-            
+
             console.log('✅ IA usada:', result.iaUsed);
             console.log('🔗 Final:', finalUrl);
-            
+
             e.loader.classList.add('hidden');
             e.resultSection.classList.remove('hidden');
             e.resultSection.scrollIntoView({ behavior: 'smooth' });
-            
+
         } catch (error) {
             console.error('❌ Error:', error);
             alert('Error generando flyer.');
@@ -775,7 +608,7 @@ const UI = {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 };
+
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
 });
-
