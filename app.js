@@ -231,13 +231,15 @@ const FlyerGenerator = {
        // this.drawHeaderBand(text);
         this.drawTitleSmart(text);
         // 5. Logo chico (AHORA DESPUÉS DE LA BANDA, visible)
-        if (logoData) {
-            await this.drawSmallLogo(logoData);
+        //if (logoData) {
+           // await this.drawSmallLogo(logoData);
         }
         
         // 6. Footer
         this.drawFooter();
-        
+        if (logoData) {
+    await this.drawLogoCenter(logoData);
+}
         // 7. Marca IA
         //if (iaUsed) this.drawIAMark();
         
@@ -425,7 +427,7 @@ const FlyerGenerator = {
         ctx.fillText(text.toUpperCase(), this.canvas.width / 2 + 40, bandHeight / 2); // +40 para no tapar logo
     },
 
-    drawSmallLogo: function(logoData) {
+    drawLogoCenter: function(logoData) {
     return new Promise((resolve) => {
         const img = new Image();
 
@@ -433,17 +435,19 @@ const FlyerGenerator = {
             const ctx = this.ctx;
             const canvas = this.canvas;
 
-            const size = 140;
+            const size = 180; // 🔥 más grande
+
+            const footerHeight = 180;
 
             const x = (canvas.width / 2) - (size / 2);
-            const y = canvas.height - 160 - (size / 2); 
-            // 160 = altura zócalo aprox
+            const y = canvas.height - footerHeight - (size / 2) + 10;
+            // 🔥 esto lo hace "encimar"
 
             ctx.save();
 
-            // sombra suave
-            ctx.shadowColor = 'rgba(0,0,0,0.25)';
-            ctx.shadowBlur = 20;
+            // sombra pro
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = 25;
 
             ctx.beginPath();
             ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
@@ -462,61 +466,46 @@ const FlyerGenerator = {
 },
 
     drawFooter: function() {
-        const ctx = this.ctx;
-        const footerHeight = 160;
-        const y = this.canvas.height - footerHeight;
-        
-        ctx.beginPath();
-        ctx.moveTo(0, y + 50);
-        ctx.bezierCurveTo(this.canvas.width * 0.25, y - 10, this.canvas.width * 0.75, y + 70, this.canvas.width, y + 30);
-        ctx.lineTo(this.canvas.width, this.canvas.height);
-        ctx.lineTo(0, this.canvas.height);
-        ctx.closePath();
-        
-        const gradient = ctx.createLinearGradient(0, y, 0, this.canvas.height);
-        gradient.addColorStop(0, '#2a4a6f');
-        gradient.addColorStop(1, '#1e3a5f');
-        ctx.fillStyle = gradient;
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.moveTo(0, y + 45);
-        ctx.bezierCurveTo(this.canvas.width * 0.25, y - 15, this.canvas.width * 0.75, y + 65, this.canvas.width, y + 25);
-        ctx.strokeStyle = '#d81b60';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        const centerY = y + 85;
-        ctx.font = '700 26px Montserrat';
-        ctx.fillText('@DraBruzera', this.canvas.width / 2, centerY);
-        ctx.font = '500 20px Montserrat';
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText('www.bruzera.turnox.pro/', this.canvas.width / 2, centerY + 30);
-        ctx.font = '600 22px Montserrat';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText('WhatsApp: 3435 303848', this.canvas.width / 2, centerY + 58);
-    },
+    const ctx = this.ctx;
+    const footerHeight = 180;
+    const y = this.canvas.height - footerHeight;
+    
+    ctx.beginPath();
+    ctx.moveTo(0, y + 50);
+    ctx.bezierCurveTo(this.canvas.width * 0.25, y - 10, this.canvas.width * 0.75, y + 70, this.canvas.width, y + 30);
+    ctx.lineTo(this.canvas.width, this.canvas.height);
+    ctx.lineTo(0, this.canvas.height);
+    ctx.closePath();
+    
+    const gradient = ctx.createLinearGradient(0, y, 0, this.canvas.height);
+    gradient.addColorStop(0, '#2a4a6f');
+    gradient.addColorStop(1, '#1e3a5f');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(0, y + 45);
+    ctx.bezierCurveTo(this.canvas.width * 0.25, y - 15, this.canvas.width * 0.75, y + 65, this.canvas.width, y + 25);
+    ctx.strokeStyle = '#d81b60';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
 
-    drawIAMark: function() {
-        const ctx = this.ctx;
-        const x = this.canvas.width - 50;
-        const y = this.canvas.height - 30;
-        
-        ctx.beginPath();
-        ctx.arc(x, y, 10, 0, Math.PI * 2);
-        ctx.fillStyle = '#d81b60';
-        ctx.fill();
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 8px Montserrat';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('AI', x, y);
-    }
-};
+    const centerY = y + 62; // más arriba
 
+    ctx.font = '700 24px Montserrat';
+    ctx.fillText('@DraBruzera', this.canvas.width / 2, centerY);
+
+    ctx.font = '500 18px Montserrat';
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.fillText('www.bruzera.turnox.com', this.canvas.width / 2, centerY + 28);
+
+    ctx.font = '600 20px Montserrat';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('WhatsApp: 343 5303848', this.canvas.width / 2, centerY + 54);
+},
 // ==========================================
 // UI
 // ==========================================
