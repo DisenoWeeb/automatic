@@ -28,10 +28,10 @@ const JSONP = {
         const cleanup = () => {
             if (script.parentNode) script.parentNode.removeChild(script);
             delete this.callbacks[callbackName];
-            delete window[callbackName];
+            delete window[callbackName] = function() {};
         };
 
-        window[callbackName] = (data) => {
+        window[callbackName] = function() {}; = (data) => {
             clearTimeout(timeoutId);
             cleanup();
             callback(null, data);
