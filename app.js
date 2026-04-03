@@ -19,7 +19,7 @@ const CONFIG = {
 const JSONP = {
     callbacks: {},
     counter: 0,
-    timeout: 30000, // 30 segundos
+    timeout: 30000,
 
     request: function(url, params, callback) {
         const callbackName = 'jsonp_callback_' + (++this.counter);
@@ -30,17 +30,14 @@ const JSONP = {
             delete window[callbackName];
         };
 
-        // Crear función callback global
         window[callbackName] = (data) => {
             clearTimeout(timeoutId);
             cleanup();
             callback(null, data);
         };
 
-        // Guardar referencia para timeout
         this.callbacks[callbackName] = true;
 
-        // Construir URL con parámetros
         const paramsArray = [];
         for (const key in params) {
             if (params[key] !== undefined && params[key] !== null) {
@@ -58,7 +55,6 @@ const JSONP = {
             callback(new Error('Error cargando script JSONP'));
         };
 
-        // Timeout
         const timeoutId = setTimeout(() => {
             cleanup();
             callback(new Error('Timeout en request JSONP'));
@@ -113,26 +109,271 @@ const CloudinaryUpload = {
 };
 
 // ==========================================
-// POLLINATIONS IA
+// GENERADOR DE FLYER - CORREGIDO
 // ==========================================
-const PollinationsAI = {
-    enhanceImage: function(imageUrl, subject) {
-        // Crear prompt para mejorar/recortar el sujeto sin inventar
-        const prompt = `professional photo of ${subject}, high quality, sharp focus, clean edges, enhanced contrast, professional lighting, veterinary clinic style, remove distracting background elements, keep subject realistic and recognizable, maintain original pose and features`;
-        
-        const encodedPrompt = encodeURIComponent(prompt);
-        const encodedImage = encodeURIComponent(imageUrl);
-        
-        // Usar image.pollinations.ai con seed fijo para consistencia
-        return `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=1080&height=1350&seed=42&nologo=true&reference=${encodedImage}&strength=0.3`;
+const FlyerGenerator = {
+    canvas: null,
+    ctx: null,
+    
+    init: function() {
+        this.canvas = document.getElementById('flyerCanvas');
+        this.ctx = this.canvas.getContext('2d');
     },
 
-    removeBackground: function(imageUrl) {
-        // Prompt específico para extracción de sujeto
-        const prompt = `subject cutout, transparent background, professional isolation, clean edges, maintain all details, high quality extraction`;
-        const encodedPrompt = encodeURIComponent(prompt);
+    generate: async function(mainImageData, logoData, text) {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
         
-        return `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=1080&height=1350&seed=123&nologo=true&reference=${encodeURIComponent(imageUrl)}&strength=0.5`;
+        // Limpiar canvas completamente
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 1. Dibujar fondo borroso/oscurecido (la imagen original como fondo)
+        await this.drawBackground(mainImageData);
+        
+        // 2. Logo grande marca de agua (detrás del sujeto)
+        this.drawWatermark();
+        
+        // 3. Sujeto principal recortado (SOLO UNA VEZ, en el centro)
+        await this.drawSubject(mainImageData);
+        
+        // 4. Logo chico arriba izquierda
+        if (logoData) {
+            await this.drawSmallLogo(logoData);
+        }
+        
+        // 5. Banda magenta superior con texto (AL FRENTE DE TODO)
+        this.drawHeaderBand(text);
+        
+        // 6. Zócalo inferior
+        this.drawFooter();
+        
+        return canvas.toDataURL('image/jpeg', 0.95);
+    },
+
+    drawBackground: function(imageData) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // Dibujar imagen como fondo con blur y oscurecido
+                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                const x = (canvas.width / 2) - (img.width / 2) * scale;
+                const y = (canvas.height / 2) - (img.height / 2) * scale;
+                
+                // Filtro de blur para el fondo
+                ctx.filter = 'blur(8px) brightness(0.7)';
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                ctx.filter = 'none';
+                
+                // Overlay azul adicional para legibilidad
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, 'rgba(30, 58, 95, 0.4)');
+                gradient.addColorStop(0.5, 'rgba(30, 58, 95, 0.2)');
+                gradient.addColorStop(1, 'rgba(30, 58, 95, 0.5)');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                resolve();
+            };
+            img.onerror = reject;
+            img.src = imageData;
+        });
+    },
+
+    drawWatermark: function() {
+        const ctx = this.ctx;
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(-Math.PI / 12);
+        
+        // Texto marca de agua más sutil
+        ctx.font = 'bold 100px Montserrat';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('DRA. BRUZERA', 0, 0);
+        
+        ctx.restore();
+    },
+
+    drawSubject: function(imageData) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // Calcular dimensiones para que el sujeto ocupe el centro
+                // Dejar espacio arriba para la banda magenta y abajo para el footer
+                const availableHeight = canvas.height - 320; // 140 banda + 180 footer + margen
+                const scale = Math.min(
+                    (canvas.width * 0.85) / img.width,
+                    availableHeight / img.height
+                );
+                
+                const width = img.width * scale;
+                const height = img.height * scale;
+                
+                // Centrar horizontalmente, posicionar verticalmente entre banda y footer
+                const x = (canvas.width - width) / 2;
+                const y = 160 + (availableHeight - height) / 2; // 160 = debajo de la banda magenta
+                
+                // Sombra suave
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = 40;
+                ctx.shadowOffsetY = 15;
+                
+                // Recorte circular/ovalado suave opcional (efecto moderno)
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(x - 10, y - 10, width + 20, height + 20, 20);
+                ctx.clip();
+                
+                ctx.drawImage(img, x, y, width, height);
+                ctx.restore();
+                
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                
+                resolve();
+            };
+            img.onerror = () => resolve(); // Continuar sin sujeto si falla
+            img.src = imageData;
+        });
+    },
+
+    drawSmallLogo: function(logoData) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const ctx = this.ctx;
+                const size = 70;
+                const padding = 25;
+                const yPos = 35; // Dentro de la banda magenta
+                
+                // Fondo circular blanco
+                ctx.beginPath();
+                ctx.arc(padding + size/2, yPos + size/2, size/2 + 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                ctx.fill();
+                
+                // Borde sutil
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Logo con recorte circular
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(padding + size/2, yPos + size/2, size/2, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(img, padding, yPos, size, size);
+                ctx.restore();
+                
+                resolve();
+            };
+            img.onerror = () => resolve();
+            img.src = logoData;
+        });
+    },
+
+    drawHeaderBand: function(text) {
+        const ctx = this.ctx;
+        
+        // Banda magenta superior - DIBUJAR AL FINAL PARA QUE ESTÉ AL FRENTE
+        const bandHeight = 140;
+        
+        // Fondo sólido magenta
+        ctx.fillStyle = '#d81b60';
+        ctx.fillRect(0, 0, this.canvas.width, bandHeight);
+        
+        // Sombra sutil debajo de la banda
+        const shadowGradient = ctx.createLinearGradient(0, bandHeight, 0, bandHeight + 15);
+        shadowGradient.addColorStop(0, 'rgba(0,0,0,0.2)');
+        shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = shadowGradient;
+        ctx.fillRect(0, bandHeight, this.canvas.width, 15);
+        
+        // Texto centrado en la banda
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Ajustar tamaño de fuente según longitud
+        let fontSize = 48;
+        ctx.font = `bold ${fontSize}px Montserrat`;
+        
+        const maxWidth = this.canvas.width - 100;
+        while (ctx.measureText(text.toUpperCase()).width > maxWidth && fontSize > 24) {
+            fontSize -= 2;
+            ctx.font = `bold ${fontSize}px Montserrat`;
+        }
+        
+        // Dibujar texto centrado verticalmente en la banda
+        ctx.fillText(text.toUpperCase(), this.canvas.width / 2, bandHeight / 2);
+    },
+
+    drawFooter: function() {
+        const ctx = this.ctx;
+        const footerHeight = 160;
+        const y = this.canvas.height - footerHeight;
+        
+        // Forma de onda moderna
+        ctx.beginPath();
+        ctx.moveTo(0, y + 50);
+        ctx.bezierCurveTo(
+            this.canvas.width * 0.25, y - 10,
+            this.canvas.width * 0.75, y + 70,
+            this.canvas.width, y + 30
+        );
+        ctx.lineTo(this.canvas.width, this.canvas.height);
+        ctx.lineTo(0, this.canvas.height);
+        ctx.closePath();
+        
+        // Gradiente azul
+        const gradient = ctx.createLinearGradient(0, y, 0, this.canvas.height);
+        gradient.addColorStop(0, '#2a4a6f');
+        gradient.addColorStop(1, '#1e3a5f');
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Línea decorativa magenta
+        ctx.beginPath();
+        ctx.moveTo(0, y + 45);
+        ctx.bezierCurveTo(
+            this.canvas.width * 0.25, y - 15,
+            this.canvas.width * 0.75, y + 65,
+            this.canvas.width, y + 25
+        );
+        ctx.strokeStyle = '#d81b60';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Información de contacto
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        
+        const centerY = y + 90;
+        
+        // Instagram
+        ctx.font = '700 28px Montserrat';
+        ctx.fillText('@dra.bruzera', this.canvas.width / 2, centerY);
+        
+        // Web
+        ctx.font = '500 22px Montserrat';
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fillText('www.drabruzera.com', this.canvas.width / 2, centerY + 32);
+        
+        // WhatsApp
+        ctx.font = '600 24px Montserrat';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('WhatsApp: 11-XXXX-XXXX', this.canvas.width / 2, centerY + 62);
     }
 };
 
@@ -161,245 +402,12 @@ const Backend = {
 };
 
 // ==========================================
-// GENERADOR DE FLYER
-// ==========================================
-const FlyerGenerator = {
-    canvas: null,
-    ctx: null,
-    
-    init: function() {
-        this.canvas = document.getElementById('flyerCanvas');
-        this.ctx = this.canvas.getContext('2d');
-    },
-
-    generate: async function(mainImage, logoImage, text) {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-        
-        // Limpiar canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 1. Dibujar fondo (imagen principal en modo cover)
-        await this.drawBackground(mainImage);
-        
-        // 2. Overlay azul suave
-        this.drawOverlay();
-        
-        // 3. Logo grande marca de agua (detrás del sujeto)
-        this.drawWatermark();
-        
-        // 4. Sujeto principal con procesamiento
-        await this.drawSubject(mainImage);
-        
-        // 5. Logo chico arriba izquierda
-        if (logoImage) {
-            await this.drawSmallLogo(logoImage);
-        }
-        
-        // 6. Banda magenta superior con texto
-        this.drawHeaderBand(text);
-        
-        // 7. Zócalo inferior con información
-        this.drawFooter();
-        
-        return canvas.toDataURL('image/jpeg', 0.95);
-    },
-
-    drawBackground: function(imageUrl) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const ctx = this.ctx;
-                const canvas = this.canvas;
-                
-                // Calcular cover
-                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                const x = (canvas.width / 2) - (img.width / 2) * scale;
-                const y = (canvas.height / 2) - (img.height / 2) * scale;
-                
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                resolve();
-            };
-            img.onerror = reject;
-            img.src = imageUrl;
-        });
-    },
-
-    drawOverlay: function() {
-        const ctx = this.ctx;
-        // Overlay azul suave para mejorar legibilidad
-        const gradient = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, 'rgba(30, 58, 95, 0.3)');
-        gradient.addColorStop(0.5, 'rgba(30, 58, 95, 0.1)');
-        gradient.addColorStop(1, 'rgba(30, 58, 95, 0.4)');
-        
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    },
-
-    drawWatermark: function() {
-        const ctx = this.ctx;
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(-Math.PI / 12);
-        
-        // Texto marca de agua
-        ctx.font = 'bold 120px Montserrat';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('DRA. BRUZERA', 0, 0);
-        
-        ctx.restore();
-    },
-
-    drawSubject: function(imageUrl) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const ctx = this.ctx;
-                
-                // Posicionar sujeto en el centro-inferior
-                const targetHeight = this.canvas.height * 0.65;
-                const scale = targetHeight / img.height;
-                const width = img.width * scale;
-                const height = targetHeight;
-                
-                const x = (this.canvas.width - width) / 2;
-                const y = this.canvas.height * 0.25;
-                
-                // Sombra suave detrás del sujeto
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.shadowBlur = 30;
-                ctx.shadowOffsetY = 10;
-                
-                ctx.drawImage(img, x, y, width, height);
-                
-                // Reset shadow
-                ctx.shadowColor = 'transparent';
-                
-                resolve();
-            };
-            img.onerror = () => {
-                // Si falla, continuar sin sujeto procesado
-                resolve();
-            };
-            // Usar imagen original si Pollinations falla
-            img.src = imageUrl;
-        });
-    },
-
-    drawSmallLogo: function(logoUrl) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const ctx = this.ctx;
-                const size = 80;
-                const padding = 30;
-                
-                // Fondo circular blanco semitransparente
-                ctx.beginPath();
-                ctx.arc(padding + size/2, padding + size/2, size/2 + 5, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,255,255,0.9)';
-                ctx.fill();
-                
-                // Logo
-                ctx.drawImage(img, padding, padding, size, size);
-                resolve();
-            };
-            img.onerror = resolve; // Continuar sin logo si falla
-            img.src = logoUrl;
-        });
-    },
-
-    drawHeaderBand: function(text) {
-        const ctx = this.ctx;
-        
-        // Banda magenta superior
-        const bandHeight = 140;
-        ctx.fillStyle = '#d81b60';
-        ctx.fillRect(0, 0, this.canvas.width, bandHeight);
-        
-        // Sombra de la banda
-        const gradient = ctx.createLinearGradient(0, bandHeight, 0, bandHeight + 20);
-        gradient.addColorStop(0, 'rgba(216, 27, 96, 0.3)');
-        gradient.addColorStop(1, 'rgba(216, 27, 96, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, bandHeight, this.canvas.width, 20);
-        
-        // Texto
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 52px Montserrat';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Ajustar tamaño si el texto es largo
-        let fontSize = 52;
-        while (ctx.measureText(text).width > this.canvas.width - 80 && fontSize > 24) {
-            fontSize -= 4;
-            ctx.font = `bold ${fontSize}px Montserrat`;
-        }
-        
-        ctx.fillText(text.toUpperCase(), this.canvas.width / 2, bandHeight / 2 + 5);
-    },
-
-    drawFooter: function() {
-        const ctx = this.ctx;
-        const footerHeight = 180;
-        const y = this.canvas.height - footerHeight;
-        
-        // Forma de onda moderna
-        ctx.beginPath();
-        ctx.moveTo(0, y + 40);
-        ctx.bezierCurveTo(
-            this.canvas.width * 0.3, y - 20,
-            this.canvas.width * 0.7, y + 60,
-            this.canvas.width, y + 20
-        );
-        ctx.lineTo(this.canvas.width, this.canvas.height);
-        ctx.lineTo(0, this.canvas.height);
-        ctx.closePath();
-        
-        // Gradiente azul
-        const gradient = ctx.createLinearGradient(0, y, 0, this.canvas.height);
-        gradient.addColorStop(0, '#2a4a6f');
-        gradient.addColorStop(1, '#1e3a5f');
-        ctx.fillStyle = gradient;
-        ctx.fill();
-        
-        // Información de contacto
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '600 28px Montserrat';
-        ctx.textAlign = 'center';
-        
-        const centerY = y + 100;
-        const lineHeight = 40;
-        
-        // Iconos y texto
-        ctx.font = '700 32px Montserrat';
-        ctx.fillText('@dra.bruzera', this.canvas.width / 2, centerY);
-        
-        ctx.font = '500 24px Montserrat';
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText('www.drabruzera.com', this.canvas.width / 2, centerY + lineHeight);
-        
-        ctx.font = '600 26px Montserrat';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText('WhatsApp: 11-XXXX-XXXX', this.canvas.width / 2, centerY + lineHeight * 2);
-    }
-};
-
-// ==========================================
 // UI CONTROLLER
 // ==========================================
 const UI = {
     elements: {},
+    mainImageData: null,
+    logoImageData: null,
     
     init: function() {
         this.elements = {
@@ -419,11 +427,8 @@ const UI = {
         
         this.bindEvents();
         this.checkFormValidity();
-        
-        // Inicializar canvas
         FlyerGenerator.init();
         
-        // Inicializar usuario en backend
         Backend.init((err, data) => {
             if (err) console.log('Error init backend:', err);
             else console.log('Usuario inicializado:', data);
@@ -433,30 +438,22 @@ const UI = {
     bindEvents: function() {
         const e = this.elements;
         
-        // Preview de imagen principal
         e.mainImage.addEventListener('change', (ev) => {
             this.handleFileSelect(ev, e.mainImagePreview, 'main');
         });
         
-        // Preview de logo
         e.logoImage.addEventListener('change', (ev) => {
             this.handleFileSelect(ev, e.logoPreview, 'logo');
         });
         
-        // Contador de palabras
         e.flyerText.addEventListener('input', () => {
             const words = e.flyerText.value.trim().split(/\s+/).filter(w => w.length > 0);
             e.wordCount.textContent = words.length + ' palabra' + (words.length !== 1 ? 's' : '');
             this.checkFormValidity();
         });
         
-        // Generar
         e.generateBtn.addEventListener('click', () => this.generateFlyer());
-        
-        // Descargar
         e.downloadBtn.addEventListener('click', () => this.downloadFlyer());
-        
-        // Nuevo flyer
         e.newFlyerBtn.addEventListener('click', () => this.resetForm());
     },
 
@@ -487,15 +484,13 @@ const UI = {
     generateFlyer: async function() {
         const e = this.elements;
         
-        // Mostrar loader
         e.loader.classList.remove('hidden');
         e.resultSection.classList.add('hidden');
         
         try {
             const text = e.flyerText.value.trim();
             
-            // Subir imagen original a Cloudinary
-            console.log('Subiendo imagen original...');
+            // Subir imagen original
             const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
             const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
             
@@ -506,33 +501,28 @@ const UI = {
                 logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
             }
             
-            // Registrar uso en backend
+            // Registrar uso
             Backend.registrarUso('imagen', text, 1, (err, data) => {
                 if (err) console.log('Error registrando uso:', err);
-                else console.log('Uso registrado:', data);
             });
             
-            // Generar flyer en canvas
-            console.log('Generando flyer...');
-            await FlyerGenerator.generate(mainUrl, logoUrl, text);
+            // Generar flyer usando los Data URLs locales (más rápido y confiable)
+            await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text);
             
-            // Subir resultado final a Cloudinary
+            // Subir resultado final
             const finalDataUrl = e.canvas.toDataURL('image/jpeg', 0.95);
             const finalFile = await this.dataURLtoFile(finalDataUrl, 'flyer.jpg');
             const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
             
             console.log('Flyer final:', finalUrl);
             
-            // Mostrar resultado
             e.loader.classList.add('hidden');
             e.resultSection.classList.remove('hidden');
-            
-            // Scroll al resultado
             e.resultSection.scrollIntoView({ behavior: 'smooth' });
             
         } catch (error) {
-            console.error('Error generando flyer:', error);
-            alert('Hubo un error generando el flyer. Por favor intentá de nuevo.');
+            console.error('Error:', error);
+            alert('Error generando el flyer. Intentá de nuevo.');
             e.loader.classList.add('hidden');
         }
     },
@@ -574,7 +564,6 @@ const UI = {
     }
 };
 
-// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
 });
