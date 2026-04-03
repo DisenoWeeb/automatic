@@ -266,7 +266,7 @@ const FlyerGenerator = {
                 const ctx = this.ctx;
                 const canvas = this.canvas;
 
-                const footerHeight = 180;
+                const footerHeight = 150;
                 const targetX = 0;
                 const targetY = 0;
                 const targetW = canvas.width;
