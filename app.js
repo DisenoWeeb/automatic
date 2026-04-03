@@ -608,19 +608,16 @@ const UI = {
 };
 
 drawTitleSmart: function(text) {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
+        const ctx = this.ctx;
+        const canvas = this.canvas;
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 60px Arial";
-    ctx.textAlign = "left";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 60px Arial";
+        ctx.textAlign = "left";
 
-    const padding = 60;
+        const padding = 60;
 
-    // lo ponemos arriba izquierda por ahora
-    ctx.fillText(text, padding, padding + 40);
-},
+        ctx.fillText(text, padding, padding + 40);
+    } 
 
-document.addEventListener('DOMContentLoaded', () => {
-    UI.init();
-});
+};
