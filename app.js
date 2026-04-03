@@ -411,7 +411,7 @@ const FlyerGenerator = {
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        const baseY = y + 108;
+        const baseY = y + 125;
         const leftX = canvas.width * 0.18;
         const centerX = canvas.width * 0.50;
         const rightX = canvas.width * 0.82;
@@ -421,9 +421,9 @@ const FlyerGenerator = {
         ctx.fillStyle = '#ffffff';
         ctx.font = '700 28px Montserrat, Arial, sans-serif';
 
-        ctx.fillText('@dra.bruzera', leftX, baseY);
-        ctx.fillText('www.drabruzera.com', centerX, baseY);
-        ctx.fillText('11-XXXX-XXXX', rightX, baseY);
+        ctx.fillText('@DraBruzera', leftX, baseY);
+        ctx.fillText('www.bruzera.turnox.pro.com', centerX, baseY);
+        ctx.fillText('343 5303848', rightX, baseY);
     },
 
     drawIAMark: function() {
