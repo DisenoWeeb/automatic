@@ -355,7 +355,7 @@ const FlyerGenerator = {
             img.onload = () => {
                 const ctx = this.ctx;
                 const size = 120; // Un poco más grande
-                const -x = 30;    // Margen izquierdo
+                const x = 30;    // Margen izquierdo
                 const y = 30;    // Margen superior (dentro de los 140px de banda)
                 
                 // Fondo blanco circular con borde
