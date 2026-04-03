@@ -347,7 +347,7 @@ const FlyerGenerator = {
                 const ctx = this.ctx;
                 const canvas = this.canvas;
 
-                const footerHeight = 220;
+                const footerHeight = 240;
                 const boxW = 180;
                 const boxH = 180;
                 const x = (canvas.width - boxW) / 2;
@@ -555,9 +555,9 @@ const FlyerGenerator = {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        ctx.fillText('@dra.bruzera',        leftX,   baseY);
-        ctx.fillText('www.drabruzera.com',  centerX, baseY);
-        ctx.fillText('11-XXXX-XXXX',        rightX,  baseY);
+        ctx.fillText('@DraBruzera',        leftX,   baseY);
+        ctx.fillText('www.bruzera.turnox.pro',  centerX, baseY);
+        ctx.fillText('343 5303848',        rightX,  baseY);
     },
 
 }; // cierra FlyerGenerator
