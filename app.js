@@ -234,12 +234,12 @@ const FlyerGenerator = {
         // 1. Fondo limpio
         await this.drawBackground();
 
-        // 2. Imagen principal
-        await this.drawSubject(enhancedImageUrl);
-
         // 3. Título oculto detrás del zócalo
         this.drawHiddenTitle(text);
-
+        
+        // 2. Imagen principal
+        await this.drawSubject(enhancedImageUrl);
+        
         // 4. Zócalo
         this.drawFooter();
 
@@ -279,7 +279,7 @@ const FlyerGenerator = {
                 const ctx = this.ctx;
                 const canvas = this.canvas;
 
-                const footerHeight = 150;
+                const footerHeight = 0;
                 const targetX = 0;
                 const targetY = 0;
                 const targetW = canvas.width;
@@ -315,8 +315,8 @@ const FlyerGenerator = {
 
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = 'rgba(255,255,255,0.01)';
-        ctx.font = '500 22px Montserrat, Arial, sans-serif';
+        
+        ctx.font = '600 22px';
         ctx.fillText(text, x, y);
     },
 
@@ -333,7 +333,7 @@ const FlyerGenerator = {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        ctx.font = '500 22px Montserrat, Arial, sans-serif';
+        ctx.font = '600 22px';
         ctx.fillText(text, x, y);
     },
 
