@@ -225,7 +225,7 @@ const FlyerGenerator = {
     await this.drawSubject(enhancedImageUrl);
 
     // 3. Título híbrido (canvas)
-    this.drawTitleSmart(text);
+    //this.drawTitleSmart(text);
 
     // 4. Zócalo
     this.drawFooter();
@@ -348,7 +348,7 @@ drawTitleSmart: function(text) {
             const ctx = this.ctx;
             const canvas = this.canvas;
 
-            const footerHeight = 180;
+            const footerHeight = 170;
             const targetX = 0;
             const targetY = 0;
             const targetW = canvas.width;
@@ -417,7 +417,7 @@ drawTitleSmart: function(text) {
             const ctx = this.ctx;
             const canvas = this.canvas;
 
-            const footerHeight = 180;
+            const footerHeight = 210;
 
             const boxW = 180;
             const boxH = 180;
@@ -497,9 +497,9 @@ drawTitleSmart: function(text) {
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 28px Montserrat, Arial, sans-serif';
 
-    ctx.fillText('@dra.bruzera', leftX, baseY);
-    ctx.fillText('www.drabruzera.com', centerX, baseY);
-    ctx.fillText('11-XXXX-XXXX', rightX, baseY);
+    ctx.fillText('@DraBruzera', leftX, baseY);
+    ctx.fillText('www.bruzera.turnox.pro', centerX, baseY);
+    ctx.fillText('343 5303848', rightX, baseY);
 },
 }; // 🔥 cierra TODO FlyerGenerator
 
