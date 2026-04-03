@@ -204,45 +204,213 @@ const PollinationsAI = {
 const FlyerGenerator = {
     canvas: null,
     ctx: null,
-    
+
     init: function() {
         this.canvas = document.getElementById('flyerCanvas');
         this.ctx = this.canvas.getContext('2d');
     },
 
     generate: async function(mainImageData, logoData, text, enhancedImageUrl, mainUrl) {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
+        const ctx = this.ctx;
+        const canvas = this.canvas;
 
-    const iaUsed = enhancedImageUrl !== mainUrl;
+        const iaUsed = enhancedImageUrl !== mainUrl;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Fondo limpio
-    await this.drawBackground();
+        // 1. Fondo limpio
+        await this.drawBackground();
 
-    // 2. Imagen principal
-    await this.drawSubject(enhancedImageUrl);
+        // 2. Imagen principal
+        await this.drawSubject(enhancedImageUrl);
 
-    // 3. Título híbrido (canvas)
-    this.drawTitleSmart(text);
+        // 3. Título oculto detrás del zócalo
+        this.drawHiddenTitle(text);
 
-    // 4. Zócalo
-    this.drawFooter();
+        // 4. Zócalo
+        this.drawFooter();
 
-    // 5. Logo encima del zócalo
-    if (logoData) {
-        await this.drawLogoCenterRect(logoData);
+        // 5. Logo arriba del zócalo
+        if (logoData) {
+            await this.drawLogoCenterRect(logoData);
+        }
+
+        // 6. Marca IA
+        if (iaUsed) this.drawIAMark();
+
+        return {
+            dataUrl: canvas.toDataURL('image/jpeg', 0.95),
+            iaUsed: iaUsed
+        };
+    },
+
+    drawBackground: function() {
+        return new Promise((resolve) => {
+            const ctx = this.ctx;
+            const canvas = this.canvas;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            resolve();
+        });
+    },
+
+    drawSubject: function(imageUrl) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+
+            img.onload = () => {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+
+                const footerHeight = 180;
+                const targetX = 0;
+                const targetY = 0;
+                const targetW = canvas.width;
+                const targetH = canvas.height - footerHeight;
+
+                const scale = Math.max(targetW / img.width, targetH / img.height);
+                const drawW = img.width * scale;
+                const drawH = img.height * scale;
+                const drawX = targetX + (targetW - drawW) / 2;
+                const drawY = targetY + (targetH - drawH) / 2;
+
+                ctx.save();
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                ctx.restore();
+
+                resolve();
+            };
+
+            img.onerror = () => resolve();
+            img.src = imageUrl;
+        });
+    },
+
+    drawHiddenTitle: function(text) {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        if (!text) return;
+
+        const footerHeight = 180;
+        const x = canvas.width / 2;
+        const y = canvas.height - (footerHeight / 2);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.01)';
+        ctx.font = '500 22px Montserrat, Arial, sans-serif';
+        ctx.fillText(text, x, y);
+    },
+
+    drawLogoCenterRect: function(logoData) {
+        return new Promise((resolve) => {
+            const img = new Image();
+
+            img.onload = () => {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+
+                const footerHeight = 180;
+                const boxW = 180;
+                const boxH = 180;
+                const x = (canvas.width - boxW) / 2;
+                const y = canvas.height - footerHeight - 70;
+
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.25)';
+                ctx.shadowBlur = 24;
+                ctx.shadowOffsetY = 6;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.roundRect(x, y, boxW, boxH, 22);
+                ctx.fill();
+
+                const padding = 14;
+                const maxW = boxW - padding * 2;
+                const maxH = boxH - padding * 2;
+                const scale = Math.min(maxW / img.width, maxH / img.height);
+
+                const drawW = img.width * scale;
+                const drawH = img.height * scale;
+                const drawX = x + (boxW - drawW) / 2;
+                const drawY = y + (boxH - drawH) / 2;
+
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                ctx.restore();
+
+                resolve();
+            };
+
+            img.onerror = () => resolve();
+            img.src = logoData;
+        });
+    },
+
+    drawFooter: function() {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        const footerHeight = 180;
+        const y = canvas.height - footerHeight;
+
+        ctx.beginPath();
+        ctx.moveTo(0, y + 40);
+        ctx.bezierCurveTo(canvas.width * 0.25, y - 10, canvas.width * 0.75, y + 55, canvas.width, y + 20);
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.closePath();
+
+        const gradient = ctx.createLinearGradient(0, y, 0, canvas.height);
+        gradient.addColorStop(0, '#2a4a6f');
+        gradient.addColorStop(1, '#1e3a5f');
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, y + 35);
+        ctx.bezierCurveTo(canvas.width * 0.25, y - 15, canvas.width * 0.75, y + 50, canvas.width, y + 15);
+        ctx.strokeStyle = '#d81b60';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        const baseY = y + 108;
+        const leftX = canvas.width * 0.18;
+        const centerX = canvas.width * 0.50;
+        const rightX = canvas.width * 0.82;
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 28px Montserrat, Arial, sans-serif';
+
+        ctx.fillText('@dra.bruzera', leftX, baseY);
+        ctx.fillText('www.drabruzera.com', centerX, baseY);
+        ctx.fillText('11-XXXX-XXXX', rightX, baseY);
+    },
+
+    drawIAMark: function() {
+        const ctx = this.ctx;
+        const x = this.canvas.width - 50;
+        const y = this.canvas.height - 30;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#d81b60';
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px Montserrat';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('AI', x, y);
     }
-
-    // 6. Marca IA
-    if (iaUsed) this.drawIAMark();
-
-    return {
-        dataUrl: canvas.toDataURL('image/jpeg', 0.95),
-        iaUsed: iaUsed
-    };
-},
+};
  
 drawTitleSmart: function(text) {
     const ctx = this.ctx;
