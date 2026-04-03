@@ -619,7 +619,7 @@ drawTitleSmart: function(text) {
 
     // lo ponemos arriba izquierda por ahora
     ctx.fillText(text, padding, padding + 40);
-}
+},
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
