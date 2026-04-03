@@ -219,7 +219,7 @@ const FlyerGenerator = {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 1. Fondo limpio
-    await this.drawBackground();
+    //await this.drawBackground();
 
     // 2. Imagen principal
     await this.drawSubject(enhancedImageUrl);
