@@ -219,10 +219,10 @@ const FlyerGenerator = {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // 1. Fondo
-    await this.drawBackground(mainImageData);
+    //await this.drawBackground(mainImageData);
         
         // 2. Marca de agua
-        this.drawWatermark();
+        //this.drawWatermark();
         
         // 3. Sujeto
         await this.drawSubject(enhancedImageUrl);
@@ -239,7 +239,7 @@ const FlyerGenerator = {
         this.drawFooter();
         
         // 7. Marca IA
-        if (iaUsed) this.drawIAMark();
+        //if (iaUsed) this.drawIAMark();
         
         return {
             dataUrl: canvas.toDataURL('image/jpeg', 0.95),
