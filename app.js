@@ -181,7 +181,7 @@ const PollinationsAI = {
                     this.lastUsed = false;
                     resolve(imageUrl);
                 }
-            }, 20000);
+            }, 40000);
             
             img.src = pollinationUrl;
         });
