@@ -222,7 +222,7 @@ const FlyerGenerator = {
     //await this.drawBackground(mainImageData);
         
         // 2. Marca de agua
-        //this.drawWatermark();
+        this.drawWatermark();
         
         // 3. Sujeto
         await this.drawSubject(enhancedImageUrl);
@@ -335,33 +335,18 @@ const FlyerGenerator = {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 },
-    drawBackground: function(imageData) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                const ctx = this.ctx;
-                const canvas = this.canvas;
-                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                const x = (canvas.width / 2) - (img.width / 2) * scale;
-                const y = (canvas.height / 2) - (img.height / 2) * scale;
-                
-                ctx.filter = 'blur(12px) brightness(0.6)';
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                ctx.filter = 'none';
-                
-                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                gradient.addColorStop(0, 'rgba(30, 58, 95, 0.5)');
-                gradient.addColorStop(0.5, 'rgba(30, 58, 95, 0.3)');
-                gradient.addColorStop(1, 'rgba(30, 58, 95, 0.6)');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                resolve();
-            };
-            img.onerror = reject;
-            img.src = imageData;
-        });
-    },
+    drawBackground: function() {
+    return new Promise((resolve) => {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        resolve();
+    });
+},
 
     drawWatermark: function() {
         const ctx = this.ctx;
