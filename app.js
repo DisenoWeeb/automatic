@@ -130,12 +130,13 @@ const Backend = {
         }, callback);
     },
 
-    enhanceImage: function(imageUrl, callback) {
-        JSONP.request(CONFIG.GAS_URL, {
-            action: 'enhanceOpenAI',
-            imageUrl: imageUrl
-        }, callback);
-    }
+    enhanceImage: function(imageUrl, texto, callback) {
+    JSONP.request(CONFIG.GAS_URL, {
+        action: 'enhanceOpenAI',
+        imageUrl: imageUrl,
+        texto: texto
+    }, callback);
+}
 };
 
 // ==========================================
@@ -225,7 +226,7 @@ const FlyerGenerator = {
         await this.drawSubject(enhancedImageUrl);
         
         // 4. BANDA MAGENTA (antes del logo para que el logo esté ENCIMA)
-        this.drawHeaderBand(text);
+       // this.drawHeaderBand(text);
         
         // 5. Logo chico (AHORA DESPUÉS DE LA BANDA, visible)
         if (logoData) {
@@ -287,6 +288,7 @@ const FlyerGenerator = {
     },
 
     drawSubject: function(imageUrl) {
+        this.drawTitleSmart(text);
         return new Promise((resolve) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -352,8 +354,8 @@ const FlyerGenerator = {
             const img = new Image();
             img.onload = () => {
                 const ctx = this.ctx;
-                const size = 80; // Un poco más grande
-                const x = 30;    // Margen izquierdo
+                const size = 120; // Un poco más grande
+                const -x = 30;    // Margen izquierdo
                 const y = 30;    // Margen superior (dentro de los 140px de banda)
                 
                 // Fondo blanco circular con borde
@@ -528,7 +530,7 @@ const UI = {
             const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
             
            const enhancedUrl = await new Promise((resolve) => {
-    Backend.enhanceImage(mainUrl, (err, res) => {
+    Backend.enhanceImage(mainUrl, text, (err, res) => {
     console.log('📦 enhanceImage -> err:', err);
     console.log('📦 enhanceImage -> res:', res);
 
@@ -604,6 +606,20 @@ const UI = {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 };
+
+drawTitleSmart: function(text) {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 60px Arial";
+    ctx.textAlign = "left";
+
+    const padding = 60;
+
+    // lo ponemos arriba izquierda por ahora
+    ctx.fillText(text, padding, padding + 40);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
