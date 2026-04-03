@@ -139,11 +139,11 @@ const PollinationsAI = {
     lastUrl: null,
 
     enhanceSubject: function(imageUrl) {
-        const prompt = 'subject isolation, keep original subject unchanged, preserve face and identity exactly, do not replace subject, do not alter person, do not generate animals, no dogs, no cats, no pets, no new subject,  no transformation, no reinterpretation, maintain original image content exactly, professional portrait enhancement, clean edges, precise cutout, soft background blur, studio lighting, balanced exposure, high sharpness, natural skin tones, subtle glow, depth of field, premium quality, centered subject, modern marketing flyer style, clean composition, space for header text, space for footer contact info, decorative elements only around borders (small icons, minimal shapes, soft floral accents, subtle paw icons), colorful but elegant, not overloaded, instagram ad design, high-end branding look, commercial flyer aesthetic';
+        const prompt = 'subject isolation, keep original subject unchanged, preserve face and identity exactly, do not replace subject, no animals, no dogs, no cats, no pets, professional portrait enhancement, clean edges, soft background blur, studio lighting, high sharpness, natural skin tones, subtle glow, premium quality, centered subject, modern marketing flyer style, floral design elements around borders, soft flowers, botanical decoration, elegant composition, colorful but clean, instagram ad design, high-end branding look';
         const encodedPrompt = encodeURIComponent(prompt);
         const encodedImage = encodeURIComponent(imageUrl);
         
-        let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.12`;
+        let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.35`;
         
         if (CONFIG.POLLINATIONS_API_KEY) {
             url += `&key=${CONFIG.POLLINATIONS_API_KEY}`;
