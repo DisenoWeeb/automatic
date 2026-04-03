@@ -225,7 +225,7 @@ await this.drawBackground(mainImageData);
 await this.drawSubject(enhancedImageUrl);
 
 // 3 texto
-//this.drawTitleSmart(text);
+this.drawTitleSmart(text);
 
 // 4 footer
 this.drawFooter();
@@ -416,9 +416,9 @@ drawTitleSmart: function(text) {
             const ctx = this.ctx;
             const canvas = this.canvas;
 
-            const size = 180; // 🔥 más grande
+            const size = 160; // 🔥 más grande
 
-            const footerHeight = 250;
+            const footerHeight = 200;
 
             const x = (canvas.width / 2) - (size / 2);
             const y = canvas.height - footerHeight - (size / 2) + 10;
