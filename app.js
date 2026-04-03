@@ -215,30 +215,34 @@ const FlyerGenerator = {
     const canvas = this.canvas;
 
     const iaUsed = enhancedImageUrl !== mainUrl;
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 1 fondo
-await this.drawBackground(mainImageData);
 
-// 2 sujeto
-await this.drawSubject(enhancedImageUrl);
+    // 1. Fondo limpio
+    await this.drawBackground();
 
-// 3 texto
-this.drawTitleSmart(text);
+    // 2. Imagen principal
+    await this.drawSubject(enhancedImageUrl);
 
-// 4 footer
-this.drawFooter();
+    // 3. Título híbrido (canvas)
+    this.drawTitleSmart(text);
 
-// 5 logo (SIEMPRE AL FINAL)
-if (logoData) {
-    await this.drawLogoCenter(logoData);
-}        
-        return {
-            dataUrl: canvas.toDataURL('image/jpeg', 0.95),
-            iaUsed: iaUsed
-        };
-    },
+    // 4. Zócalo
+    this.drawFooter();
+
+    // 5. Logo encima del zócalo
+    if (logoData) {
+        await this.drawLogoCenterRect(logoData);
+    }
+
+    // 6. Marca IA
+    if (iaUsed) this.drawIAMark();
+
+    return {
+        dataUrl: canvas.toDataURL('image/jpeg', 0.95),
+        iaUsed: iaUsed
+    };
+},
  
 drawTitleSmart: function(text) {
     const ctx = this.ctx;
@@ -246,24 +250,20 @@ drawTitleSmart: function(text) {
 
     if (!text) return;
 
-    const paddingX = 60;
-    const topY = 95;
-    const maxWidth = canvas.width * 0.42;
+    const paddingX = 70;
+    const topY = 55;
+    const maxWidth = canvas.width * 0.52;
 
-    let fontSize = 64;
+    let fontSize = 84;
+    let lines = [];
+
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 3;
 
-    const lines = [];
     const words = text.toUpperCase().split(/\s+/).filter(Boolean);
 
     const buildLines = () => {
-        lines.length = 0;
+        lines = [];
         let currentLine = '';
 
         for (const word of words) {
@@ -282,34 +282,27 @@ drawTitleSmart: function(text) {
     };
 
     do {
-        ctx.font = `bold ${fontSize}px Montserrat, Arial, sans-serif`;
+        ctx.font = `800 ${fontSize}px Montserrat, Arial, sans-serif`;
         buildLines();
         fontSize -= 2;
-    } while ((lines.length > 3 || lines.some(line => ctx.measureText(line).width > maxWidth)) && fontSize > 34);
+    } while ((lines.length > 3 || lines.some(line => ctx.measureText(line).width > maxWidth)) && fontSize > 36);
 
-    ctx.font = `bold ${fontSize}px Montserrat, Arial, sans-serif`;
+    ctx.font = `800 ${fontSize}px Montserrat, Arial, sans-serif`;
 
-    const lineHeight = fontSize * 1.08;
-    const blockHeight = lines.length * lineHeight;
+    const lineHeight = fontSize * 0.96;
 
-    // prueba primero arriba izquierda
-    const leftX = paddingX;
-    const rightX = canvas.width - paddingX - maxWidth;
+    // arriba derecha, sin caja
+    const x = canvas.width - maxWidth - paddingX;
+    const y = topY;
 
-    // como el sujeto está bastante centrado, elegimos derecha por defecto
-    // si querés, podés invertir esta prioridad
-    const preferredX = rightX;
-
-    // fondo sutil detrás del texto para legibilidad
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.beginPath();
-    ctx.roundRect(preferredX - 18, topY - 12, maxWidth + 36, blockHeight + 24, 18);
-    ctx.fill();
-
-    // texto
     ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.32)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+
     for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], preferredX, topY + i * lineHeight);
+        ctx.fillText(lines[i], x, y + i * lineHeight);
     }
 
     ctx.shadowColor = 'transparent';
@@ -317,7 +310,7 @@ drawTitleSmart: function(text) {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 },
-    drawBackground: function() {
+    ddrawBackground: function() {
     return new Promise((resolve) => {
         const ctx = this.ctx;
         const canvas = this.canvas;
@@ -355,7 +348,7 @@ drawTitleSmart: function(text) {
             const ctx = this.ctx;
             const canvas = this.canvas;
 
-            const footerHeight = 160;
+            const footerHeight = 180;
             const targetX = 0;
             const targetY = 0;
             const targetW = canvas.width;
@@ -378,36 +371,7 @@ drawTitleSmart: function(text) {
         img.src = imageUrl;
     });
 },
-
-   drawHeaderBand: function(text) {
-        const ctx = this.ctx;
-        const bandHeight = 140;
-        
-        // Fondo magenta sólido
-        ctx.fillStyle = '#d81b60';
-        ctx.fillRect(0, 0, this.canvas.width, bandHeight);
-        
-        // Sombra debajo
-        const shadowGradient = ctx.createLinearGradient(0, bandHeight, 0, bandHeight + 15);
-        shadowGradient.addColorStop(0, 'rgba(0,0,0,0.2)');
-        shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = shadowGradient;
-        ctx.fillRect(0, bandHeight, this.canvas.width, 15);
-        
-        // Texto
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        let fontSize = 48;
-        ctx.font = `bold ${fontSize}px Montserrat`;
-        const maxWidth = this.canvas.width - 200; // Dejar espacio para logo
-        while (ctx.measureText(text.toUpperCase()).width > maxWidth && fontSize > 24) {
-            fontSize -= 2;
-            ctx.font = `bold ${fontSize}px Montserrat`;
-        }
-        ctx.fillText(text.toUpperCase(), this.canvas.width / 2 + 40, bandHeight / 2); // +40 para no tapar logo
-    },
-
+   
     drawLogoCenter: function(logoData) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -442,6 +406,53 @@ drawTitleSmart: function(text) {
             resolve();
         };
 
+        img.src = logoData;
+    });
+},
+    drawLogoCenterRect: function(logoData) {
+    return new Promise((resolve) => {
+        const img = new Image();
+
+        img.onload = () => {
+            const ctx = this.ctx;
+            const canvas = this.canvas;
+
+            const footerHeight = 180;
+
+            const boxW = 180;
+            const boxH = 180;
+            const x = (canvas.width - boxW) / 2;
+            const y = canvas.height - footerHeight - 70;
+
+            // tarjeta blanca suave
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.25)';
+            ctx.shadowBlur = 24;
+            ctx.shadowOffsetY = 6;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect(x, y, boxW, boxH, 22);
+            ctx.fill();
+
+            // calcular contain sin recorte
+            const padding = 14;
+            const maxW = boxW - padding * 2;
+            const maxH = boxH - padding * 2;
+            const scale = Math.min(maxW / img.width, maxH / img.height);
+
+            const drawW = img.width * scale;
+            const drawH = img.height * scale;
+            const drawX = x + (boxW - drawW) / 2;
+            const drawY = y + (boxH - drawH) / 2;
+
+            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            ctx.restore();
+
+            resolve();
+        };
+
+        img.onerror = () => resolve();
         img.src = logoData;
     });
 },
@@ -489,7 +500,7 @@ drawTitleSmart: function(text) {
     ctx.fillText('@dra.bruzera', leftX, baseY);
     ctx.fillText('www.drabruzera.com', centerX, baseY);
     ctx.fillText('11-XXXX-XXXX', rightX, baseY);
-    },
+},
 }; // 🔥 cierra TODO FlyerGenerator
 
 // ==========================================
