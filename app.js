@@ -195,20 +195,7 @@ const PollinationsAI = {
         });
     }
 };
-drawTitleSmart: function(text) {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 60px Arial";
-    ctx.textAlign = "left";
-
-    const padding = 60;
-
-    ctx.fillText(text, padding, padding + 40);
-} // 👈 SIN coma si es la última
-
-}; // 👈 ACA CERRÁS EL OBJETO
 
 
 // ==========================================
@@ -242,7 +229,7 @@ const FlyerGenerator = {
         
         // 4. BANDA MAGENTA (antes del logo para que el logo esté ENCIMA)
        // this.drawHeaderBand(text);
-        
+        this.drawTitleSmart(text);
         // 5. Logo chico (AHORA DESPUÉS DE LA BANDA, visible)
         if (logoData) {
             await this.drawSmallLogo(logoData);
@@ -259,6 +246,20 @@ const FlyerGenerator = {
             iaUsed: iaUsed
         };
     },
+    drawTitleSmart: function(text) {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 60px Arial";
+    ctx.textAlign = "left";
+
+    const padding = 60;
+
+    ctx.fillText(text, padding, padding + 40);
+} // 👈 SIN coma si es la última
+
+}; // 👈 ACA CERRÁS EL OBJETO
     drawBackground: function(imageData) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -303,7 +304,7 @@ const FlyerGenerator = {
     },
 
     drawSubject: function(imageUrl) {
-        this.drawTitleSmart(text);
+        
         return new Promise((resolve) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
