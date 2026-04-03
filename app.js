@@ -206,11 +206,10 @@ drawTitleSmart: function(text) {
     const padding = 60;
 
     ctx.fillText(text, padding, padding + 40);
-}, // 👈 ESTA COMA
+} // 👈 SIN coma si es la última
 
-document.addEventListener('DOMContentLoaded', () => {
-    UI.init();
-});
+}; // 👈 ACA CERRÁS EL OBJETO
+
 
 // ==========================================
 // GENERADOR FLYER
