@@ -486,7 +486,8 @@ if (logoData) {
     ctx.font = '600 20px Montserrat';
     ctx.fillStyle = '#ffffff';
     ctx.fillText('WhatsApp: 343 5303848', this.canvas.width / 2, centerY + 54);
-},
+}
+    },
 // ==========================================
 // UI
 // ==========================================
