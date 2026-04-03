@@ -378,38 +378,38 @@ const FlyerGenerator = {
         ctx.restore();
     },
 
-    drawSubject: function(imageUrl) {
-        
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const ctx = this.ctx;
-                const availableHeight = this.canvas.height - 320;
-                const scale = Math.min((this.canvas.width * 0.8) / img.width, availableHeight / img.height);
-                const width = img.width * scale;
-                const height = img.height * scale;
-                const x = (this.canvas.width - width) / 2;
-                const y = 150 + (availableHeight - height) / 2;
-                
-                ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                ctx.shadowBlur = 50;
-                ctx.shadowOffsetY = 20;
-                
-                ctx.save();
-                ctx.beginPath();
-                ctx.roundRect(x - 5, y - 5, width + 10, height + 10, 15);
-                ctx.clip();
-                ctx.drawImage(img, x, y, width, height);
-                ctx.restore();
-                
-                ctx.shadowColor = 'transparent';
-                resolve();
-            };
-            img.onerror = () => resolve();
-            img.src = imageUrl;
-        });
-    },
+   drawSubject: function(imageUrl) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+            const ctx = this.ctx;
+            const canvas = this.canvas;
+
+            const footerHeight = 160;
+            const targetX = 0;
+            const targetY = 0;
+            const targetW = canvas.width;
+            const targetH = canvas.height - footerHeight;
+
+            const scale = Math.max(targetW / img.width, targetH / img.height);
+            const drawW = img.width * scale;
+            const drawH = img.height * scale;
+            const drawX = targetX + (targetW - drawW) / 2;
+            const drawY = targetY + (targetH - drawH) / 2;
+
+            ctx.save();
+            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            ctx.restore();
+
+            resolve();
+        };
+
+        img.onerror = () => resolve();
+        img.src = imageUrl;
+    });
+},
 
    drawHeaderBand: function(text) {
         const ctx = this.ctx;
