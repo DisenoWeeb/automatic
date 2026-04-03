@@ -426,44 +426,40 @@ const FlyerGenerator = {
     },
 
     drawSmallLogo: function(logoData) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const ctx = this.ctx;
-                const size = 120; // Un poco más grande
-                const x = -30;    // Margen izquierdo
-                const y = 30;    // Margen superior (dentro de los 140px de banda)
-                
-                // Fondo blanco circular con borde
-                ctx.beginPath();
-                ctx.arc(x + size/2, y + size/2, size/2 + 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Logo recortado circular
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(img, x, y, size, size);
-                ctx.restore();
-                
-                // Sombra sutil
-                ctx.shadowColor = 'rgba(0,0,0,0.2)';
-                ctx.shadowBlur = 10;
-                ctx.shadowOffsetY = 3;
-                
-                resolve();
-            };
-            img.onerror = () => resolve();
-            img.src = logoData;
-        });
-    },
- 
+    return new Promise((resolve) => {
+        const img = new Image();
 
+        img.onload = () => {
+            const ctx = this.ctx;
+            const canvas = this.canvas;
+
+            const size = 140;
+
+            const x = (canvas.width / 2) - (size / 2);
+            const y = canvas.height - 160 - (size / 2); 
+            // 160 = altura zócalo aprox
+
+            ctx.save();
+
+            // sombra suave
+            ctx.shadowColor = 'rgba(0,0,0,0.25)';
+            ctx.shadowBlur = 20;
+
+            ctx.beginPath();
+            ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            ctx.drawImage(img, x, y, size, size);
+
+            ctx.restore();
+
+            resolve();
+        };
+
+        img.src = logoData;
+    });
+},
 
     drawFooter: function() {
         const ctx = this.ctx;
