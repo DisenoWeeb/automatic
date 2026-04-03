@@ -207,12 +207,27 @@ const FlyerGenerator = {
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // 1. Fondo
         await this.drawBackground(mainImageData);
+        
+        // 2. Marca de agua
         this.drawWatermark();
+        
+        // 3. Sujeto
         await this.drawSubject(enhancedImageUrl);
-        if (logoData) await this.drawSmallLogo(logoData);
+        
+        // 4. BANDA MAGENTA (antes del logo para que el logo esté ENCIMA)
         this.drawHeaderBand(text);
+        
+        // 5. Logo chico (AHORA DESPUÉS DE LA BANDA, visible)
+        if (logoData) {
+            await this.drawSmallLogo(logoData);
+        }
+        
+        // 6. Footer
         this.drawFooter();
+        
+        // 7. Marca IA
         if (iaUsed) this.drawIAMark();
         
         return {
@@ -220,7 +235,6 @@ const FlyerGenerator = {
             iaUsed: iaUsed
         };
     },
-
     drawBackground: function(imageData) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -296,57 +310,71 @@ const FlyerGenerator = {
         });
     },
 
-    drawSmallLogo: function(logoData) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const ctx = this.ctx;
-                const size = 90;
-                const padding = 30;
-                const yPos = 37;
-                
-                ctx.beginPath();
-                ctx.arc(padding + size/2, yPos + size/2, size/2 + 2, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,255,255,0.95)';
-                ctx.fill();
-                
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(padding + size/2, yPos + size/2, size/2, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(img, padding, yPos, size, size);
-                ctx.restore();
-                
-                resolve();
-            };
-            img.onerror = () => resolve();
-            img.src = logoData;
-        });
-    },
-
-    drawHeaderBand: function(text) {
+   drawHeaderBand: function(text) {
         const ctx = this.ctx;
         const bandHeight = 140;
+        
+        // Fondo magenta sólido
         ctx.fillStyle = '#d81b60';
         ctx.fillRect(0, 0, this.canvas.width, bandHeight);
         
+        // Sombra debajo
         const shadowGradient = ctx.createLinearGradient(0, bandHeight, 0, bandHeight + 15);
         shadowGradient.addColorStop(0, 'rgba(0,0,0,0.2)');
         shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = shadowGradient;
         ctx.fillRect(0, bandHeight, this.canvas.width, 15);
         
+        // Texto
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         let fontSize = 48;
         ctx.font = `bold ${fontSize}px Montserrat`;
-        const maxWidth = this.canvas.width - 120;
+        const maxWidth = this.canvas.width - 200; // Dejar espacio para logo
         while (ctx.measureText(text.toUpperCase()).width > maxWidth && fontSize > 24) {
             fontSize -= 2;
             ctx.font = `bold ${fontSize}px Montserrat`;
         }
-        ctx.fillText(text.toUpperCase(), this.canvas.width / 2, bandHeight / 2);
+        ctx.fillText(text.toUpperCase(), this.canvas.width / 2 + 40, bandHeight / 2); // +40 para no tapar logo
+    },
+
+    drawSmallLogo: function(logoData) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const ctx = this.ctx;
+                const size = 80; // Un poco más grande
+                const x = 30;    // Margen izquierdo
+                const y = 30;    // Margen superior (dentro de los 140px de banda)
+                
+                // Fondo blanco circular con borde
+                ctx.beginPath();
+                ctx.arc(x + size/2, y + size/2, size/2 + 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Logo recortado circular
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(img, x, y, size, size);
+                ctx.restore();
+                
+                // Sombra sutil
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 3;
+                
+                resolve();
+            };
+            img.onerror = () => resolve();
+            img.src = logoData;
+        });
     },
 
     drawFooter: function() {
