@@ -219,7 +219,7 @@ const FlyerGenerator = {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 1. Fondo limpio
-    //await this.drawBackground();
+    await this.drawBackground();
 
     // 2. Imagen principal
     await this.drawSubject(enhancedImageUrl);
@@ -310,7 +310,7 @@ drawTitleSmart: function(text) {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 },
-    ddrawBackground: function() {
+    drawBackground: function() {
     return new Promise((resolve) => {
         const ctx = this.ctx;
         const canvas = this.canvas;
