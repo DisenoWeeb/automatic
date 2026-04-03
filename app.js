@@ -8,7 +8,7 @@ const CONFIG = {
     // Cloudinary
     CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
     CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
-    
+
     // Pollinations
     POLLINATIONS_API_KEY: 'sk_ra2ebNYzZbwxPSGKUA2FEFZjFJnpr152',
     POLLINATIONS_URL: 'https://image.pollinations.ai/prompt'
@@ -20,7 +20,7 @@ const CONFIG = {
 const JSONP = {
     callbacks: {},
     counter: 0,
-    timeout: 180000,
+    timeout: 60000,
 
     request: function(url, params, callback) {
         const callbackName = 'jsonp_callback_' + (++this.counter);
