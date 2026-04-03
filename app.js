@@ -225,7 +225,7 @@ const FlyerGenerator = {
     await this.drawSubject(enhancedImageUrl);
 
     // 3. Título híbrido (canvas)
-    //this.drawTitleSmart(text);
+    this.drawTitleSmart(text);
 
     // 4. Zócalo
     this.drawFooter();
