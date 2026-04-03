@@ -139,7 +139,7 @@ const PollinationsAI = {
     lastUrl: null,
 
     enhanceSubject: function(imageUrl) {
-        const prompt = 'professional veterinary photo, subject isolation, clean edges, enhanced lighting, high contrast, sharp focus';
+        const prompt = 'a human portrait, keep the same person, do not change identity';
         const encodedPrompt = encodeURIComponent(prompt);
         const encodedImage = encodeURIComponent(imageUrl);
         
