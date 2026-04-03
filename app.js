@@ -250,77 +250,18 @@ drawTitleSmart: function(text) {
 
     if (!text) return;
 
-    const paddingX = 70;
-    const topY = 55;
-    const maxWidth = canvas.width * 0.52;
+    const footerHeight = 180;
 
-    let fontSize = 84;
-    let lines = [];
+    const x = canvas.width / 2;
+    const y = canvas.height - (footerHeight / 2);
 
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-    const words = text.toUpperCase().split(/\s+/).filter(Boolean);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'; // casi invisible
+    ctx.font = '500 22px Montserrat, Arial, sans-serif';
 
-    const buildLines = () => {
-        lines = [];
-        let currentLine = '';
-
-        for (const word of words) {
-            const testLine = currentLine ? currentLine + ' ' + word : word;
-            const width = ctx.measureText(testLine).width;
-
-            if (width <= maxWidth) {
-                currentLine = testLine;
-            } else {
-                if (currentLine) lines.push(currentLine);
-                currentLine = word;
-            }
-        }
-
-        if (currentLine) lines.push(currentLine);
-    };
-
-    do {
-        ctx.font = `800 ${fontSize}px Montserrat, Arial, sans-serif`;
-        buildLines();
-        fontSize -= 2;
-    } while ((lines.length > 3 || lines.some(line => ctx.measureText(line).width > maxWidth)) && fontSize > 36);
-
-    ctx.font = `800 ${fontSize}px Montserrat, Arial, sans-serif`;
-
-    const lineHeight = fontSize * 0.96;
-
-    // arriba derecha, sin caja
-    const x = canvas.width - maxWidth - paddingX;
-    const y = topY;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0,0,0,0.32)';
-    ctx.shadowBlur = 16;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 4;
-
-    for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x, y + i * lineHeight);
-    }
-
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-},
-    drawBackground: function() {
-    return new Promise((resolve) => {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        resolve();
-    });
+    ctx.fillText(text, x, y);
 },
 
     
