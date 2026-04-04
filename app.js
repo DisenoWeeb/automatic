@@ -343,19 +343,26 @@ async getBestAvailableImageUrl(urls) {
 
   let drawW, drawH, drawX, drawY;
 
-  // 🔥 COVER (llena todo el espacio)
+  // 🔥 COVER con inteligencia
   if (imgRatio > boxRatio) {
-    // imagen más ancha → cortar lados
+    // Imagen más ancha → cortar lados
     drawH = frameH;
     drawW = frameH * imgRatio;
     drawX = frameX - (drawW - frameW) / 2;
+
+    // 🔥 leve bias vertical (no centrar perfecto)
     drawY = frameY;
   } else {
-    // imagen más alta → cortar arriba/abajo
+    // Imagen más alta → cortar arriba/abajo
     drawW = frameW;
     drawH = frameW / imgRatio;
     drawX = frameX;
-    drawY = frameY - (drawH - frameH) / 2;
+
+    // 🔥 CLAVE: NO centrar → subir la imagen
+    const overflow = drawH - frameH;
+
+    // 👉 0.35 = recorta más abajo que arriba (evita cortar caras)
+    drawY = frameY - overflow * 0.35;
   }
 
   ctx.drawImage(img, drawX, drawY, drawW, drawH);
