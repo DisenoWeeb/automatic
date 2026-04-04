@@ -699,7 +699,7 @@ const safeHeight = canvas.height * 0.14;
         const minFont = 44;
 
         while (fontSize > minFont) {
-            ctx.font = `${fontSize}px "Gasoek One", sans-serif;
+            ctx.font = `${fontSize}px "Gasoek One", sans-serif`;
             const fits = lines.every(line => ctx.measureText(line).width <= safeWidth);
             const totalTextHeight = lines.length * fontSize * 0.98;
 
@@ -726,7 +726,7 @@ const safeHeight = canvas.height * 0.14;
 
         lines.forEach((line, i) => {
             const y = startY + i * lineHeight;
-            ctx.font = `${fontSize}px "Gasoek One", sans-serif;
+            ctx.font = `${fontSize}px "Gasoek One", sans-serif`;
             ctx.strokeText(line, centerX, y);
             ctx.fillText(line, centerX, y);
         });
@@ -854,7 +854,7 @@ const UI = {
             }
 
             Backend.registrarUso('imagen', text, 1, () => {});
-            await document.fonts.load('100px "Gasoek One";);
+            await document.fonts.load('100px "Gasoek One"`;);
 
             const result = await FlyerGenerator.generate(
                 this.mainImageData,
