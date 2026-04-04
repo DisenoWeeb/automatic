@@ -791,7 +791,7 @@ const UI = {
         }
 
         Backend.registrarUso('imagen', text, 1, () => {});
-
+        await document.fonts.load('100px "Rammetto One"');
         const result = await FlyerGenerator.generate(
             this.mainImageData,
             this.logoImageData,
