@@ -343,39 +343,31 @@ async getBestAvailableImageUrl(urls) {
 
   let drawW, drawH, drawX, drawY;
 
-  // en vez de recortar brutalmente, priorizamos ver más imagen
+  // 🔥 COVER (llena todo el espacio)
   if (imgRatio > boxRatio) {
+    // imagen más ancha → cortar lados
+    drawH = frameH;
+    drawW = frameH * imgRatio;
+    drawX = frameX - (drawW - frameW) / 2;
+    drawY = frameY;
+  } else {
+    // imagen más alta → cortar arriba/abajo
     drawW = frameW;
     drawH = frameW / imgRatio;
     drawX = frameX;
-    drawY = frameY + (frameH - drawH) / 2;
-  } else {
-    drawH = frameH;
-    drawW = frameH * imgRatio;
-    drawX = frameX + (frameW - drawW) / 2;
-    drawY = frameY;
+    drawY = frameY - (drawH - frameH) / 2;
   }
-
-  // fondo suave por si sobra espacio
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
-  ctx.fillRect(frameX, frameY, frameW, frameH);
 
   ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
   ctx.restore();
 
+  // borde
   ctx.strokeStyle = 'rgba(255,255,255,0.8)';
   ctx.lineWidth = 4;
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.stroke();
-
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  this.roundRect(ctx, frameX + 16, frameY + 16, frameW - 32, frameH - 32, 28);
-  ctx.strokeStyle = 'rgba(255,255,255,0.30)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-},
-
+}
   drawTopDecoration(ctx, width, height) {
     ctx.save();
 
