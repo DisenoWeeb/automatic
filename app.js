@@ -148,62 +148,6 @@ const Backend = {
     }
 };
 
-// ==========================================
-// POLLINATIONS IA
-// ==========================================
-const PollinationsAI = {
-    lastUsed: false,
-    lastUrl: null,
-
-    enhanceSubject: function(imageUrl) {
-        const prompt = 'subject isolation, keep original subject unchanged, preserve face and identity exactly, do not replace subject, no animals, no dogs, no cats, no pets, professional portrait enhancement, clean edges, soft background blur, studio lighting, high sharpness, natural skin tones, subtle glow, premium quality, centered subject, modern marketing flyer style, floral design elements around borders, soft flowers, botanical decoration, elegant composition, colorful but clean, instagram ad design, high-end branding look';
-        const encodedPrompt = encodeURIComponent(prompt);
-        const encodedImage = encodeURIComponent(imageUrl);
-        
-        let url = `${CONFIG.POLLINATIONS_URL}/${encodedPrompt}?width=800&height=1000&seed=42&nologo=true&reference=${encodedImage}&strength=0.15`;
-        
-        if (CONFIG.POLLINATIONS_API_KEY) {
-            url += `&key=${CONFIG.POLLINATIONS_API_KEY}`;
-        }
-        
-        this.lastUrl = url;
-        return url;
-    },
-
-    processImage: async function(imageUrl) {
-        console.log('🤖 IA: Iniciando...');
-        const startTime = Date.now();
-        
-        const pollinationUrl = this.enhanceSubject(imageUrl);
-        
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            
-            img.onload = () => {
-                console.log(`✅ IA: OK en ${Date.now() - startTime}ms`);
-                this.lastUsed = true;
-                resolve(pollinationUrl);
-            };
-            
-            img.onerror = () => {
-                console.log('❌ IA: Falló');
-                this.lastUsed = false;
-                resolve(imageUrl);
-            };
-            
-            setTimeout(() => {
-                if (!img.complete) {
-                    console.log('⏱️ IA: Timeout');
-                    this.lastUsed = false;
-                    resolve(imageUrl);
-                }
-            }, 200000);
-            
-            img.src = pollinationUrl;
-        });
-    }
-};
 
 // ==========================================
 // GENERADOR FLYER
@@ -830,7 +774,7 @@ const UI = {
                 enhancedUrl = localStorage.getItem(cacheKey);
             } else {
                 enhancedUrl = await new Promise((resolve) => {
-                    Backend.enhanceImage(mainUrl, text, (err, res) => {
+                    Backend.enhanceImage(mainUrl, (err, res) => {
                         console.log('📦 enhanceImage -> err:', err);
                         console.log('📦 enhanceImage -> res:', res);
 
