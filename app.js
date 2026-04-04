@@ -164,29 +164,30 @@ const App = {
 
     let finalMainImageUrl = null;
 
+let finalMainImageUrl = null;
+
 if (CONFIG.IMAGE_MODE === 'smart') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildSmartFlyerUrl(uploaded.publicId, uploaded.format),
-    CloudinaryUpload.buildSafePadUrl(uploaded.publicId, uploaded.format),
-    CloudinaryUpload.buildContainUrl(uploaded.publicId, uploaded.format)
+    CloudinaryUpload.buildSmartFlyerUrl(uploaded.publicId),
+    CloudinaryUpload.buildSafePadUrl(uploaded.publicId),
+    CloudinaryUpload.buildContainUrl(uploaded.publicId)
   ]);
 } else if (CONFIG.IMAGE_MODE === 'safe_pad') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildSafePadUrl(uploaded.publicId, uploaded.format),
-    CloudinaryUpload.buildContainUrl(uploaded.publicId, uploaded.format)
+    CloudinaryUpload.buildSafePadUrl(uploaded.publicId),
+    CloudinaryUpload.buildContainUrl(uploaded.publicId)
   ]);
 } else if (CONFIG.IMAGE_MODE === 'face') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildFacePriorityUrl(uploaded.publicId, uploaded.format),
-    CloudinaryUpload.buildSafePadUrl(uploaded.publicId, uploaded.format),
-    CloudinaryUpload.buildContainUrl(uploaded.publicId, uploaded.format)
+    CloudinaryUpload.buildFacePriorityUrl(uploaded.publicId),
+    CloudinaryUpload.buildSafePadUrl(uploaded.publicId),
+    CloudinaryUpload.buildContainUrl(uploaded.publicId)
   ]);
 } else {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildContainUrl(uploaded.publicId, uploaded.format)
+    CloudinaryUpload.buildContainUrl(uploaded.publicId)
   ]);
 }
-
     let finalLogo = null;
 
     if (this.state.logoImageData) {
@@ -733,6 +734,7 @@ const Backend = {
    Claudinary
    ========================= */
 const CloudinaryUpload = {
+
   async upload(file, folder = CONFIG.CLOUDINARY_FOLDER) {
     const formData = new FormData();
     formData.append('file', file);
@@ -759,33 +761,25 @@ const CloudinaryUpload = {
 
     return {
       secureUrl: data.secure_url,
-      publicId: data.public_id,
-      format: data.format || 'jpg',
-      width: data.width,
-      height: data.height
+      publicId: data.public_id
     };
   },
 
-  buildUrl(publicId, transform = '', format = 'jpg') {
+  // 🔧 BASE URL (CORREGIDO)
+  buildUrl(publicId, transform = '') {
     const safeTransform = transform ? `${transform}/` : '';
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/${safeTransform}${publicId}.${format}`;
+    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/${safeTransform}${publicId}`;
   },
 
-  buildSmartFlyerUrl(publicId, format = 'jpg') {
+  // 🧠 MODO INTELIGENTE (mejor calidad general)
+  buildSmartFlyerUrl(publicId) {
     const transforms = [
-      // mejora de entrega
       'f_auto',
       'q_auto',
-
-      // crop principal
       'c_fill',
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
-
-      // foco inteligente
       'g_auto',
-
-      // mejoras suaves
       'e_improve',
       'e_sharpen:60',
       'e_contrast:15',
@@ -793,70 +787,65 @@ const CloudinaryUpload = {
       'e_saturation:8'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms, format);
+    return this.buildUrl(publicId, transforms);
   },
 
-  buildSafePadUrl(publicId, format = 'jpg') {
+  // 🧠 MODO SEGURO (NO corta imagen)
+  buildSafePadUrl(publicId) {
     const transforms = [
       'f_auto',
       'q_auto',
-
-      // conserva más contenido, evita cortes agresivos
-      'c_fill_pad',
+      'c_pad',
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
       'g_auto',
-
+      'b_auto',
       'e_improve',
       'e_sharpen:40',
       'e_contrast:10',
       'e_brightness:6'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms, format);
+    return this.buildUrl(publicId, transforms);
   },
 
-  buildFacePriorityUrl(publicId, format = 'jpg') {
+  // 🧠 PRIORIDAD CARA
+  buildFacePriorityUrl(publicId) {
     const transforms = [
       'f_auto',
       'q_auto',
-
       'c_fill',
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
-
-      // si lo importante es no cortar rostros
       'g_faces',
-
       'e_improve',
       'e_sharpen:50',
       'e_contrast:12',
       'e_brightness:8'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms, format);
+    return this.buildUrl(publicId, transforms);
   },
 
-  buildContainUrl(publicId, format = 'jpg') {
+  // 🧠 CONTENER TODO (fallback final)
+  buildContainUrl(publicId) {
     const transforms = [
       'f_auto',
       'q_auto',
-
-      // no recorta, mete toda la imagen dentro
-      'c_fit',
+      'c_pad',
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
-
+      'b_auto',
       'e_improve',
       'e_sharpen:35',
       'e_contrast:10',
       'e_brightness:6'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms, format);
+    return this.buildUrl(publicId, transforms);
   }
-};
 
+};
 /* =========================
    Init
    ========================= */
