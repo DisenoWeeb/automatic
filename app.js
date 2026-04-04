@@ -8,10 +8,6 @@ const CONFIG = {
     // Cloudinary
     CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
     CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
-
-    // Pollinations
-    POLLINATIONS_API_KEY: 'sk_ra2ebNYzZbwxPSGKUA2FEFZjFJnpr152',
-    POLLINATIONS_URL: 'https://image.pollinations.ai/prompt'
 };
 
 // ==========================================
