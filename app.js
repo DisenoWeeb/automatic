@@ -160,40 +160,37 @@ const App = {
     this.setLoading(true, 'Subiendo imagen y optimizando...');
 
     const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
-    const uploaded = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
+   const uploaded = await CloudinaryUpload.upload(mainFile, 'dra_bruzera');
 
     let finalMainImageUrl = null;
 
-
-
 if (CONFIG.IMAGE_MODE === 'smart') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildSmartFlyerUrl(uploaded.publicId),
-    CloudinaryUpload.buildSafePadUrl(uploaded.publicId),
-    CloudinaryUpload.buildContainUrl(uploaded.publicId)
+    CloudinaryUpload.buildSmartFlyerUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
   ]);
 } else if (CONFIG.IMAGE_MODE === 'safe_pad') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildSafePadUrl(uploaded.publicId),
-    CloudinaryUpload.buildContainUrl(uploaded.publicId)
+    CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
   ]);
 } else if (CONFIG.IMAGE_MODE === 'face') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildFacePriorityUrl(uploaded.publicId),
-    CloudinaryUpload.buildSafePadUrl(uploaded.publicId),
-    CloudinaryUpload.buildContainUrl(uploaded.publicId)
+    CloudinaryUpload.buildFacePriorityUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
   ]);
 } else {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
-    CloudinaryUpload.buildContainUrl(uploaded.publicId)
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
   ]);
-}
-    let finalLogo = null;
+}    let finalLogo = null;
 
     if (this.state.logoImageData) {
       try {
         const logoFile = await this.dataURLtoFile(this.state.logoImageData, 'logo.png');
-        const logoUploaded = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
+        const logoUploaded = await CloudinaryUpload.upload(logoFile, 'dra_bruzera');
         finalLogo = logoUploaded.secureUrl;
       } catch (err) {
         console.warn('No se pudo subir el logo, sigo sin logo:', err);
@@ -734,7 +731,6 @@ const Backend = {
    Claudinary
    ========================= */
 const CloudinaryUpload = {
-
   async upload(file, folder = CONFIG.CLOUDINARY_FOLDER) {
     const formData = new FormData();
     formData.append('file', file);
@@ -761,18 +757,18 @@ const CloudinaryUpload = {
 
     return {
       secureUrl: data.secure_url,
-      publicId: data.public_id
+      publicId: data.public_id,
+      format: data.format || 'jpg',
+      version: data.version
     };
   },
 
-  // 🔧 BASE URL (CORREGIDO)
-  buildUrl(publicId, transform = '') {
-    const safeTransform = transform ? `${transform}/` : '';
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/${safeTransform}${publicId}`;
+  buildUrlFromSecureUrl(secureUrl, transform = '') {
+    if (!transform) return secureUrl;
+    return secureUrl.replace('/image/upload/', `/image/upload/${transform}/`);
   },
 
-  // 🧠 MODO INTELIGENTE (mejor calidad general)
-  buildSmartFlyerUrl(publicId) {
+  buildSmartFlyerUrl(secureUrl) {
     const transforms = [
       'f_auto',
       'q_auto',
@@ -780,37 +776,27 @@ const CloudinaryUpload = {
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
       'g_auto',
-      'e_improve',
-      'e_sharpen:60',
-      'e_contrast:15',
-      'e_brightness:8',
-      'e_saturation:8'
+      'e_improve'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms);
+    return this.buildUrlFromSecureUrl(secureUrl, transforms);
   },
 
-  // 🧠 MODO SEGURO (NO corta imagen)
-  buildSafePadUrl(publicId) {
+  buildSafePadUrl(secureUrl) {
     const transforms = [
       'f_auto',
       'q_auto',
       'c_pad',
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
-      'g_auto',
       'b_auto',
-      'e_improve',
-      'e_sharpen:40',
-      'e_contrast:10',
-      'e_brightness:6'
+      'e_improve'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms);
+    return this.buildUrlFromSecureUrl(secureUrl, transforms);
   },
 
-  // 🧠 PRIORIDAD CARA
-  buildFacePriorityUrl(publicId) {
+  buildFacePriorityUrl(secureUrl) {
     const transforms = [
       'f_auto',
       'q_auto',
@@ -818,17 +804,13 @@ const CloudinaryUpload = {
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
       'g_faces',
-      'e_improve',
-      'e_sharpen:50',
-      'e_contrast:12',
-      'e_brightness:8'
+      'e_improve'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms);
+    return this.buildUrlFromSecureUrl(secureUrl, transforms);
   },
 
-  // 🧠 CONTENER TODO (fallback final)
-  buildContainUrl(publicId) {
+  buildContainUrl(secureUrl) {
     const transforms = [
       'f_auto',
       'q_auto',
@@ -836,16 +818,13 @@ const CloudinaryUpload = {
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
       'b_auto',
-      'e_improve',
-      'e_sharpen:35',
-      'e_contrast:10',
-      'e_brightness:6'
+      'e_improve'
     ].join(',');
 
-    return this.buildUrl(publicId, transforms);
+    return this.buildUrlFromSecureUrl(secureUrl, transforms);
   }
-
 };
+
 /* =========================
    Init
    ========================= */
