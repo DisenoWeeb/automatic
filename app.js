@@ -348,57 +348,74 @@ const FlyerGenerator = {
     },
 
     drawTopDecor: function() {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
+    const ctx = this.ctx;
+    const canvas = this.canvas;
 
+    ctx.save();
+
+    // glow superior izquierdo
+    const g1 = ctx.createRadialGradient(
+        canvas.width * 0.18, canvas.height * 0.10, 20,
+        canvas.width * 0.18, canvas.height * 0.10, 260
+    );
+    g1.addColorStop(0, 'rgba(255,255,255,0.48)');
+    g1.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.32);
+
+    // glow superior derecho
+    const g2 = ctx.createRadialGradient(
+        canvas.width * 0.82, canvas.height * 0.12, 10,
+        canvas.width * 0.82, canvas.height * 0.12, 220
+    );
+    g2.addColorStop(0, 'rgba(255,255,255,0.30)');
+    g2.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g2;
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.32);
+
+    // líneas decorativas visibles
+    ctx.beginPath();
+    ctx.moveTo(40, canvas.height * 0.16);
+    ctx.bezierCurveTo(
+        canvas.width * 0.22, canvas.height * 0.08,
+        canvas.width * 0.42, canvas.height * 0.20,
+        canvas.width * 0.56, canvas.height * 0.12
+    );
+    ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.44, canvas.height * 0.12);
+    ctx.bezierCurveTo(
+        canvas.width * 0.62, canvas.height * 0.04,
+        canvas.width * 0.78, canvas.height * 0.18,
+        canvas.width - 40, canvas.height * 0.10
+    );
+    ctx.strokeStyle = 'rgba(216, 27, 96, 0.26)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // cruces/spark decorativos
+    const drawSpark = (x, y, s, color) => {
         ctx.save();
-
-        // glow superior suave
-        const g1 = ctx.createRadialGradient(
-            canvas.width * 0.20, canvas.height * 0.08, 20,
-            canvas.width * 0.20, canvas.height * 0.08, 220
-        );
-        g1.addColorStop(0, 'rgba(255,255,255,0.32)');
-        g1.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = g1;
-        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.35);
-
-        const g2 = ctx.createRadialGradient(
-            canvas.width * 0.82, canvas.height * 0.10, 10,
-            canvas.width * 0.82, canvas.height * 0.10, 200
-        );
-        g2.addColorStop(0, 'rgba(255,255,255,0.18)');
-        g2.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = g2;
-        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.35);
-
-        // huellitas / cruces minimalistas
-        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-        ctx.lineWidth = 2.2;
-
-        const drawSpark = (x, y, s) => {
-            ctx.beginPath();
-            ctx.moveTo(x - s, y);
-            ctx.lineTo(x + s, y);
-            ctx.moveTo(x, y - s);
-            ctx.lineTo(x, y + s);
-            ctx.stroke();
-        };
-
-        drawSpark(canvas.width * 0.12, canvas.height * 0.11, 10);
-        drawSpark(canvas.width * 0.87, canvas.height * 0.16, 8);
-        drawSpark(canvas.width * 0.20, canvas.height * 0.22, 6);
-
-        // línea decorativa muy sutil
-        ctx.beginPath();
-        ctx.moveTo(50, canvas.height * 0.24);
-        ctx.bezierCurveTo(canvas.width * 0.25, canvas.height * 0.20, canvas.width * 0.75, canvas.height * 0.28, canvas.width - 50, canvas.height * 0.23);
-        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.strokeStyle = color;
         ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - s, y);
+        ctx.lineTo(x + s, y);
+        ctx.moveTo(x, y - s);
+        ctx.lineTo(x, y + s);
         ctx.stroke();
-
         ctx.restore();
-    },
+    };
+
+    drawSpark(canvas.width * 0.12, canvas.height * 0.11, 10, 'rgba(255,255,255,0.34)');
+    drawSpark(canvas.width * 0.86, canvas.height * 0.16, 9, 'rgba(216,27,96,0.28)');
+    drawSpark(canvas.width * 0.24, canvas.height * 0.21, 7, 'rgba(255,255,255,0.24)');
+
+    ctx.restore();
+},
 
     drawLogoCenterRect: function(logoData) {
         return new Promise((resolve) => {
