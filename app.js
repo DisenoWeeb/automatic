@@ -139,13 +139,12 @@ const Backend = {
         }, callback);
     },
 
-    enhanceImage: function(imageUrl, texto, callback) {
-        JSONP.request(CONFIG.GAS_URL, {
-            action: 'enhanceOpenAI',
-            imageUrl: imageUrl,
-            texto: texto
-        }, callback);
-    }
+    enhanceImage: function(imageUrl, callback) {
+    JSONP.request(CONFIG.GAS_URL, {
+        action: 'enhanceOpenAI',
+        imageUrl: imageUrl
+    }, callback);
+}
 };
 
 
