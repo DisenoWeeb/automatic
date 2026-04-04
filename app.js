@@ -286,7 +286,7 @@ if (CONFIG.IMAGE_MODE === 'smart') {
       } catch (err) {
         console.warn('No se pudo dibujar el logo:', err);
       }
-    },
+    }
 
     return canvas.toDataURL('image/png', 1);
   },
