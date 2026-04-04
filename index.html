@@ -1,80 +1,395 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dra. Bruzera - Generador de Flyers</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-  
-    <link href="https://fonts.googleapis.com/css2?family=Gasoek+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dra. Bruzera - Flyers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.25), transparent 30%),
+        linear-gradient(135deg, #f7d7df 0%, #efbfd0 35%, #ddb5e3 70%, #ccb2f3 100%);
+      color: #4a1f46;
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      color: #6e2f66;
+      letter-spacing: -.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #6f506d;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255,255,255,.68);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 24px;
+      box-shadow: 0 18px 50px rgba(109, 56, 111, .16);
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 18px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #6e2f66;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6c4568;
+    }
+
+    .field input[type="text"],
+    .field input[type="url"],
+    .field input[type="tel"],
+    .field textarea,
+    .field input[type="file"] {
+      width: 100%;
+      border: 1px solid rgba(134, 74, 126, .18);
+      outline: none;
+      border-radius: 16px;
+      background: rgba(255,255,255,.9);
+      padding: 14px 16px;
+      font: inherit;
+      color: #53274e;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .preview-box {
+      background: rgba(255,255,255,.55);
+      border: 1px dashed rgba(110, 47, 102, .25);
+      border-radius: 20px;
+      padding: 12px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .preview-box span {
+      font-size: 12px;
+      font-weight: 700;
+      color: #7a5a77;
+    }
+
+    .preview-box img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      display: block;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 14px 18px;
+      font: inherit;
+      font-weight: 800;
+      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+      box-shadow: 0 10px 24px rgba(104, 41, 100, .18);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3672 0%, #5b2d71 100%);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.95);
+      color: #6a3265;
+      border: 1px solid rgba(107, 50, 101, .12);
+    }
+
+    .statusbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      background: rgba(255,255,255,.82);
+      color: #6e2f66;
+      border: 1px solid rgba(110, 47, 102, .12);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .loader {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(110, 47, 102, .12);
+      color: #6b4267;
+      font-weight: 700;
+    }
+
+    .hidden { display: none !important; }
+
+    .result-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .result-frame {
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(110, 47, 102, .12);
+      border-radius: 24px;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .result-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+    }
+
+    .history {
+      display: grid;
+      gap: 12px;
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .history-item,
+    .history-empty {
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(110, 47, 102, .1);
+      border-radius: 18px;
+      padding: 14px;
+      color: #66405f;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .history-item strong {
+      display: block;
+      color: #6e2f66;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 14px; }
+      .card { padding: 16px; border-radius: 20px; }
+      .two, .three, .preview-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>Dra. Bruzera</h1>
-            <p>Generador de Flyers Profesionales</p>
-        </header>
-
-        <main class="main-content">
-            <!-- Formulario -->
-            <section class="form-section">
-                <div class="input-group">
-                    <label for="mainImage">Imagen Principal *</label>
-                    <input type="file" id="mainImage" accept="image/*" required>
-                    <div class="preview-container" id="mainImagePreview">
-                        <span class="preview-placeholder">Vista previa de imagen principal</span>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="logoImage">Logo (opcional)</label>
-                    <input type="file" id="logoImage" accept="image/*">
-                    <div class="preview-container" id="logoPreview">
-                        <span class="preview-placeholder">Vista previa del logo</span>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="flyerText">Texto del Flyer * (máx. 6 palabras)</label>
-                    <input type="text" id="flyerText" maxlength="40" placeholder="Ej: Cuidamos a tu mejor amigo" required>
-                    <span class="word-count" id="wordCount">0 palabras</span>
-                </div>
-
-                <button id="generateBtn" class="btn-generate" disabled>
-                    Generar Flyer
-                </button>
-            </section>
-
-            <!-- Loader -->
-            <div id="loader" class="loader hidden">
-                <div class="spinner"></div>
-                <p>Procesando imagen...</p>
-                <p class="loader-sub">Esto puede tomar unos segundos</p>
-            </div>
-
-            <!-- Resultado -->
-            <section id="resultSection" class="result-section hidden">
-                
-                <h2>¡Flyer Generado!</h2>
-                <div id="iaStatus" class="ia-status hidden"></div>
-                <div class="canvas-container">
-                    <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
-                </div>
-                <div class="result-actions">
-                    <button id="downloadBtn" class="btn-download">Descargar Flyer</button>
-                    <button id="newFlyerBtn" class="btn-new">Crear Nuevo</button>
-                </div>
-            </section>
-        </main>
-
-        <footer class="footer">
-            <p>&copy; 2024 Dra. Bruzera - Veterinaria</p>
-        </footer>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Flyers Dra. Bruzera</h1>
+      <p>Generador simple sin IA · PNG vertical para Instagram · 1080 × 1350</p>
     </div>
 
-    <script src="app.js"></script>
+    <div class="grid">
+      <!-- COLUMNA IZQUIERDA -->
+      <div class="card">
+        <h2>Configuración</h2>
+
+        <div class="stack">
+          <div class="preview-grid">
+            <div class="field">
+              <label for="mainImage">Imagen principal</label>
+              <input type="file" id="mainImage" accept="image/*" />
+            </div>
+
+            <div class="field">
+              <label for="logoImage">Logo (opcional)</label>
+              <input type="file" id="logoImage" accept="image/*" />
+            </div>
+          </div>
+
+          <div class="preview-grid">
+            <div class="preview-box">
+              <span>Preview imagen</span>
+              <img id="previewMain" alt="Preview imagen principal" />
+            </div>
+
+            <div class="preview-box">
+              <span>Preview logo</span>
+              <img id="previewLogo" alt="Preview logo" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor" />
+          </div>
+
+          <div class="field">
+            <label for="texto">Texto</label>
+            <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="instagram">Instagram</label>
+              <input type="text" id="instagram" value="@drabruzera" />
+            </div>
+
+            <div class="field">
+              <label for="whatsapp">WhatsApp</label>
+              <input type="tel" id="whatsapp" value="343 5303848" />
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="web">Web</label>
+              <input type="text" id="web" value="www.bruzera.turnox.pro" />
+            </div>
+
+            <div class="field">
+              <label for="ubicacion">Ubicación</label>
+              <input type="text" id="ubicacion" value="José Venturino 1239" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="btnGenerar">Generar flyer</button>
+            <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar PNG</button>
+            <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
+          </div>
+
+          <div class="statusbar">
+            <div class="chip">User ID: <span id="userIdBox">---</span></div>
+            <div class="chip">1 crédito por imagen</div>
+          </div>
+
+          <div class="loader hidden" id="loader">
+            <span id="loaderText">Generando flyer...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA -->
+      <div class="stack">
+        <div class="card result-card">
+          <h2>Resultado</h2>
+
+          <div class="result-frame">
+            <img id="resultImage" alt="Resultado flyer" />
+          </div>
+
+          <div id="resultSection" class="hidden">
+            <div class="chip">Flyer generado correctamente</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Historial local</h2>
+          <div id="historyList" class="history">
+            <div class="history-empty">Todavía no hay registros locales</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tu app.js -->
+  <script src="./app.js"></script>
 </body>
 </html>
