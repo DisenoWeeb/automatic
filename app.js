@@ -291,31 +291,32 @@ if (CONFIG.IMAGE_MODE === 'smart') {
     return canvas.toDataURL('image/png', 1);
   },
 
-  drawBackground(ctx, width, height) {
-    const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, '#f7d7df');
-    gradient.addColorStop(0.35, '#f4c6d4');
-    gradient.addColorStop(0.7, '#e7b8d8');
-    gradient.addColorStop(1, '#d9b8f3');
+ drawBackground(ctx, width, height) {
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, '#f7d7df');
+  gradient.addColorStop(0.35, '#f4c6d4');
+  gradient.addColorStop(0.7, '#e7b8d8');
+  gradient.addColorStop(1, '#d9b8f3');
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
 
-    for (let i = 0; i < 18; i++) {
-      const x = (width / 18) * i;
-      ctx.beginPath();
-      ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.fill();
-    }
+  for (let i = 0; i < 18; i++) {
+    const x = (width / 18) * i;
+    ctx.beginPath();
+    ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fill();
+  }
 
-    for (let i = 0; i < 14; i++) {
-      const y = 200 + i * 70;
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
-      ctx.fillRect(0, y, width, 8);
-     }
-  },
-     async getBestAvailableImageUrl(urls) {
+  for (let i = 0; i < 14; i++) {
+    const y = 200 + i * 70;
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
+    ctx.fillRect(0, y, width, 8);
+  }
+},
+
+async getBestAvailableImageUrl(urls) {
   for (const url of urls) {
     try {
       await this.loadImage(url);
@@ -326,8 +327,7 @@ if (CONFIG.IMAGE_MODE === 'smart') {
   }
 
   throw new Error('No se pudo cargar ninguna versión optimizada de la imagen');
-}
-  },
+},
 
   drawMainImage(ctx, img, width, height) {
   const frameX = 60;
