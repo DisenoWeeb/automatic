@@ -507,15 +507,13 @@ const FlyerGenerator = {
 
         // ── DATOS DE CONTACTO CON ICONOS ───────────────────────────────
         const iconSize = 21;
-        const labelY1 = y + 130;
-        const labelY2 = y + 172;
-        const iconY1 = labelY1 - 26;
-        const iconY2 = labelY2 - 26;
+        const labelY = y + 140;
+        const iconY = labelY - 28;
 
-        const x1 = canvas.width * 0.18;
-        const x2 = canvas.width * 0.50;
-        const x3 = canvas.width * 0.82;
-        const x4 = canvas.width * 0.50;
+       const x1 = canvas.width * 0.12;
+       const x2 = canvas.width * 0.37;
+       const x3 = canvas.width * 0.62;
+       const x4 = canvas.width * 0.87;
 
         const textFontTop = '600 20px Montserrat, Arial, sans-serif';
         const textFontBottom = '600 18px Montserrat, Arial, sans-serif';
@@ -626,22 +624,20 @@ const FlyerGenerator = {
             ctx.restore();
         };
 
-        drawInstagramIcon(x1, iconY1, iconSize);
-        drawWebIcon(x2, iconY1, iconSize);
-        drawPhoneIcon(x3, iconY1, iconSize);
-        drawLocationIcon(x4, iconY2, iconSize);
+        drawInstagramIcon(x1, iconY, iconSize);
+drawWebIcon(x2, iconY, iconSize);
+drawPhoneIcon(x3, iconY, iconSize);
+drawLocationIcon(x4, iconY, iconSize);
 
         ctx.fillStyle = '#ffffff';
         ctx.font = textFontTop;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        ctx.fillText('@DraBruzera', x1, labelY1);
-        ctx.fillText('www.bruzera.turnox.pro', x2, labelY1);
-        ctx.fillText('343 5303848', x3, labelY1);
-
-        ctx.font = textFontBottom;
-        ctx.fillText('José Venturino 1239', x4, labelY2);
+       ctx.fillText('@DraBruzera', x1, labelY);
+ctx.fillText('www.bruzera.turnox.pro', x2, labelY);
+ctx.fillText('343 5303848', x3, labelY);
+ctx.fillText('José Venturino 1239', x4, labelY);
     },
 
     drawTopTitle: function(text) {
