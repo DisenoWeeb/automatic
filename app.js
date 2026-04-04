@@ -651,8 +651,8 @@ const FlyerGenerator = {
         if (!text) return;
 
         // zona segura más chica
-        const safeTop = canvas.height * 0.045;
-        const safeHeight = canvas.height * 0.20;
+        const safeTop = canvas.height * 0.02;
+const safeHeight = canvas.height * 0.14;
         const safeWidth = canvas.width * 0.84;
         const centerX = canvas.width / 2;
 
@@ -686,7 +686,7 @@ const FlyerGenerator = {
             ];
         }
 
-        let fontSize = 108;
+        let fontSize = 82;
         const minFont = 44;
 
         while (fontSize > minFont) {
