@@ -144,12 +144,12 @@ const Backend = {
     },
 
     enhanceImage: function(imageUrl, texto, callback) {
-    JSONP.request(CONFIG.GAS_URL, {
-        action: 'enhanceOpenAI',
-        imageUrl: imageUrl,
-        texto: texto
-    }, callback);
-}
+        JSONP.request(CONFIG.GAS_URL, {
+            action: 'enhanceOpenAI',
+            imageUrl: imageUrl,
+            texto: texto
+        }, callback);
+    }
 };
 
 // ==========================================
@@ -209,8 +209,6 @@ const PollinationsAI = {
     }
 };
 
-
-
 // ==========================================
 // GENERADOR FLYER
 // ==========================================
@@ -234,23 +232,22 @@ const FlyerGenerator = {
         // 1. Fondo limpio
         await this.drawBackground();
 
-        //  Título oculto detrás del zócalo
-        //this.drawHiddenTitle(text);
-        
         // 2. Imagen principal
         await this.drawSubject(enhancedImageUrl);
-        // 3. Título ARRIBA
+
+        // 3. Decoración superior
+        this.drawTopDecor();
+
+        // 4. Título arriba
         this.drawTopTitle(text);
-        // 4. Zócalo
+
+        // 5. Zócalo
         this.drawFooter();
 
-        // 5. Logo arriba del zócalo
+        // 6. Logo arriba del zócalo
         if (logoData) {
             await this.drawLogoCenterRect(logoData);
         }
-
-        // 6. Marca IA
-        //if (iaUsed) this.drawIAMark();
 
         return {
             dataUrl: canvas.toDataURL('image/jpeg', 0.95),
@@ -286,6 +283,7 @@ const FlyerGenerator = {
                 const targetW = canvas.width;
                 const targetH = canvas.height - footerHeight;
 
+                // cover sin deformar
                 const scale = Math.max(targetW / img.width, targetH / img.height);
                 const drawW = img.width * scale;
                 const drawH = img.height * scale;
@@ -353,6 +351,59 @@ const FlyerGenerator = {
         ctx.restore();
     },
 
+    drawTopDecor: function() {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        ctx.save();
+
+        // glow superior suave
+        const g1 = ctx.createRadialGradient(
+            canvas.width * 0.20, canvas.height * 0.08, 20,
+            canvas.width * 0.20, canvas.height * 0.08, 220
+        );
+        g1.addColorStop(0, 'rgba(255,255,255,0.32)');
+        g1.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g1;
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.35);
+
+        const g2 = ctx.createRadialGradient(
+            canvas.width * 0.82, canvas.height * 0.10, 10,
+            canvas.width * 0.82, canvas.height * 0.10, 200
+        );
+        g2.addColorStop(0, 'rgba(255,255,255,0.18)');
+        g2.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g2;
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.35);
+
+        // huellitas / cruces minimalistas
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth = 2.2;
+
+        const drawSpark = (x, y, s) => {
+            ctx.beginPath();
+            ctx.moveTo(x - s, y);
+            ctx.lineTo(x + s, y);
+            ctx.moveTo(x, y - s);
+            ctx.lineTo(x, y + s);
+            ctx.stroke();
+        };
+
+        drawSpark(canvas.width * 0.12, canvas.height * 0.11, 10);
+        drawSpark(canvas.width * 0.87, canvas.height * 0.16, 8);
+        drawSpark(canvas.width * 0.20, canvas.height * 0.22, 6);
+
+        // línea decorativa muy sutil
+        ctx.beginPath();
+        ctx.moveTo(50, canvas.height * 0.24);
+        ctx.bezierCurveTo(canvas.width * 0.25, canvas.height * 0.20, canvas.width * 0.75, canvas.height * 0.28, canvas.width - 50, canvas.height * 0.23);
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore();
+    },
+
     drawLogoCenterRect: function(logoData) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -361,11 +412,11 @@ const FlyerGenerator = {
                 const ctx = this.ctx;
                 const canvas = this.canvas;
 
-                const footerHeight = 240;
+                const footerHeight = 265;
                 const boxW = 180;
                 const boxH = 180;
                 const x = (canvas.width - boxW) / 2;
-                const y = canvas.height - footerHeight - 70;
+                const y = canvas.height - footerHeight - 58;
 
                 ctx.save();
                 ctx.shadowColor = 'rgba(0,0,0,0.25)';
@@ -398,11 +449,11 @@ const FlyerGenerator = {
         });
     },
 
-   drawFooter: function() {
+    drawFooter: function() {
         const ctx = this.ctx;
         const canvas = this.canvas;
 
-        const footerHeight = 180;
+        const footerHeight = 210;
         const y = canvas.height - footerHeight;
 
         // ── SOMBRA DEL ZÓCALO ──────────────────────────────────────────
@@ -425,45 +476,54 @@ const FlyerGenerator = {
         ctx.fill();
         ctx.restore();
 
+        // brillo suave detrás del logo
+        const glow = ctx.createRadialGradient(canvas.width / 2, y + 18, 10, canvas.width / 2, y + 18, 180);
+        glow.addColorStop(0, 'rgba(255,255,255,0.16)');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(canvas.width / 2 - 220, y - 40, 440, 220);
+
         // ── LÍNEAS MAGENTA ENTRELAZADAS ────────────────────────────────
-        // Línea 1 — gruesa, arco principal (va de izq-abajo a der-arriba)
         ctx.beginPath();
-        ctx.moveTo(0, y + 50);
-        ctx.bezierCurveTo(canvas.width * 0.3, y - 20, canvas.width * 0.7, y + 60, canvas.width, y + 10);
+        ctx.moveTo(0, y + 52);
+        ctx.bezierCurveTo(canvas.width * 0.3, y - 18, canvas.width * 0.7, y + 62, canvas.width, y + 12);
         ctx.strokeStyle = 'rgba(216, 27, 96, 0.9)';
         ctx.lineWidth = 4;
         ctx.stroke();
 
-        // Línea 2 — delgada, arco invertido (va de izq-arriba a der-abajo, cruza línea 1)
         ctx.beginPath();
-        ctx.moveTo(0, y + 15);
-        ctx.bezierCurveTo(canvas.width * 0.25, y + 70, canvas.width * 0.65, y - 5, canvas.width, y + 45);
+        ctx.moveTo(0, y + 17);
+        ctx.bezierCurveTo(canvas.width * 0.25, y + 74, canvas.width * 0.65, y - 8, canvas.width, y + 48);
         ctx.strokeStyle = 'rgba(216, 27, 96, 0.55)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Línea 3 — media, arco suave que cruza entre las dos anteriores
         ctx.beginPath();
-        ctx.moveTo(0, y + 30);
-        ctx.bezierCurveTo(canvas.width * 0.4, y + 55, canvas.width * 0.6, y - 10, canvas.width, y + 28);
+        ctx.moveTo(0, y + 32);
+        ctx.bezierCurveTo(canvas.width * 0.4, y + 58, canvas.width * 0.6, y - 12, canvas.width, y + 30);
         ctx.strokeStyle = 'rgba(216, 27, 96, 0.35)';
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
         // ── DATOS DE CONTACTO CON ICONOS ───────────────────────────────
-        const baseY = y + 118;
-        const leftX   = canvas.width * 0.18;
-        const centerX = canvas.width * 0.50;
-        const rightX  = canvas.width * 0.82;
-        const iconSize = 22;
-        const iconY = baseY - 36;
-        const textFont = '600 22px Montserrat, Arial, sans-serif';
+        const iconSize = 21;
+        const labelY1 = y + 130;
+        const labelY2 = y + 172;
+        const iconY1 = labelY1 - 26;
+        const iconY2 = labelY2 - 26;
+
+        const x1 = canvas.width * 0.18;
+        const x2 = canvas.width * 0.50;
+        const x3 = canvas.width * 0.82;
+        const x4 = canvas.width * 0.50;
+
+        const textFontTop = '600 20px Montserrat, Arial, sans-serif';
+        const textFontBottom = '600 18px Montserrat, Arial, sans-serif';
 
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#ffffff';
 
-        // ── Icono Instagram (cámara redondeada) ──
         const drawInstagramIcon = (cx, cy, s) => {
             const r = s * 0.38;
             const x = cx - s / 2;
@@ -474,17 +534,14 @@ const FlyerGenerator = {
             ctx.lineWidth = 1.8;
             ctx.fillStyle = 'transparent';
 
-            // cuerpo
             ctx.beginPath();
             ctx.roundRect(x, yy, s, s, s * 0.22);
             ctx.stroke();
 
-            // lente
             ctx.beginPath();
             ctx.arc(cx, cy, r, 0, Math.PI * 2);
             ctx.stroke();
 
-            // punto superior derecho
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(x + s * 0.78, yy + s * 0.22, s * 0.07, 0, Math.PI * 2);
@@ -493,30 +550,25 @@ const FlyerGenerator = {
             ctx.restore();
         };
 
-        // ── Icono Web (globo) ──
         const drawWebIcon = (cx, cy, s) => {
             const r = s * 0.46;
             ctx.save();
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 1.8;
 
-            // círculo exterior
             ctx.beginPath();
             ctx.arc(cx, cy, r, 0, Math.PI * 2);
             ctx.stroke();
 
-            // elipse horizontal (líneas de latitud)
             ctx.beginPath();
             ctx.ellipse(cx, cy, r * 0.52, r, 0, 0, Math.PI * 2);
             ctx.stroke();
 
-            // línea horizontal central
             ctx.beginPath();
             ctx.moveTo(cx - r, cy);
             ctx.lineTo(cx + r, cy);
             ctx.stroke();
 
-            // línea vertical central
             ctx.beginPath();
             ctx.moveTo(cx, cy - r);
             ctx.lineTo(cx, cy + r);
@@ -525,7 +577,6 @@ const FlyerGenerator = {
             ctx.restore();
         };
 
-        // ── Icono Teléfono ──
         const drawPhoneIcon = (cx, cy, s) => {
             ctx.save();
             ctx.strokeStyle = '#ffffff';
@@ -539,17 +590,14 @@ const FlyerGenerator = {
             const yy = cy - h / 2;
             const rr = s * 0.12;
 
-            // cuerpo del teléfono
             ctx.beginPath();
             ctx.roundRect(x, yy, w, h, rr);
             ctx.stroke();
 
-            // pantalla
             ctx.beginPath();
             ctx.roundRect(x + s * 0.08, yy + s * 0.1, w - s * 0.16, h - s * 0.28, rr * 0.5);
             ctx.stroke();
 
-            // botón home
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(cx, yy + h - s * 0.1, s * 0.06, 0, Math.PI * 2);
@@ -558,114 +606,124 @@ const FlyerGenerator = {
             ctx.restore();
         };
 
-        // Dibujar iconos
-        drawInstagramIcon(leftX,   iconY, iconSize);
-        drawWebIcon(centerX,       iconY, iconSize);
-        drawPhoneIcon(rightX,      iconY, iconSize);
+        const drawLocationIcon = (cx, cy, s) => {
+            ctx.save();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
+            ctx.fillStyle = 'transparent';
 
-        // Textos
+            const r = s * 0.24;
+            ctx.beginPath();
+            ctx.arc(cx, cy - s * 0.1, r, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + s * 0.52);
+            ctx.bezierCurveTo(cx - s * 0.36, cy + s * 0.12, cx - s * 0.32, cy - s * 0.20, cx, cy - s * 0.46);
+            ctx.bezierCurveTo(cx + s * 0.32, cy - s * 0.20, cx + s * 0.36, cy + s * 0.12, cx, cy + s * 0.52);
+            ctx.stroke();
+
+            ctx.restore();
+        };
+
+        drawInstagramIcon(x1, iconY1, iconSize);
+        drawWebIcon(x2, iconY1, iconSize);
+        drawPhoneIcon(x3, iconY1, iconSize);
+        drawLocationIcon(x4, iconY2, iconSize);
+
         ctx.fillStyle = '#ffffff';
-        ctx.font = textFont;
+        ctx.font = textFontTop;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        ctx.fillText('@DraBruzera',        leftX,   baseY);
-        ctx.fillText('www.bruzera.turnox.pro',  centerX, baseY);
-        ctx.fillText('343 5303848',        rightX,  baseY);
+        ctx.fillText('@DraBruzera', x1, labelY1);
+        ctx.fillText('www.bruzera.turnox.pro', x2, labelY1);
+        ctx.fillText('343 5303848', x3, labelY1);
+
+        ctx.font = textFontBottom;
+        ctx.fillText('José Venturino 1239', x4, labelY2);
     },
 
-  drawTopTitle: function(text) {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
+    drawTopTitle: function(text) {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
 
-    if (!text) return;
+        if (!text) return;
 
-    // ── ZONA SEGURA ─────────────────────
-    const safeTop = canvas.height * 0.03;
-    const safeHeight = canvas.height * 0.35;
-    const safeWidth = canvas.width * 0.9;
-    const centerX = canvas.width / 2;
+        // zona segura más chica
+        const safeTop = canvas.height * 0.045;
+        const safeHeight = canvas.height * 0.20;
+        const safeWidth = canvas.width * 0.84;
+        const centerX = canvas.width / 2;
 
-    // ── DETECTAR COLOR DE FONDO ─────────
-    const sampleY = safeTop + safeHeight / 2;
-    let brightness = 255;
+        // detectar color de fondo
+        const sampleY = safeTop + safeHeight / 2;
+        let brightness = 255;
 
-    try {
-        const sample = ctx.getImageData(canvas.width / 2, sampleY, 1, 1).data;
-        brightness = (sample[0] * 299 + sample[1] * 587 + sample[2] * 114) / 1000;
-    } catch (e) {
-        // fallback si falla por CORS
-        brightness = 200;
+        try {
+            const sample = ctx.getImageData(canvas.width / 2, sampleY, 1, 1).data;
+            brightness = (sample[0] * 299 + sample[1] * 587 + sample[2] * 114) / 1000;
+        } catch (e) {
+            brightness = 200;
+        }
+
+        const isDark = brightness < 140;
+        const textColor = isDark ? '#ffffff' : '#1f3f5b';
+        const strokeColor = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.75)';
+
+        // respetar mayúsculas/minúsculas del usuario
+        const clean = text.trim();
+        const words = clean.split(/\s+/).slice(0, 4);
+
+        let lines = [];
+        if (words.length <= 2) {
+            lines = [words.join(' ')];
+        } else {
+            const mid = Math.ceil(words.length / 2);
+            lines = [
+                words.slice(0, mid).join(' '),
+                words.slice(mid).join(' ')
+            ];
+        }
+
+        let fontSize = 108;
+        const minFont = 44;
+
+        while (fontSize > minFont) {
+            ctx.font = `${fontSize}px "Rammetto One", sans-serif`;
+            const fits = lines.every(line => ctx.measureText(line).width <= safeWidth);
+            const totalTextHeight = lines.length * fontSize * 0.98;
+
+            if (fits && totalTextHeight <= safeHeight) break;
+            fontSize -= 2;
+        }
+
+        const lineHeight = fontSize * 0.98;
+        const totalTextHeight = lines.length * lineHeight;
+        const startY = safeTop + ((safeHeight - totalTextHeight) / 2) + fontSize * 0.82;
+
+        ctx.save();
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = textColor;
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = Math.max(3, fontSize * 0.045);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.shadowColor = isDark ? 'rgba(0,0,0,0.28)' : 'rgba(255,255,255,0.18)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 3;
+
+        lines.forEach((line, i) => {
+            const y = startY + i * lineHeight;
+            ctx.font = `${fontSize}px "Rammetto One", sans-serif`;
+            ctx.strokeText(line, centerX, y);
+            ctx.fillText(line, centerX, y);
+        });
+
+        ctx.restore();
     }
-
-    const isDark = brightness < 140;
-
-    const textColor = isDark ? '#ffffff' : '#1f3f5b';
-    const strokeColor = isDark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
-
-    // ── TEXTO LIMPIO ────────────────────
-    const clean = text.trim().toUpperCase();
-    const words = clean.split(/\s+/).slice(0, 4);
-
-    let lines = [];
-    if (words.length <= 2) {
-        lines = [words.join(' ')];
-    } else {
-        const mid = Math.ceil(words.length / 2);
-        lines = [
-            words.slice(0, mid).join(' '),
-            words.slice(mid).join(' ')
-        ];
-    }
-
-    // ── AUTO SIZE ───────────────────────
-    let fontSize = 120;
-    const minFont = 50;
-
-    while (fontSize > minFont) {
-        ctx.font = `${fontSize}px "Rammetto One", sans-serif`;
-
-        const fits = lines.every(l => ctx.measureText(l).width <= safeWidth);
-        const totalHeight = lines.length * fontSize * 0.95;
-
-        if (fits && totalHeight < safeHeight) break;
-        fontSize -= 2;
-    }
-
-    const lineHeight = fontSize * 0.95;
-    const totalHeight = lines.length * lineHeight;
-    let startY = safeTop + (safeHeight - totalHeight) / 2 + fontSize;
-
-    ctx.save();
-
-    // ── CAJA ADAPTATIVA ─────────────────
-    ctx.fillStyle = isDark 
-        ? 'rgba(0,0,0,0.25)' 
-        : 'rgba(255,255,255,0.25)';
-
-    ctx.beginPath();
-    ctx.roundRect(40, safeTop, canvas.width - 80, safeHeight - 20, 30);
-    ctx.fill();
-
-    // ── TEXTO ───────────────────────────
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = textColor;
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = Math.max(3, fontSize * 0.04);
-    ctx.lineJoin = 'round';
-
-    lines.forEach((line, i) => {
-        const y = startY + i * lineHeight;
-
-        ctx.font = `${fontSize}px "Rammetto One", sans-serif`;
-
-        ctx.strokeText(line, centerX, y);
-        ctx.fillText(line, centerX, y);
-    });
-
-    ctx.restore();
-}
 }; // cierra FlyerGenerator
 
 // ==========================================
@@ -742,80 +800,78 @@ const UI = {
         e.generateBtn.disabled = !(this.mainImageData && e.flyerText.value.trim().length > 0);
     },
 
-   generateFlyer: async function() {
-    const e = this.elements;
+    generateFlyer: async function() {
+        const e = this.elements;
 
-    e.loader.classList.remove('hidden');
-    e.resultSection.classList.add('hidden');
+        e.loader.classList.remove('hidden');
+        e.resultSection.classList.add('hidden');
 
-    try {
-        const text = e.flyerText.value.trim();
+        try {
+            const text = e.flyerText.value.trim();
 
-        const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
-        const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
+            const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
+            const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
 
-        // 🔥 CACHE PARA NO PAGAR 2 VECES
-        const cacheKey = 'ai_' + mainUrl;
+            // cache para no pagar 2 veces
+            const cacheKey = 'ai_' + mainUrl;
+            let enhancedUrl;
 
-        let enhancedUrl;
+            if (localStorage.getItem(cacheKey)) {
+                console.log('🧠 CACHE USADO');
+                enhancedUrl = localStorage.getItem(cacheKey);
+            } else {
+                enhancedUrl = await new Promise((resolve) => {
+                    Backend.enhanceImage(mainUrl, text, (err, res) => {
+                        console.log('📦 enhanceImage -> err:', err);
+                        console.log('📦 enhanceImage -> res:', res);
 
-        if (localStorage.getItem(cacheKey)) {
-            console.log('🧠 CACHE USADO');
-            enhancedUrl = localStorage.getItem(cacheKey);
-        } else {
-            enhancedUrl = await new Promise((resolve) => {
-                Backend.enhanceImage(mainUrl, text, (err, res) => {
-                    console.log('📦 enhanceImage -> err:', err);
-                    console.log('📦 enhanceImage -> res:', res);
+                        if (err || !res || !res.success || !res.enhancedUrl) {
+                            console.log('⚠️ OpenAI fallback');
+                            resolve(mainUrl);
+                            return;
+                        }
 
-                    if (err || !res || !res.success || !res.enhancedUrl) {
-                        console.log('⚠️ OpenAI fallback');
-                        resolve(mainUrl);
-                        return;
-                    }
-
-                    console.log('🤖 OpenAI OK');
-
-                    // guardar en cache
-                    localStorage.setItem(cacheKey, res.enhancedUrl);
-
-                    resolve(res.enhancedUrl);
+                        console.log('🤖 OpenAI OK');
+                        localStorage.setItem(cacheKey, res.enhancedUrl);
+                        resolve(res.enhancedUrl);
+                    });
                 });
-            });
+            }
+
+            let logoUrl = null;
+            if (this.logoImageData) {
+                const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
+                logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
+            }
+
+            Backend.registrarUso('imagen', text, 1, () => {});
+            await document.fonts.load('100px "Rammetto One"');
+
+            const result = await FlyerGenerator.generate(
+                this.mainImageData,
+                this.logoImageData,
+                text,
+                enhancedUrl,
+                mainUrl
+            );
+
+            const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
+            const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
+
+            console.log('✅ IA usada:', result.iaUsed);
+            console.log('🔗 Final:', finalUrl);
+
+            e.loader.classList.add('hidden');
+            e.resultSection.classList.remove('hidden');
+            e.resultSection.scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error('❌ Error:', error);
+            alert('Error generando flyer.');
+            e.loader.classList.add('hidden');
         }
+    },
 
-        let logoUrl = null;
-        if (this.logoImageData) {
-            const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
-            logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
-        }
-
-        Backend.registrarUso('imagen', text, 1, () => {});
-        await document.fonts.load('100px "Rammetto One"');
-        const result = await FlyerGenerator.generate(
-            this.mainImageData,
-            this.logoImageData,
-            text,
-            enhancedUrl,
-            mainUrl
-        );
-
-        const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
-        const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
-
-        console.log('✅ IA usada:', result.iaUsed);
-        console.log('🔗 Final:', finalUrl);
-
-        e.loader.classList.add('hidden');
-        e.resultSection.classList.remove('hidden');
-        e.resultSection.scrollIntoView({ behavior: 'smooth' });
-
-    } catch (error) {
-        console.error('❌ Error:', error);
-        alert('Error generando flyer.');
-        e.loader.classList.add('hidden');
-    }
-},
     dataURLtoFile: function(dataurl, filename) {
         return new Promise((resolve) => {
             const arr = dataurl.split(',');
