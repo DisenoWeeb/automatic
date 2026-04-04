@@ -1,6 +1,6 @@
 // CONFIG
 const CONFIG = {
-    GAS_URL: 'TU_URL_GAS',
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbxLhR_vAg14TC2qnoywDnyc6iKLm3AmWQ8GPCdlL9Lo6RPDxgXHZSrFZ5YkHJ47K5-8Dg/exec',
     CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
     CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned'
 };
