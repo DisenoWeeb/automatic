@@ -767,7 +767,7 @@ const CloudinaryUpload = {
       'c_fill',
       `w_${CONFIG.OUTPUT_WIDTH}`,
       `h_${CONFIG.OUTPUT_HEIGHT}`,
-      'g_auto',
+      'g_faces',
       'e_improve'
     ].join(',');
 
