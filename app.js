@@ -234,12 +234,13 @@ const FlyerGenerator = {
         // 1. Fondo limpio
         await this.drawBackground();
 
-        // 3. Título oculto detrás del zócalo
-        this.drawHiddenTitle(text);
+        //  Título oculto detrás del zócalo
+        //this.drawHiddenTitle(text);
         
         // 2. Imagen principal
         await this.drawSubject(enhancedImageUrl);
-        
+        // 3. Título ARRIBA
+        this.drawTopTitle(text);
         // 4. Zócalo
         this.drawFooter();
 
@@ -573,6 +574,98 @@ const FlyerGenerator = {
         ctx.fillText('343 5303848',        rightX,  baseY);
     },
 
+  drawTopTitle: function(text) {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    if (!text) return;
+
+    // ── ZONA SEGURA ─────────────────────
+    const safeTop = canvas.height * 0.03;
+    const safeHeight = canvas.height * 0.35;
+    const safeWidth = canvas.width * 0.9;
+    const centerX = canvas.width / 2;
+
+    // ── DETECTAR COLOR DE FONDO ─────────
+    const sampleY = safeTop + safeHeight / 2;
+    let brightness = 255;
+
+    try {
+        const sample = ctx.getImageData(canvas.width / 2, sampleY, 1, 1).data;
+        brightness = (sample[0] * 299 + sample[1] * 587 + sample[2] * 114) / 1000;
+    } catch (e) {
+        // fallback si falla por CORS
+        brightness = 200;
+    }
+
+    const isDark = brightness < 140;
+
+    const textColor = isDark ? '#ffffff' : '#1f3f5b';
+    const strokeColor = isDark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
+
+    // ── TEXTO LIMPIO ────────────────────
+    const clean = text.trim().toUpperCase();
+    const words = clean.split(/\s+/).slice(0, 4);
+
+    let lines = [];
+    if (words.length <= 2) {
+        lines = [words.join(' ')];
+    } else {
+        const mid = Math.ceil(words.length / 2);
+        lines = [
+            words.slice(0, mid).join(' '),
+            words.slice(mid).join(' ')
+        ];
+    }
+
+    // ── AUTO SIZE ───────────────────────
+    let fontSize = 120;
+    const minFont = 50;
+
+    while (fontSize > minFont) {
+        ctx.font = `${fontSize}px "Rammetto One", sans-serif`;
+
+        const fits = lines.every(l => ctx.measureText(l).width <= safeWidth);
+        const totalHeight = lines.length * fontSize * 0.95;
+
+        if (fits && totalHeight < safeHeight) break;
+        fontSize -= 2;
+    }
+
+    const lineHeight = fontSize * 0.95;
+    const totalHeight = lines.length * lineHeight;
+    let startY = safeTop + (safeHeight - totalHeight) / 2 + fontSize;
+
+    ctx.save();
+
+    // ── CAJA ADAPTATIVA ─────────────────
+    ctx.fillStyle = isDark 
+        ? 'rgba(0,0,0,0.25)' 
+        : 'rgba(255,255,255,0.25)';
+
+    ctx.beginPath();
+    ctx.roundRect(40, safeTop, canvas.width - 80, safeHeight - 20, 30);
+    ctx.fill();
+
+    // ── TEXTO ───────────────────────────
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = textColor;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = Math.max(3, fontSize * 0.04);
+    ctx.lineJoin = 'round';
+
+    lines.forEach((line, i) => {
+        const y = startY + i * lineHeight;
+
+        ctx.font = `${fontSize}px "Rammetto One", sans-serif`;
+
+        ctx.strokeText(line, centerX, y);
+        ctx.fillText(line, centerX, y);
+    });
+
+    ctx.restore();
+}
 }; // cierra FlyerGenerator
 
 // ==========================================
