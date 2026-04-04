@@ -10,7 +10,7 @@ const CONFIG = {
    CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
   CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
    CLOUDINARY_FOLDER: 'dra_bruzera',
-   IMAGE_MODE: 'safe_pad', // smart | safe_pad | face | contain
+   IMAGE_MODE: 'smart', // smart | safe_pad | face | contain
   OUTPUT_WIDTH: 1080,
   OUTPUT_HEIGHT: 1350,
   CREDITOS_IMAGEN: 1,
