@@ -164,7 +164,7 @@ const App = {
 
     let finalMainImageUrl = null;
 
-let finalMainImageUrl = null;
+
 
 if (CONFIG.IMAGE_MODE === 'smart') {
   finalMainImageUrl = await this.getBestAvailableImageUrl([
