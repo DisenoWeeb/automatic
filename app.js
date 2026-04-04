@@ -854,7 +854,7 @@ const UI = {
             }
 
             Backend.registrarUso('imagen', text, 1, () => {});
-            await document.fonts.load('100px "Gasoek One"`;);
+           await document.fonts.load('100px "Gasoek One"');
 
             const result = await FlyerGenerator.generate(
                 this.mainImageData,
