@@ -742,19 +742,28 @@ const UI = {
         e.generateBtn.disabled = !(this.mainImageData && e.flyerText.value.trim().length > 0);
     },
 
-    generateFlyer: async function() {
-        const e = this.elements;
+   generateFlyer: async function() {
+    const e = this.elements;
 
-        e.loader.classList.remove('hidden');
-        e.resultSection.classList.add('hidden');
+    e.loader.classList.remove('hidden');
+    e.resultSection.classList.add('hidden');
 
-        try {
-            const text = e.flyerText.value.trim();
+    try {
+        const text = e.flyerText.value.trim();
 
-            const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
-            const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
+        const mainFile = await this.dataURLtoFile(this.mainImageData, 'main.jpg');
+        const mainUrl = await CloudinaryUpload.upload(mainFile, 'dra_bruzera/originales');
 
-            const enhancedUrl = await new Promise((resolve) => {
+        // 🔥 CACHE PARA NO PAGAR 2 VECES
+        const cacheKey = 'ai_' + mainUrl;
+
+        let enhancedUrl;
+
+        if (localStorage.getItem(cacheKey)) {
+            console.log('🧠 CACHE USADO');
+            enhancedUrl = localStorage.getItem(cacheKey);
+        } else {
+            enhancedUrl = await new Promise((resolve) => {
                 Backend.enhanceImage(mainUrl, text, (err, res) => {
                     console.log('📦 enhanceImage -> err:', err);
                     console.log('📦 enhanceImage -> res:', res);
@@ -766,37 +775,47 @@ const UI = {
                     }
 
                     console.log('🤖 OpenAI OK');
+
+                    // guardar en cache
+                    localStorage.setItem(cacheKey, res.enhancedUrl);
+
                     resolve(res.enhancedUrl);
                 });
             });
-
-            let logoUrl = null;
-            if (this.logoImageData) {
-                const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
-                logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
-            }
-
-            Backend.registrarUso('imagen', text, 1, () => {});
-
-            const result = await FlyerGenerator.generate(this.mainImageData, this.logoImageData, text, enhancedUrl, mainUrl);
-
-            const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
-            const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
-
-            console.log('✅ IA usada:', result.iaUsed);
-            console.log('🔗 Final:', finalUrl);
-
-            e.loader.classList.add('hidden');
-            e.resultSection.classList.remove('hidden');
-            e.resultSection.scrollIntoView({ behavior: 'smooth' });
-
-        } catch (error) {
-            console.error('❌ Error:', error);
-            alert('Error generando flyer.');
-            e.loader.classList.add('hidden');
         }
-    },
 
+        let logoUrl = null;
+        if (this.logoImageData) {
+            const logoFile = await this.dataURLtoFile(this.logoImageData, 'logo.png');
+            logoUrl = await CloudinaryUpload.upload(logoFile, 'dra_bruzera/logos');
+        }
+
+        Backend.registrarUso('imagen', text, 1, () => {});
+
+        const result = await FlyerGenerator.generate(
+            this.mainImageData,
+            this.logoImageData,
+            text,
+            enhancedUrl,
+            mainUrl
+        );
+
+        const finalFile = await this.dataURLtoFile(result.dataUrl, 'flyer.jpg');
+        const finalUrl = await CloudinaryUpload.upload(finalFile, 'dra_bruzera/flyers');
+
+        console.log('✅ IA usada:', result.iaUsed);
+        console.log('🔗 Final:', finalUrl);
+
+        e.loader.classList.add('hidden');
+        e.resultSection.classList.remove('hidden');
+        e.resultSection.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error('❌ Error:', error);
+        alert('Error generando flyer.');
+        e.loader.classList.add('hidden');
+    }
+},
     dataURLtoFile: function(dataurl, filename) {
         return new Promise((resolve) => {
             const arr = dataurl.split(',');
