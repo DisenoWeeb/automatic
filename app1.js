@@ -450,7 +450,8 @@ getFlyerColors() {
     panel1: s.getPropertyValue('--flyer-panel-1').trim(),
     panel2: s.getPropertyValue('--flyer-panel-2').trim(),
 
-    text: s.getPropertyValue('--flyer-text').trim(),
+    bodyText: s.getPropertyValue('--flyer-body-text').trim(),
+    contactText: s.getPropertyValue('--flyer-contact-text').trim(),
 
     frame: s.getPropertyValue('--flyer-frame').trim(),
     frameSoft: s.getPropertyValue('--flyer-frame-soft').trim(),
@@ -669,7 +670,7 @@ drawBodyText(ctx, texto, width, startY, panelY) {
   const lineHeight = 42;
   const maxLines = Math.max(1, Math.floor(availableH / lineHeight));
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = c.bodyText;
   ctx.font = '500 34px Montserrat, Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
@@ -690,8 +691,8 @@ drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
   const startX = 130;              // 👉 más a la derecha
   const baseY = panelY + 60;       // 👉 más arriba
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '600 31px Montserrat, Arial, sans-serif';
+  ctx.fillStyle = c.contactText;
+  ctx.font = '600 34px Montserrat, Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
@@ -706,7 +707,7 @@ drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
 
   lines.forEach(line => {
     ctx.fillText(line, startX, y);
-    y += 38; // 👉 spacing cómodo
+    y += 34; // 👉 spacing cómodo
   });
 },
 
