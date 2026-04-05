@@ -39,7 +39,7 @@
   --flyer-panel-2: var(--violet);
 
   /* Texto */
-  --flyer-text: #ffffff;
+  --flyer-text: var(--violet);
 
   /* Bordes y detalles */
   --flyer-frame: rgba(255,255,255,0.88);
