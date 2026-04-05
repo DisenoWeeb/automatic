@@ -1,861 +1,395 @@
-/* =========================
-   DRA. BRUZERA - app.js
-   Frontend sin IA
-   ========================= */
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dra. Bruzera - Flyers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbyVS35VZ8GmXFUsq787A23ec74wnYKhK07_eRO7BQp5zVT_Jv_DJijt41VHthVXbZzdVQ/exec',
-  STORAGE_USER_ID: 'dra_bruzera_user_id',
-  STORAGE_HISTORY: 'dra_bruzera_history',
-  CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
-  CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
-  CLOUDINARY_FOLDER: 'dra_bruzera',
-  IMAGE_MODE: 'safe_pad', // smart | safe_pad | face | contain
-  OUTPUT_WIDTH: 1080,
-  OUTPUT_HEIGHT: 1350,
-  CREDITOS_IMAGEN: 1,
-  CREDITOS_VIDEO: 4
-};
+  <style>
+    * { box-sizing: border-box; }
 
-const App = {
-  state: {
-    userId: null,
-    mainImageData: null,
-    logoImageData: null,
-    generatedImage: null
-  },
-
-  elements: {},
-  _lastFrame: null,
-  _bodyStartY: 0,
-  _bottomPanelY: 0,
-
-  init() {
-    this.cacheElements();
-    this.bindEvents();
-    this.ensureUserId();
-    this.initUserOnBackend();
-    this.renderLocalHistory();
-  },
-
-  cacheElements() {
-    this.elements = {
-      mainImageInput: document.getElementById('mainImage'),
-      logoImageInput: document.getElementById('logoImage'),
-
-      titulo: document.getElementById('titulo'),
-      texto: document.getElementById('texto'),
-      instagram: document.getElementById('instagram'),
-      web: document.getElementById('web'),
-      whatsapp: document.getElementById('whatsapp'),
-      ubicacion: document.getElementById('ubicacion'),
-
-      previewMain: document.getElementById('previewMain'),
-      previewLogo: document.getElementById('previewLogo'),
-
-      btnGenerar: document.getElementById('btnGenerar'),
-      btnDescargar: document.getElementById('btnDescargar'),
-      btnCompartir: document.getElementById('btnCompartir'),
-
-      loader: document.getElementById('loader'),
-      loaderText: document.getElementById('loaderText'),
-
-      resultSection: document.getElementById('resultSection'),
-      resultImage: document.getElementById('resultImage'),
-
-      historyList: document.getElementById('historyList'),
-      userIdBox: document.getElementById('userIdBox')
-    };
-  },
-
-  bindEvents() {
-    const e = this.elements;
-
-    if (e.mainImageInput) {
-      e.mainImageInput.addEventListener('change', async (ev) => {
-        const file = ev.target.files && ev.target.files[0];
-        if (!file) return;
-
-        try {
-          const dataUrl = await this.fileToDataURL(file);
-          this.state.mainImageData = dataUrl;
-          if (e.previewMain) e.previewMain.src = dataUrl;
-        } catch (err) {
-          console.error(err);
-          this.showError('No se pudo leer la imagen principal');
-        }
-      });
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.25), transparent 30%),
+        linear-gradient(135deg, #f7d7df 0%, #efbfd0 35%, #ddb5e3 70%, #ccb2f3 100%);
+      color: #4a1f46;
+      min-height: 100vh;
     }
 
-    if (e.logoImageInput) {
-      e.logoImageInput.addEventListener('change', async (ev) => {
-        const file = ev.target.files && ev.target.files[0];
-        if (!file) return;
-
-        try {
-          const dataUrl = await this.fileToDataURL(file);
-          this.state.logoImageData = dataUrl;
-          if (e.previewLogo) e.previewLogo.src = dataUrl;
-        } catch (err) {
-          console.error(err);
-          this.showError('No se pudo leer el logo');
-        }
-      });
+    .wrap {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
     }
 
-    if (e.btnGenerar) {
-      e.btnGenerar.addEventListener('click', () => this.generarFlyer());
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
     }
 
-    if (e.btnDescargar) {
-      e.btnDescargar.addEventListener('click', () => this.descargarImagen());
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      color: #6e2f66;
+      letter-spacing: -.02em;
     }
 
-    if (e.btnCompartir) {
-      e.btnCompartir.addEventListener('click', () => this.compartirImagen());
-    }
-  },
-
-  ensureUserId() {
-    let userId = localStorage.getItem(CONFIG.STORAGE_USER_ID);
-
-    if (!userId) {
-      userId = this.generateUserId();
-      localStorage.setItem(CONFIG.STORAGE_USER_ID, userId);
+    .hero p {
+      margin: 0;
+      color: #6f506d;
+      font-size: 15px;
+      font-weight: 500;
     }
 
-    this.state.userId = userId;
-
-    if (this.elements.userIdBox) {
-      this.elements.userIdBox.textContent = userId;
-    }
-  },
-
-  generateUserId() {
-    return 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
-  },
-
-  async initUserOnBackend() {
-    try {
-      const res = await Backend.init(this.state.userId);
-      console.log('Init backend OK:', res);
-    } catch (err) {
-      console.warn('Init backend error:', err);
-    }
-  },
-
-  async generarFlyer() {
-    const e = this.elements;
-
-    if (!this.state.mainImageData) {
-      this.showError('Primero subí una imagen');
-      return;
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 24px;
+      align-items: start;
     }
 
-    const titulo = (e.titulo && e.titulo.value.trim()) || 'Flyer';
-    const texto = (e.texto && e.texto.value.trim()) || '';
-    const instagram = (e.instagram && e.instagram.value.trim()) || '@drabruzera';
-    const web = (e.web && e.web.value.trim()) || 'www.bruzera.turnox.pro';
-    const whatsapp = (e.whatsapp && e.whatsapp.value.trim()) || '343 5303848';
-    const ubicacion = (e.ubicacion && e.ubicacion.value.trim()) || 'José Venturino 1239';
-
-    try {
-      this.setLoading(true, 'Subiendo imagen y optimizando...');
-
-      const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
-      const uploaded = await CloudinaryUpload.upload(mainFile, 'dra_bruzera');
-
-      let finalMainImageUrl = null;
-
-      if (CONFIG.IMAGE_MODE === 'smart') {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildSmartFlyerUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      } else if (CONFIG.IMAGE_MODE === 'safe_pad') {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      } else if (CONFIG.IMAGE_MODE === 'face') {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildFacePriorityUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      } else {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      }
-
-      let finalLogo = null;
-
-      if (this.state.logoImageData) {
-        try {
-          const logoFile = await this.dataURLtoFile(this.state.logoImageData, 'logo.png');
-          const logoUploaded = await CloudinaryUpload.upload(logoFile, 'dra_bruzera');
-          finalLogo = logoUploaded.secureUrl;
-        } catch (err) {
-          console.warn('No se pudo subir el logo, sigo sin logo:', err);
-        }
-      }
-
-      await Backend.registrar({
-        userId: this.state.userId,
-        tipo: 'imagen',
-        titulo,
-        creditos: CONFIG.CREDITOS_IMAGEN
-      });
-
-      this.setLoading(true, 'Armando flyer final...');
-
-      const finalDataUrl = await this.componerFlyer({
-        mainImage: finalMainImageUrl,
-        logoImage: finalLogo,
-        titulo,
-        texto,
-        instagram,
-        web,
-        whatsapp,
-        ubicacion
-      });
-
-      this.state.generatedImage = finalDataUrl;
-
-      if (e.resultImage) {
-        e.resultImage.src = finalDataUrl;
-      }
-
-      if (e.resultSection) {
-        e.resultSection.classList.remove('hidden');
-        e.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      this.saveLocalHistory({
-        titulo,
-        tipo: 'imagen',
-        creditos: CONFIG.CREDITOS_IMAGEN,
-        fecha: new Date().toISOString()
-      });
-
-      this.renderLocalHistory();
-    } catch (err) {
-      console.error(err);
-      this.showError(err.message || 'Error al generar el flyer');
-    } finally {
-      this.setLoading(false);
-    }
-  },
-
-  async componerFlyer({ mainImage, logoImage, titulo, texto, instagram, web, whatsapp, ubicacion }) {
-    const canvas = document.createElement('canvas');
-    canvas.width = CONFIG.OUTPUT_WIDTH;
-    canvas.height = CONFIG.OUTPUT_HEIGHT;
-
-    const ctx = canvas.getContext('2d');
-    this._lastFrame = null;
-    this._bodyStartY = 0;
-    this._bottomPanelY = 0;
-
-    this.drawBackground(ctx, canvas.width, canvas.height);
-
-    const mainImg = await this.loadImage(mainImage);
-
-    this.drawTopDecoration(ctx, canvas.width, canvas.height);
-    this.drawMainImage(ctx, mainImg, canvas.width, canvas.height);
-
-    if (titulo) {
-      this.drawTitle(ctx, titulo, canvas.width);
+    .card {
+      background: rgba(255,255,255,.68);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 24px;
+      box-shadow: 0 18px 50px rgba(109, 56, 111, .16);
+      padding: 22px;
     }
 
-    this.drawBottomPanel(ctx, canvas.width, canvas.height);
-
-    if (texto) {
-      this.drawBodyText(ctx, texto, canvas.width, canvas.height);
+    .card h2 {
+      margin: 0 0 18px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #6e2f66;
     }
 
-    this.drawContactData(ctx, {
-      instagram,
-      web,
-      whatsapp,
-      ubicacion,
-      width: canvas.width,
-      height: canvas.height
-    });
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
 
-    if (logoImage) {
-      try {
-        const logoImg = await this.loadImage(logoImage);
-        this.drawLogo(ctx, logoImg, canvas.width, canvas.height);
-      } catch (err) {
-        console.warn('No se pudo dibujar el logo:', err);
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6c4568;
+    }
+
+    .field input[type="text"],
+    .field input[type="url"],
+    .field input[type="tel"],
+    .field textarea,
+    .field input[type="file"] {
+      width: 100%;
+      border: 1px solid rgba(134, 74, 126, .18);
+      outline: none;
+      border-radius: 16px;
+      background: rgba(255,255,255,.9);
+      padding: 14px 16px;
+      font: inherit;
+      color: #53274e;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .preview-box {
+      background: rgba(255,255,255,.55);
+      border: 1px dashed rgba(110, 47, 102, .25);
+      border-radius: 20px;
+      padding: 12px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .preview-box span {
+      font-size: 12px;
+      font-weight: 700;
+      color: #7a5a77;
+    }
+
+    .preview-box img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      display: block;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 14px 18px;
+      font: inherit;
+      font-weight: 800;
+      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+      box-shadow: 0 10px 24px rgba(104, 41, 100, .18);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3672 0%, #5b2d71 100%);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.95);
+      color: #6a3265;
+      border: 1px solid rgba(107, 50, 101, .12);
+    }
+
+    .statusbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      background: rgba(255,255,255,.82);
+      color: #6e2f66;
+      border: 1px solid rgba(110, 47, 102, .12);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .loader {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(110, 47, 102, .12);
+      color: #6b4267;
+      font-weight: 700;
+    }
+
+    .hidden { display: none !important; }
+
+    .result-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .result-frame {
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(110, 47, 102, .12);
+      border-radius: 24px;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .result-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+    }
+
+    .history {
+      display: grid;
+      gap: 12px;
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .history-item,
+    .history-empty {
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(110, 47, 102, .1);
+      border-radius: 18px;
+      padding: 14px;
+      color: #66405f;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .history-item strong {
+      display: block;
+      color: #6e2f66;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
       }
     }
 
-    return canvas.toDataURL('image/png', 1);
-  },
-
-  drawBackground(ctx, width, height) {
-    const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, '#f3eefb');
-    gradient.addColorStop(0.35, '#eadcf8');
-    gradient.addColorStop(0.7, '#d6b8f3');
-    gradient.addColorStop(1, '#b98de8');
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-
-    for (let i = 0; i < 18; i++) {
-      const x = (width / 18) * i;
-      ctx.beginPath();
-      ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.fill();
+    @media (max-width: 640px) {
+      .wrap { padding: 14px; }
+      .card { padding: 16px; border-radius: 20px; }
+      .two, .three, .preview-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
     }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Flyers Dra. Bruzera</h1>
+      <p>Generador simple sin IA · PNG vertical para Instagram · 1080 × 1350</p>
+    </div>
 
-    for (let i = 0; i < 14; i++) {
-      const y = 200 + i * 70;
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
-      ctx.fillRect(0, y, width, 8);
-    }
-  },
+    <div class="grid">
+      <!-- COLUMNA IZQUIERDA -->
+      <div class="card">
+        <h2>Configuración</h2>
 
-  async getBestAvailableImageUrl(urls) {
-    for (const url of urls) {
-      try {
-        await this.loadImage(url);
-        return url;
-      } catch (err) {
-        console.warn('Fallback de imagen Cloudinary:', url, err);
-      }
-    }
+        <div class="stack">
+          <div class="preview-grid">
+            <div class="field">
+              <label for="mainImage">Imagen principal</label>
+              <input type="file" id="mainImage" accept="image/*" />
+            </div>
 
-    throw new Error('No se pudo cargar ninguna versión optimizada de la imagen');
-  },
+            <div class="field">
+              <label for="logoImage">Logo (opcional)</label>
+              <input type="file" id="logoImage" accept="image/*" />
+            </div>
+          </div>
 
-  drawMainImage(ctx, img, width, height) {
-    const frameX = 60;
-    const frameY = 180;
-    const frameW = width - 120;
-    const imgRatio = img.width / img.height;
+          <div class="preview-grid">
+            <div class="preview-box">
+              <span>Preview imagen</span>
+              <img id="previewMain" alt="Preview imagen principal" />
+            </div>
 
-    let frameH = frameW / imgRatio;
-    frameH = Math.max(460, Math.min(frameH, 820));
+            <div class="preview-box">
+              <span>Preview logo</span>
+              <img id="previewLogo" alt="Preview logo" />
+            </div>
+          </div>
 
-    this._lastFrame = {
-      x: frameX,
-      y: frameY,
-      w: frameW,
-      h: frameH
-    };
+          <div class="field">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor" />
+          </div>
 
-    ctx.save();
-    this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
-    ctx.clip();
+          <div class="field">
+            <label for="texto">Texto</label>
+            <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+          </div>
 
-    const boxRatio = frameW / frameH;
-    let drawW, drawH, drawX, drawY;
+          <div class="two">
+            <div class="field">
+              <label for="instagram">Instagram</label>
+              <input type="text" id="instagram" value="@drabruzera" />
+            </div>
 
-    if (imgRatio > boxRatio) {
-      drawH = frameH;
-      drawW = drawH * imgRatio;
-      drawX = frameX - (drawW - frameW) / 2;
-      drawY = frameY;
-    } else {
-      drawW = frameW;
-      drawH = drawW / imgRatio;
-      drawX = frameX;
-      drawY = frameY - (drawH - frameH) * 0.35;
-    }
+            <div class="field">
+              <label for="whatsapp">WhatsApp</label>
+              <input type="tel" id="whatsapp" value="343 5303848" />
+            </div>
+          </div>
 
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-    ctx.restore();
+          <div class="two">
+            <div class="field">
+              <label for="web">Web</label>
+              <input type="text" id="web" value="www.bruzera.turnox.pro" />
+            </div>
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.88)';
-    ctx.lineWidth = 4;
-    this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
-    ctx.stroke();
+            <div class="field">
+              <label for="ubicacion">Ubicación</label>
+              <input type="text" id="ubicacion" value="José Venturino 1239" />
+            </div>
+          </div>
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.24)';
-    ctx.lineWidth = 2;
-    this.roundRect(ctx, frameX + 14, frameY + 14, frameW - 28, frameH - 28, 26);
-    ctx.stroke();
+          <div class="actions">
+            <button class="btn btn-primary" id="btnGenerar">Generar flyer</button>
+            <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar PNG</button>
+            <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
+          </div>
 
-    this._bodyStartY = frameY + frameH + 26;
-  },
+          <div class="statusbar">
+            <div class="chip">User ID: <span id="userIdBox">---</span></div>
+            <div class="chip">1 crédito por imagen</div>
+          </div>
 
-  drawTopDecoration(ctx, width, height) {
-    ctx.save();
-
-    const g = ctx.createLinearGradient(0, 0, width, 0);
-    g.addColorStop(0, 'rgba(255,255,255,0.65)');
-    g.addColorStop(0.5, 'rgba(255,255,255,0.20)');
-    g.addColorStop(1, 'rgba(255,255,255,0.65)');
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(width, 0);
-    ctx.lineTo(width, 78);
-    ctx.bezierCurveTo(width * 0.72, 114, width * 0.28, 38, 0, 110);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
-  },
-
-  drawBottomPanel(ctx, width, height) {
-    const panelH = 250;
-    const minY = this._bodyStartY + 110;
-    const y = Math.max(height - panelH, minY);
-
-    this._bottomPanelY = y;
-
-    const g = ctx.createLinearGradient(0, y, width, height);
-    g.addColorStop(0, 'rgba(112, 53, 120, 0.90)');
-    g.addColorStop(1, 'rgba(78, 30, 88, 0.98)');
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(0, y + 42);
-    ctx.bezierCurveTo(width * 0.18, y - 20, width * 0.38, y + 82, width * 0.55, y + 18);
-    ctx.bezierCurveTo(width * 0.72, y - 28, width * 0.88, y + 46, width, y + 8);
-    ctx.lineTo(width, height);
-    ctx.lineTo(0, height);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    ctx.beginPath();
-    ctx.arc(92, y + 118, 72, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(width - 120, y + 54, 60, 0, Math.PI * 2);
-    ctx.fill();
-  },
-
-  drawTitle(ctx, titulo, width) {
-    const maxWidth = width - 160;
-    ctx.fillStyle = '#6f2c67';
-    ctx.font = 'bold 58px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-
-    const lines = this.wrapText(ctx, titulo.toUpperCase(), maxWidth);
-    let y = 64;
-
-    lines.slice(0, 2).forEach(line => {
-      ctx.fillText(line, width / 2, y);
-      y += 66;
-    });
-  },
-
-  drawBodyText(ctx, texto, width, height) {
-    if (!texto) return;
-
-    const panelTop = this._bottomPanelY || (height - 250);
-    const startY = this._bodyStartY;
-    const availableH = Math.max(0, panelTop - startY - 26);
-    if (availableH < 28) return;
-
-    const maxLines = Math.max(1, Math.floor(availableH / 36));
-    const maxWidth = width - 180;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '500 28px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-
-    const lines = this.wrapText(ctx, texto, maxWidth);
-    let y = startY;
-
-    lines.slice(0, maxLines).forEach(line => {
-      ctx.fillText(line, 90, y);
-      y += 36;
-    });
-  },
-
-  drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, height }) {
-    const panelTop = this._bottomPanelY || (height - 250);
-    const startX = 90;
-    const baseY = panelTop + 110;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '600 25px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-
-    const lines = [
-      `Instagram: ${instagram}`,
-      `Web: ${web}`,
-      `WhatsApp: ${whatsapp}`,
-      `Ubicación: ${ubicacion}`
-    ];
-
-    let y = baseY;
-    lines.forEach(line => {
-      ctx.fillText(line, startX, y);
-      y += 32;
-    });
-  },
-
-  drawLogo(ctx, img, width, height) {
-    const panelTop = this._bottomPanelY || (height - 250);
-    const maxW = 170;
-    const maxH = 170;
-
-    const ratio = Math.min(maxW / img.width, maxH / img.height);
-    const drawW = img.width * ratio;
-    const drawH = img.height * ratio;
-
-    const x = width - drawW - 70;
-    const y = panelTop + 66;
-
-    ctx.save();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.16)';
-    this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
-    ctx.fill();
-
-    ctx.drawImage(img, x, y, drawW, drawH);
-    ctx.restore();
-  },
-
-  wrapText(ctx, text, maxWidth) {
-    if (!text) return [];
-    const words = String(text).split(/\s+/);
-    const lines = [];
-    let current = '';
-
-    for (const word of words) {
-      const testLine = current ? current + ' ' + word : word;
-      const metrics = ctx.measureText(testLine);
-
-      if (metrics.width <= maxWidth) {
-        current = testLine;
-      } else {
-        if (current) lines.push(current);
-        current = word;
-      }
-    }
-
-    if (current) lines.push(current);
-    return lines;
-  },
-
-  roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  },
-
-  async descargarImagen() {
-    if (!this.state.generatedImage) {
-      this.showError('Primero generá una imagen');
-      return;
-    }
-
-    const a = document.createElement('a');
-    a.href = this.state.generatedImage;
-    a.download = 'flyer-dra-bruzera.png';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  },
-
-  async compartirImagen() {
-    if (!this.state.generatedImage) {
-      this.showError('Primero generá una imagen');
-      return;
-    }
-
-    try {
-      const file = await this.dataURLtoFile(this.state.generatedImage, 'flyer-dra-bruzera.png');
-
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Flyer Dra. Bruzera',
-          files: [file]
-        });
-      } else {
-        this.showError('Tu dispositivo no permite compartir archivos desde el navegador');
-      }
-    } catch (err) {
-      console.error(err);
-      this.showError('No se pudo compartir la imagen');
-    }
-  },
-
-  saveLocalHistory(item) {
-    const raw = localStorage.getItem(CONFIG.STORAGE_HISTORY);
-    const history = raw ? JSON.parse(raw) : [];
-    history.unshift(item);
-    localStorage.setItem(CONFIG.STORAGE_HISTORY, JSON.stringify(history.slice(0, 20)));
-  },
-
-  renderLocalHistory() {
-    const box = this.elements.historyList;
-    if (!box) return;
-
-    const raw = localStorage.getItem(CONFIG.STORAGE_HISTORY);
-    const history = raw ? JSON.parse(raw) : [];
-
-    if (!history.length) {
-      box.innerHTML = '<div class="history-empty">Todavía no hay registros locales</div>';
-      return;
-    }
-
-    box.innerHTML = history.map(item => {
-      const fecha = new Date(item.fecha).toLocaleString('es-AR');
-      return `
-        <div class="history-item">
-          <strong>${this.escapeHtml(item.titulo || 'Sin título')}</strong>
-          <div>Tipo: ${this.escapeHtml(item.tipo || '-')}</div>
-          <div>Créditos: ${this.escapeHtml(String(item.creditos || 0))}</div>
-          <div>Fecha: ${this.escapeHtml(fecha)}</div>
+          <div class="loader hidden" id="loader">
+            <span id="loaderText">Generando flyer...</span>
+          </div>
         </div>
-      `;
-    }).join('');
-  },
+      </div>
 
-  fileToDataURL(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  },
+      <!-- COLUMNA DERECHA -->
+      <div class="stack">
+        <div class="card result-card">
+          <h2>Resultado</h2>
 
-  dataURLtoFile(dataUrl, filename) {
-    return fetch(dataUrl)
-      .then(res => res.blob())
-      .then(blob => new File([blob], filename, { type: blob.type || 'image/png' }));
-  },
+          <div class="result-frame">
+            <img id="resultImage" alt="Resultado flyer" />
+          </div>
 
-  loadImage(src) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = src;
-    });
-  },
+          <div id="resultSection" class="hidden">
+            <div class="chip">Flyer generado correctamente</div>
+          </div>
+        </div>
 
-  setLoading(isLoading, text = 'Cargando...') {
-    const e = this.elements;
+        <div class="card">
+          <h2>Historial local</h2>
+          <div id="historyList" class="history">
+            <div class="history-empty">Todavía no hay registros locales</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    if (e.loader) {
-      e.loader.classList.toggle('hidden', !isLoading);
-    }
-
-    if (e.loaderText) {
-      e.loaderText.textContent = text;
-    }
-
-    if (e.btnGenerar) {
-      e.btnGenerar.disabled = isLoading;
-    }
-  },
-
-  showError(message) {
-    alert(message);
-  },
-
-  escapeHtml(str) {
-    return String(str)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-};
-
-/* =========================
-   JSONP
-   ========================= */
-
-function jsonpRequest(url) {
-  return new Promise((resolve, reject) => {
-    const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-    const script = document.createElement('script');
-
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error('Timeout en JSONP'));
-    }, 20000);
-
-    function cleanup() {
-      clearTimeout(timeout);
-      if (script.parentNode) script.parentNode.removeChild(script);
-      try {
-        delete window[callbackName];
-      } catch (_) {
-        window[callbackName] = undefined;
-      }
-    }
-
-    window[callbackName] = function(data) {
-      cleanup();
-      if (data && data.success === false) {
-        reject(new Error(data.error || 'Error del servidor'));
-        return;
-      }
-      resolve(data);
-    };
-
-    script.onerror = function() {
-      cleanup();
-      reject(new Error('Error cargando JSONP'));
-    };
-
-    const sep = url.includes('?') ? '&' : '?';
-    script.src = url + sep + 'callback=' + callbackName + '&_=' + Date.now();
-    document.body.appendChild(script);
-  });
-}
-
-/* =========================
-   Backend
-   ========================= */
-
-const Backend = {
-  init(userId) {
-    const url =
-      CONFIG.API_URL +
-      '?action=init' +
-      '&userId=' + encodeURIComponent(userId);
-
-    return jsonpRequest(url);
-  },
-
-  registrar({ userId, tipo, titulo, creditos }) {
-    const url =
-      CONFIG.API_URL +
-      '?action=registrar' +
-      '&userId=' + encodeURIComponent(userId) +
-      '&tipo=' + encodeURIComponent(tipo) +
-      '&titulo=' + encodeURIComponent(titulo) +
-      '&creditos=' + encodeURIComponent(creditos);
-
-    return jsonpRequest(url);
-  }
-};
-
-/* =========================
-   Cloudinary
-   ========================= */
-
-const CloudinaryUpload = {
-  async upload(file, folder = CONFIG.CLOUDINARY_FOLDER) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
-    formData.append('folder', folder);
-
-    const url = `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      throw new Error('Error subiendo a Cloudinary: ' + txt);
-    }
-
-    const data = await res.json();
-
-    if (!data || !data.secure_url || !data.public_id) {
-      throw new Error('Respuesta inválida de Cloudinary');
-    }
-
-    return {
-      secureUrl: data.secure_url,
-      publicId: data.public_id,
-      format: data.format || 'jpg',
-      version: data.version
-    };
-  },
-
-  buildUrlFromSecureUrl(secureUrl, transform = '') {
-    if (!transform) return secureUrl;
-    return secureUrl.replace('/image/upload/', `/image/upload/${transform}/`);
-  },
-
-  buildSmartFlyerUrl(secureUrl) {
-    const transforms = [
-      'f_auto',
-      'q_auto',
-      'c_fill',
-      `w_${CONFIG.OUTPUT_WIDTH}`,
-      `h_${CONFIG.OUTPUT_HEIGHT}`,
-      'g_auto',
-      'e_improve'
-    ].join(',');
-
-    return this.buildUrlFromSecureUrl(secureUrl, transforms);
-  },
-
-  buildSafePadUrl(secureUrl) {
-    const transforms = [
-      'f_auto',
-      'q_auto',
-      'c_pad',
-      `w_${CONFIG.OUTPUT_WIDTH}`,
-      `h_${CONFIG.OUTPUT_HEIGHT}`,
-      'b_auto',
-      'e_improve'
-    ].join(',');
-
-    return this.buildUrlFromSecureUrl(secureUrl, transforms);
-  },
-
-  buildFacePriorityUrl(secureUrl) {
-    const transforms = [
-      'f_auto',
-      'q_auto',
-      'c_fill',
-      `w_${CONFIG.OUTPUT_WIDTH}`,
-      `h_${CONFIG.OUTPUT_HEIGHT}`,
-      'g_faces',
-      'e_improve'
-    ].join(',');
-
-    return this.buildUrlFromSecureUrl(secureUrl, transforms);
-  },
-
-  buildContainUrl(secureUrl) {
-    const transforms = [
-      'f_auto',
-      'q_auto',
-      'c_pad',
-      `w_${CONFIG.OUTPUT_WIDTH}`,
-      `h_${CONFIG.OUTPUT_HEIGHT}`,
-      'b_auto',
-      'e_improve'
-    ].join(',');
-
-    return this.buildUrlFromSecureUrl(secureUrl, transforms);
-  }
-};
-
-/* =========================
-   Init
-   ========================= */
-
-document.addEventListener('DOMContentLoaded', () => {
-  App.init();
-});
-        
-      
+  <!-- Tu app.js -->
+  <script src="./app.js"></script>
+</body>
+</html>
