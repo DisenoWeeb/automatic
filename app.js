@@ -7,6 +7,10 @@ const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbyVS35VZ8GmXFUsq787A23ec74wnYKhK07_eRO7BQp5zVT_Jv_DJijt41VHthVXbZzdVQ/exec',
   STORAGE_USER_ID: 'dra_bruzera_user_id',
   STORAGE_HISTORY: 'dra_bruzera_history',
+   CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
+  CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
+  CLOUDINARY_FOLDER: 'dra_bruzera',
+  USE_CLOUDINARY_AI: true,
   OUTPUT_WIDTH: 1080,
   OUTPUT_HEIGHT: 1350,
   CREDITOS_IMAGEN: 1,
@@ -692,39 +696,62 @@ const App = {
   },
 
   async generarFlyer() {
-    if (!this.state.editor.img) {
-      this.showError('Primero subí una imagen');
-      return;
+  if (!this.state.editor.img || !this.state.mainImageData) {
+    this.showError('Primero subí una imagen');
+    return;
+  }
+
+  try {
+    this.setLoading(true, 'Subiendo imagen...');
+
+    const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.png');
+    const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
+
+    const originalUrl = uploadRes.secure_url;
+    const publicId = uploadRes.public_id;
+
+    let aiUrl = originalUrl;
+
+    if (CONFIG.USE_CLOUDINARY_AI) {
+      this.setLoading(true, 'Aplicando IA Cloudinary...');
+      aiUrl = CloudinaryAI.buildGenFillUrl(publicId);
+      // Si querés probar fondo removido en vez de gen fill:
+      // aiUrl = CloudinaryAI.buildBgRemovalUrl(publicId);
     }
 
-    try {
-      this.setLoading(true, 'Guardando...');
+    this.setLoading(true, 'Renderizando flyer...');
 
-      this.renderPreview();
+    const aiImg = await this.loadImage(aiUrl);
+    this.state.editor.img = aiImg;
+    this.resetImageTransform();
+    this.renderPreview();
 
-      await Backend.registrar({
-        userId: this.state.userId,
-        tipo: 'imagen',
-        titulo: this.getFormData().titulo,
-        creditos: CONFIG.CREDITOS_IMAGEN
-      });
+    await Backend.registrar({
+      userId: this.state.userId,
+      tipo: 'imagen',
+      titulo: this.getFormData().titulo,
+      creditos: CONFIG.CREDITOS_IMAGEN
+    });
 
-      this.saveLocalHistory({
-        titulo: this.getFormData().titulo,
-        tipo: 'imagen',
-        creditos: CONFIG.CREDITOS_IMAGEN,
-        fecha: new Date().toISOString()
-      });
+    this.saveLocalHistory({
+      titulo: this.getFormData().titulo,
+      tipo: 'imagen',
+      creditos: CONFIG.CREDITOS_IMAGEN,
+      fecha: new Date().toISOString(),
+      originalUrl,
+      aiUrl,
+      publicId
+    });
 
-      this.renderLocalHistory();
-      alert('Flyer listo para descargar');
-    } catch (err) {
-      console.error(err);
-      this.showError(err.message || 'Error al guardar');
-    } finally {
-      this.setLoading(false);
-    }
-  },
+    this.renderLocalHistory();
+    alert('Flyer listo para descargar');
+  } catch (err) {
+    console.error(err);
+    this.showError(err.message || 'Error generando flyer');
+  } finally {
+    this.setLoading(false);
+  }
+},
 
   async descargarImagen() {
     if (!this.state.generatedImage) {
@@ -891,6 +918,60 @@ function jsonpRequest(url) {
     document.body.appendChild(script);
   });
 }
+/* =========================
+   Claudinary
+   ========================= */
+/* =========================
+   Cloudinary
+   ========================= */
+
+const CloudinaryUpload = {
+  async upload(file, folder = CONFIG.CLOUDINARY_FOLDER) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', folder);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data.secure_url) {
+      throw new Error(data.error?.message || 'No se pudo subir a Cloudinary');
+    }
+
+    return data;
+  }
+};
+
+const CloudinaryAI = {
+  buildGenFillUrl(publicId) {
+    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
+      `c_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/` +
+      `e_gen_fill/` +
+      `f_auto,q_auto/` +
+      `${publicId}.png`;
+  },
+
+  buildBgRemovalUrl(publicId) {
+    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
+      `e_background_removal/` +
+      `f_auto,q_auto/` +
+      `${publicId}.png`;
+  },
+
+  buildOriginalOptimizedUrl(publicId) {
+    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
+      `f_auto,q_auto/` +
+      `${publicId}`;
+  }
+};
 
 /* =========================
    Backend
