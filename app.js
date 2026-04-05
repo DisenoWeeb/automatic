@@ -334,20 +334,19 @@ async getBestAvailableImageUrl(urls) {
   throw new Error('No se pudo cargar ninguna versión optimizada de la imagen');
 },
 
-  drawMainImage(ctx, img, width, height) {
+drawMainImage(ctx, img, width, height) {
   const frameX = 60;
-  const frameW = width - 120;
   const frameY = 180;
+  const frameW = width - 120;
 
   const imgRatio = img.width / img.height;
 
-  // 🔥 altura dinámica pero con límites
+  // altura del bloque según proporción de la foto
   let frameH = frameW / imgRatio;
 
-  // límites para no romper diseño
+  // límites para no romper el diseño del flyer
   frameH = Math.max(480, Math.min(frameH, 820));
 
-  // guardamos esto para usarlo después
   this._lastFrame = {
     x: frameX,
     y: frameY,
@@ -360,7 +359,26 @@ async getBestAvailableImageUrl(urls) {
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.clip();
 
-  ctx.drawImage(img, frameX, frameY, frameW, frameH);
+  const boxRatio = frameW / frameH;
+
+  let drawW, drawH, drawX, drawY;
+
+  // COVER sin deformar
+  if (imgRatio > boxRatio) {
+    // la imagen es más ancha que el marco
+    drawH = frameH;
+    drawW = drawH * imgRatio;
+    drawX = frameX - (drawW - frameW) / 2;
+    drawY = frameY;
+  } else {
+    // la imagen es más alta que el marco
+    drawW = frameW;
+    drawH = drawW / imgRatio;
+    drawX = frameX;
+    drawY = frameY - (drawH - frameH) * 0.35;
+  }
+
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
   ctx.restore();
 
@@ -369,6 +387,9 @@ async getBestAvailableImageUrl(urls) {
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.stroke();
 },
+
+
+   
    drawTopDecoration(ctx, width, height) {
   ctx.save();
 
