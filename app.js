@@ -364,7 +364,7 @@ async getBestAvailableImageUrl(urls) {
 },
   drawBottomPanel(ctx, width, height) {
     const panelH = 230;
-    const y = height - panelH;
+    const y = Math.max(height - panelH, this._lastFrame.y + this._lastFrame.h + 120);
 
     const g = ctx.createLinearGradient(0, y, width, height);
     g.addColorStop(0, 'rgba(126, 61, 118, 0.88)');
@@ -408,8 +408,7 @@ async getBestAvailableImageUrl(urls) {
 
       drawBodyText(ctx, texto, width, height) {
     const maxWidth = width - 180;
-    const startY = 990;
-
+    const startY = this._lastFrame.y + this._lastFrame.h + 40;
     ctx.fillStyle = '#ffffff';
     ctx.font = '500 28px Montserrat, Arial, sans-serif';
     ctx.textAlign = 'left';
