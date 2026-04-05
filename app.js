@@ -334,44 +334,26 @@ async getBestAvailableImageUrl(urls) {
 
   const imgRatio = img.width / img.height;
 
-  let frameH;
+  // 🔥 altura dinámica pero con límites
+  let frameH = frameW / imgRatio;
 
-  // horizontal
-  if (imgRatio >= 1.5) {
-    frameH = 520;
-  }
-  // casi cuadrada
-  else if (imgRatio >= 0.9) {
-    frameH = 680;
-  }
-  // vertical
-  else {
-    frameH = 780;
-  }
+  // límites para no romper diseño
+  frameH = Math.max(480, Math.min(frameH, 820));
+
+  // guardamos esto para usarlo después
+  this._lastFrame = {
+    x: frameX,
+    y: frameY,
+    w: frameW,
+    h: frameH
+  };
 
   ctx.save();
 
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.clip();
 
-  const boxRatio = frameW / frameH;
-
-  let drawW, drawH, drawX, drawY;
-
-  // cover
-  if (imgRatio > boxRatio) {
-    drawH = frameH;
-    drawW = frameH * imgRatio;
-    drawX = frameX - (drawW - frameW) / 2;
-    drawY = frameY;
-  } else {
-    drawW = frameW;
-    drawH = frameW / imgRatio;
-    drawX = frameX;
-    drawY = frameY - (drawH - frameH) * 0.35;
-  }
-
-  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  ctx.drawImage(img, frameX, frameY, frameW, frameH);
 
   ctx.restore();
 
@@ -379,31 +361,7 @@ async getBestAvailableImageUrl(urls) {
   ctx.lineWidth = 4;
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.stroke();
-
-  ctx.fillStyle = 'rgba(255,255,255,0.10)';
-  this.roundRect(ctx, frameX + 14, frameY + 14, frameW - 28, frameH - 28, 28);
-  ctx.fill();
 },
-  drawTopDecoration(ctx, width, height) {
-    ctx.save();
-
-    const g = ctx.createLinearGradient(0, 0, width, 0);
-    g.addColorStop(0, 'rgba(255,255,255,0.75)');
-    g.addColorStop(0.5, 'rgba(255,255,255,0.28)');
-    g.addColorStop(1, 'rgba(255,255,255,0.75)');
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(width, 0);
-    ctx.lineTo(width, 90);
-    ctx.bezierCurveTo(width * 0.75, 160, width * 0.25, 20, 0, 120);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
-  },
-
   drawBottomPanel(ctx, width, height) {
     const panelH = 230;
     const y = height - panelH;
