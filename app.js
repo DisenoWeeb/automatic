@@ -862,30 +862,27 @@ bindCanvasInteractions() {
 
   dataURLtoFile(dataUrl, filename = 'main.jpg') {
   return new Promise((resolve, reject) => {
-    const img = new Image();
+    try {
+      const arr = dataUrl.split(',');
+      if (arr.length < 2) {
+        reject(new Error('DataURL inválido'));
+        return;
+      }
 
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
 
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
 
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          reject(new Error('No se pudo convertir la imagen a JPG'));
-          return;
-        }
-
-        resolve(new File([blob], filename, { type: 'image/jpeg' }));
-      }, 'image/jpeg', 0.92);
-    };
-
-    img.onerror = () => reject(new Error('No se pudo cargar la imagen para convertirla a JPG'));
-    img.src = dataUrl;
+      resolve(new File([u8arr], filename, { type: mime }));
+    } catch (err) {
+      reject(new Error('No se pudo convertir la imagen a archivo'));
+    }
   });
 },
 
