@@ -349,7 +349,9 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="btnGenerar">Generar flyer</button>
+            <button class="btn btn-primary" id="btnGenerar">
+  Guardar flyer
+</button>
             <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar PNG</button>
             <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
           </div>
@@ -370,11 +372,11 @@
         <div class="card result-card">
           <h2>Resultado</h2>
 
-          <div class="result-frame">
-            <img id="resultImage" alt="Resultado flyer" />
-          </div>
+        <div class="result-frame">
+  <canvas id="flyerCanvas"></canvas>
+</div>
 
-          <div id="resultSection" class="hidden">
+          <div id="resultSection">
             <div class="chip">Flyer generado correctamente</div>
           </div>
         </div>
