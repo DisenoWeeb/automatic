@@ -188,7 +188,7 @@ const App = {
   if (e.btnCompartir) {
     e.btnCompartir.addEventListener('click', () => this.compartirImagen());
   }
-},
+}
   
     if (e.logoImageInput) {
       e.logoImageInput.addEventListener('change', async (ev) => {
