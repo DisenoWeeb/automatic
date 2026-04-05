@@ -25,12 +25,6 @@
       <section class="layout">
         <div class="card preview-card">
           <div class="preview-header">
-            <h2>Vista previa</h2>
-
-            <div class="preview-actions-top">
-              <label for="mainImage" class="quick-action">Subir foto</label>
-              <label for="logoImage" class="quick-action secondary">Subir logo</label>
-            </div>
           </div>
 
           <div class="preview-stage-wrap">
@@ -38,6 +32,13 @@
               <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
             </div>
           </div>
+           <div class="preview-actions-top">
+              <label for="mainImage" class="quick-action">Subir foto</label>
+              <label for="logoImage" class="quick-action secondary">Subir logo</label>
+            </div>
+          <div class="actions actions-main">
+                <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">Aplicar IA</button>
+              </div>
         </div>
 
         <div class="stack">
@@ -93,9 +94,7 @@
   </div>
 </details>
 
-              <div class="actions actions-main">
-                <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">Aplicar IA</button>
-              </div>
+              
 
               <div class="actions actions-result u-hidden" id="resultActions">
                 <button class="btn btn-secondary" id="btnNuevo" type="button">Nuevo</button>
