@@ -709,15 +709,15 @@ drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
 
 drawLogo(ctx, img, width, panelY) {
   const c = this.getFlyerColors();
-  const maxW = 170;
-  const maxH = 170;
+  const maxW = 260;
+  const maxH = 260;
 
   const ratio = Math.min(maxW / img.width, maxH / img.height);
   const drawW = img.width * ratio;
   const drawH = img.height * ratio;
 
   const x = width - drawW - 70;
-  const y = panelY + 66;
+  const y = panelY + 10;
 
   ctx.save();
 
