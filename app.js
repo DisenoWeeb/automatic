@@ -7,7 +7,7 @@ const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbyVS35VZ8GmXFUsq787A23ec74wnYKhK07_eRO7BQp5zVT_Jv_DJijt41VHthVXbZzdVQ/exec',
   STORAGE_USER_ID: 'dra_bruzera_user_id',
   STORAGE_HISTORY: 'dra_bruzera_history',
-   CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
+  CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
   CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
   CLOUDINARY_FOLDER: 'dra_bruzera',
   USE_CLOUDINARY_AI: true,
@@ -708,7 +708,7 @@ const App = {
     console.log('mainImageData tipo:', typeof this.state.mainImageData);
     console.log('mainImageData inicio:', String(this.state.mainImageData).slice(0, 80));
 
-    const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.png');
+    const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
 
     console.log('mainFile:', mainFile);
     console.log('mainFile.size:', mainFile.size);
@@ -731,6 +731,13 @@ const App = {
       this.setLoading(true, 'Aplicando IA Cloudinary...');
       aiUrl = CloudinaryAI.buildGenFillUrl(publicId);
       console.log('aiUrl:', aiUrl);
+
+      try {
+        await this.loadImage(aiUrl);
+      } catch (err) {
+        console.warn('Gen Fill falló, uso imagen original:', err);
+        aiUrl = originalUrl;
+      }
     }
 
     this.setLoading(true, 'Cargando imagen final...');
@@ -766,7 +773,7 @@ const App = {
     this.setLoading(false);
   }
 },
-  async descargarImagen() {
+   async descargarImagen() {
     if (!this.state.generatedImage) {
       this.renderPreview();
     }
@@ -842,19 +849,33 @@ const App = {
     });
   },
 
-  dataURLtoFile(dataUrl, filename) {
-  const arr = dataUrl.split(',');
-  const mimeMatch = arr[0].match(/:(.*?);/);
-  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
+  dataURLtoFile(dataUrl, filename = 'main.jpg') {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
 
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
 
-  return Promise.resolve(new File([u8arr], filename, { type: mime }));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error('No se pudo convertir la imagen a JPG'));
+          return;
+        }
+
+        resolve(new File([blob], filename, { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.92);
+    };
+
+    img.onerror = () => reject(new Error('No se pudo cargar la imagen para convertirla a JPG'));
+    img.src = dataUrl;
+  });
 },
 
   loadImage(src) {
@@ -981,22 +1002,21 @@ const CloudinaryUpload = {
 };
 const CloudinaryAI = {
   buildGenFillUrl(publicId) {
-  return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-    `c_pad,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto,b_gen_fill/` +
-    `f_auto,q_auto/` +
-    `${publicId}`;
-},
-
-  buildBgRemovalUrl(publicId) {
     return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-      `e_background_removal/` +
+      `c_pad,b_gen_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/` +
       `f_auto,q_auto/` +
-      `${publicId}.png`;
+      `${publicId}`;
   },
 
   buildOriginalOptimizedUrl(publicId) {
     return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
       `f_auto,q_auto/` +
+      `${publicId}`;
+  },
+
+  buildBgRemovalUrl(publicId) {
+    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
+      `e_background_removal/f_auto,q_auto/` +
       `${publicId}`;
   }
 };
