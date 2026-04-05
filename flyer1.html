@@ -9,25 +9,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="wrap">
     <div class="app-shell">
 
-      <section class="hero">
-        <div class="hero-top">
-          <div class="hero-copy">
-            <h1>Flyers Dra. Bruzera</h1>
-            <p>Editor visual en una sola pantalla · PNG vertical para Instagram · 1080 × 1350</p>
-          </div>
-
-          <div class="hero-chips">
-            <div class="chip">User ID: <span id="userIdBox">---</span></div>
-            <div class="chip">1 crédito por imagen</div>
-          </div>
+      <header class="app-header">
+        <div class="app-header-left">
+          <button class="menu-btn" type="button" aria-label="Menú">☰</button>
+          <div class="user-badge">Usuario: <span id="userIdBox">---</span></div>
         </div>
-      </section>
+      </header>
 
       <section class="layout">
         <div class="card preview-card">
@@ -43,17 +36,6 @@
           <div class="preview-stage-wrap">
             <div class="preview-stage">
               <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
-
-              <div class="preview-overlay">
-                <div class="preview-hint">
-                  Tocá <strong>Subir foto</strong> para usar cámara o elegir imagen. Después podés acomodarla con zoom y arrastre.
-                </div>
-
-                <div class="preview-floating-actions">
-                  <label for="mainImage" class="floating-btn">Cambiar foto</label>
-                  <label for="logoImage" class="floating-btn secondary">Cambiar logo</label>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -62,13 +44,14 @@
           <div class="card form-card">
             <div class="section-head">
               <h2>Acciones</h2>
-              <p>Base limpia para esta plantilla.</p>
+              <p>Plantilla base</p>
             </div>
 
             <div class="stack">
               <input type="file" id="mainImage" accept="image/*" capture="environment" hidden>
               <input type="file" id="logoImage" accept="image/*" hidden>
 
+              <!-- Se mantienen ocultos para no romper la lógica actual -->
               <div class="field u-hidden">
                 <label for="titulo">Título</label>
                 <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
@@ -109,14 +92,14 @@
                 </div>
               </details>
 
-              <div class="actions">
-                <button class="btn btn-primary" id="btnGenerar" type="button">Aplicar IA</button>
-                <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
-                <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
+              <div class="actions actions-main">
+                <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">Aplicar IA</button>
               </div>
 
-              <div class="mini-status">
-                <div class="mini-pill">Botones compactos y una sola pantalla</div>
+              <div class="actions actions-result u-hidden" id="resultActions">
+                <button class="btn btn-secondary" id="btnNuevo" type="button">Nuevo</button>
+                <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
+                <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
               </div>
 
               <div class="loader hidden" id="loader">
@@ -125,46 +108,12 @@
             </div>
           </div>
 
-          <!--
-          Se deja comentado para no perder referencia.
-          Si querés recuperarlo después, solo descomentás.
-          Mantener oculto ayuda a limpiar la pantalla sin tocar la lógica base.
-          <div class="card form-card">
-            <div class="section-head">
-              <h2>Archivos cargados</h2>
-              <p>Vista rápida de imagen y logo.</p>
-            </div>
-
-            <div class="preview-thumbs">
-              <div class="thumb-box">
-                <span>Imagen principal</span>
-                <img id="previewMain" alt="Preview imagen principal" />
-              </div>
-
-              <div class="thumb-box">
-                <span>Logo</span>
-                <img id="previewLogo" alt="Preview logo" />
-              </div>
-            </div>
-
-            <div id="resultSection" class="resultSection">
-              <div class="mini-pill">El resultado se ve directamente arriba en el canvas</div>
-            </div>
-          </div>
-          -->
-
           <!-- Elementos ocultos para no romper la lógica actual -->
           <div class="u-hidden">
             <img id="previewMain" alt="Preview imagen principal">
             <img id="previewLogo" alt="Preview logo">
             <div id="resultSection" class="resultSection"></div>
-          </div>
-
-          <div class="card history-card">
-            <h2>Historial local</h2>
-            <div id="historyList" class="history">
-              <div class="history-empty">Todavía no hay registros locales</div>
-            </div>
+            <div id="historyList" class="history"></div>
           </div>
         </div>
       </section>
