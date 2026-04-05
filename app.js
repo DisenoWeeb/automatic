@@ -1016,7 +1016,7 @@ const CloudinaryAI = {
   buildOriginalOptimizedUrl(secureUrl) {
     return secureUrl.replace(
       '/upload/',
-      '/upload/e_auto_enhance:enhance-colors_true/e_improve/f_auto,q_auto/'
+      '/upload/e_background_removal/c_pad,b_gen_fill,w_1080,h_1350,g_auto/e_improve/e_auto_enhance:enhance-colors_true/f_auto,q_auto/'
     );
   },
 
