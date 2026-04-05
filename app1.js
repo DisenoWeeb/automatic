@@ -228,10 +228,11 @@ bindCanvasInteractions() {
       if (!this.state.editor.dragging || !this.layout?.photo) return;
 
       const dx = x - this.state.editor.lastX;
-      const dy = y - this.state.editor.lastY;
+const dy = y - this.state.editor.lastY;
+const dragFactor = 0.72;
 
-      this.state.editor.offsetX += dx;
-      this.state.editor.offsetY += dy;
+this.state.editor.offsetX += dx * dragFactor;
+this.state.editor.offsetY += dy * dragFactor;
 
       this.state.editor.lastX = x;
       this.state.editor.lastY = y;
@@ -262,7 +263,7 @@ bindCanvasInteractions() {
       if (!this.layout?.photo) return;
 
       const p = getPoint(ev.clientX, ev.clientY);
-      const factor = ev.deltaY < 0 ? 1.08 : 0.92;
+      const factor = ev.deltaY < 0 ? 1.035 : 0.965;
       this.zoomAtPoint(factor, p.x, p.y);
     }, { passive: false });
 
@@ -292,7 +293,8 @@ bindCanvasInteractions() {
         if (!this.state.editor.pinchStartDistance) return;
 
         const ratio = dist / this.state.editor.pinchStartDistance;
-        const nextScale = this.state.editor.pinchStartScale * ratio;
+       const rawNextScale = this.state.editor.pinchStartScale * ratio;
+const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.scale) * 0.22;
 
         const midClientX = (ev.touches[0].clientX + ev.touches[1].clientX) / 2;
         const midClientY = (ev.touches[0].clientY + ev.touches[1].clientY) / 2;
@@ -368,7 +370,7 @@ bindCanvasInteractions() {
 
     this.state.editor.scale = baseScale;
     this.state.editor.minScale = baseScale;
-    this.state.editor.maxScale = baseScale * 4;
+    this.state.editor.maxScale = baseScale * 6;
     this.state.editor.offsetX = photo.x + (photo.w - img.width * baseScale) / 2;
     this.state.editor.offsetY = photo.y + (photo.h - img.height * baseScale) / 2;
   },
