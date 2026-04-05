@@ -19,7 +19,43 @@
   --btn-h-main: 44px;
   --btn-font: 13px;
 }
+/* =========================
+   🎨 BRAND → FLYER MAPPING
+   ========================= */
 
+:root {
+
+  /* Fondo del flyer */
+  --flyer-bg-1: #f3eefb;
+  --flyer-bg-2: #eadcf8;
+  --flyer-bg-3: #d6b8f3;
+  --flyer-bg-4: #b98de8;
+
+  /* Título */
+  --flyer-title: var(--violet);
+
+  /* Panel inferior */
+  --flyer-panel-1: var(--pink);
+  --flyer-panel-2: var(--violet);
+
+  /* Texto */
+  --flyer-text: #ffffff;
+
+  /* Bordes y detalles */
+  --flyer-frame: rgba(255,255,255,0.88);
+  --flyer-frame-soft: rgba(255,255,255,0.24);
+
+  /* Placeholder */
+  --flyer-placeholder: rgba(111,44,103,0.75);
+
+  /* Fondo logo */
+  --flyer-logo-bg: rgba(255,255,255,0.16);
+
+  /* Decoración superior */
+  --flyer-top-1: rgba(255,255,255,0.65);
+  --flyer-top-2: rgba(255,255,255,0.20);
+  --flyer-top-3: rgba(255,255,255,0.65);
+}
 html, body {
   min-height: 100%;
 }
