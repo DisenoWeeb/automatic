@@ -223,11 +223,11 @@ body {
   box-shadow: 0 10px 24px rgba(54, 42, 111, .10);
 }
 
-.preview-overlay {
+/*.preview-overlay {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
+}*/
 
 .preview-hint {
   width: 100%;
@@ -249,14 +249,14 @@ body {
   gap: 8px;
 }
 
-.floating-btn {
+/*.floating-btn {
   min-height: var(--btn-h);
   padding: 0 14px;
   color: #fff;
   background: linear-gradient(135deg, var(--pink), var(--violet));
   box-shadow: 0 8px 18px rgba(77, 38, 121, .22);
   width: 100%;
-}
+}*/
 
 .floating-btn.secondary {
   color: var(--violet);
