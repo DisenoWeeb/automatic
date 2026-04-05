@@ -291,29 +291,36 @@ if (CONFIG.IMAGE_MODE === 'smart') {
 
  drawBackground(ctx, width, height) {
   const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, '#f7d7df');
-  gradient.addColorStop(0.35, '#f4c6d4');
-  gradient.addColorStop(0.7, '#e7b8d8');
-  gradient.addColorStop(1, '#d9b8f3');
+
+  // 🎨 NUEVA PALETA (más marca)
+  gradient.addColorStop(0, '#f3e8ff');   // violeta muy claro
+  gradient.addColorStop(0.35, '#e9d5ff'); // lavanda
+  gradient.addColorStop(0.7, '#d8b4fe');  // violeta suave
+  gradient.addColorStop(1, '#c084fc');    // violeta marca
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
+  // 🌿 ondas suaves (igual pero mejor contraste)
   for (let i = 0; i < 18; i++) {
     const x = (width / 18) * i;
     ctx.beginPath();
     ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+
+    // un poco más visible
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
     ctx.fill();
   }
 
+  // 🎛️ líneas sutiles
   for (let i = 0; i < 14; i++) {
     const y = 200 + i * 70;
-    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
+    ctx.fillStyle = i % 2 === 0 
+      ? 'rgba(255,255,255,0.05)' 
+      : 'rgba(255,255,255,0.025)';
     ctx.fillRect(0, y, width, 8);
   }
 },
-
 async getBestAvailableImageUrl(urls) {
   for (const url of urls) {
     try {
