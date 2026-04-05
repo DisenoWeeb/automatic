@@ -35,9 +35,10 @@
         </div>
         
            <div class="preview-actions-top">
-              <label for="mainImage" class="quick-action">Subir foto</label>
-              <label for="logoImage" class="quick-action secondary">Subir logo</label>
-           </div>
+  <label for="mainImageGallery" class="quick-action">Elegir foto</label>
+  <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
+  <label for="logoImage" class="quick-action secondary">Subir logo</label>
+</div>
            <div class="actions actions-main">
                 <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">Aplicar IA</button>
            </div>
@@ -50,11 +51,11 @@
             </div>
 
             <div class="stack">
-              <input type="file" id="mainImage" accept="image/*" hidden>
-              <input type="file" id="logoImage" accept="image/*" hidden>
-
               
-
+             <input type="file" id="mainImageGallery" accept="image/*" hidden>
+<input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
+<input type="file" id="logoImage" accept="image/*" hidden>
+              
              <details class="details-card">
   <summary>Titulo + Desc. + Contacto</summary>
 
