@@ -43,54 +43,55 @@
         <div class="stack">
           <div class="card form-card">
             <div class="section-head">
-              <h2>Acciones</h2>
-              <p>Plantilla base</p>
+              <h2>+ Acciones</h2>
+              <p>Seguí editando</p>
             </div>
 
             <div class="stack">
               <input type="file" id="mainImage" accept="image/*" capture="environment" hidden>
               <input type="file" id="logoImage" accept="image/*" hidden>
 
-              <!-- Se mantienen ocultos para no romper la lógica actual -->
-              <div class="field u-hidden">
-                <label for="titulo">Título</label>
-                <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
-              </div>
+              
 
-              <div class="field u-hidden">
-                <label for="texto">Texto</label>
-                <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
-              </div>
+             <details class="details-card">
+  <summary>Titulo + Desc. + Contacto</summary>
 
-              <details class="details-card">
-                <summary>Datos de contacto</summary>
+  <div class="details-body">
+    <div class="field">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
+    </div>
 
-                <div class="details-body">
-                  <div class="two">
-                    <div class="field">
-                      <label for="instagram">Instagram</label>
-                      <input type="text" id="instagram" value="@drabruzera">
-                    </div>
+    <div class="field">
+      <label for="texto">Texto</label>
+      <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+    </div>
 
-                    <div class="field">
-                      <label for="whatsapp">WhatsApp</label>
-                      <input type="tel" id="whatsapp" value="343 5303848">
-                    </div>
-                  </div>
+    <div class="two">
+      <div class="field">
+        <label for="instagram">Instagram</label>
+        <input type="text" id="instagram" value="@drabruzera">
+      </div>
 
-                  <div class="two">
-                    <div class="field">
-                      <label for="web">Web</label>
-                      <input type="text" id="web" value="www.bruzera.turnox.pro">
-                    </div>
+      <div class="field">
+        <label for="whatsapp">WhatsApp</label>
+        <input type="tel" id="whatsapp" value="343 5303848">
+      </div>
+    </div>
 
-                    <div class="field">
-                      <label for="ubicacion">Ubicación</label>
-                      <input type="text" id="ubicacion" value="José Venturino 1239">
-                    </div>
-                  </div>
-                </div>
-              </details>
+    <div class="two">
+      <div class="field">
+        <label for="web">Web</label>
+        <input type="text" id="web" value="www.bruzera.turnox.pro">
+      </div>
+
+      <div class="field">
+        <label for="ubicacion">Ubicación</label>
+        <input type="text" id="ubicacion" value="José Venturino 1239">
+      </div>
+    </div>
+  </div>
+</details>
 
               <div class="actions actions-main">
                 <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">Aplicar IA</button>
