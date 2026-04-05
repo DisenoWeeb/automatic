@@ -662,34 +662,36 @@ drawBottomPanel(ctx, width, height, y, panelH) {
 },
 
 drawBodyText(ctx, texto, width, startY, panelY) {
-  const c = this.getFlyerColors();
-  const maxWidth = width - 180;
+  const maxWidth = width - 220;
   const availableH = Math.max(0, panelY - startY - 24);
   if (availableH < 30) return;
 
-  const maxLines = Math.max(1, Math.floor(availableH / 36));
+  const lineHeight = 42;
+  const maxLines = Math.max(1, Math.floor(availableH / lineHeight));
 
-  ctx.fillStyle = c.text;
-  ctx.font = '500 36px Montserrat, Arial, sans-serif';
-  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '500 34px Montserrat, Arial, sans-serif';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
   const lines = this.wrapText(ctx, texto, maxWidth);
-  let y = startY;
+
+  // 👉 más arriba
+  let y = startY - 20;
 
   lines.slice(0, maxLines).forEach(line => {
-    ctx.fillText(line, 90, y);
-    y += 36;
+    // 👉 más a la derecha
+    ctx.fillText(line, 130, y);
+    y += lineHeight;
   });
 },
-
+   
 drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
-  const c = this.getFlyerColors();
-  const startX = 10;
-  const baseY = panelY + 110;
+  const startX = 130;              // 👉 más a la derecha
+  const baseY = panelY + 60;       // 👉 más arriba
 
-  ctx.fillStyle = c.text;
-  ctx.font = '600 30px Montserrat, Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '600 31px Montserrat, Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
@@ -701,27 +703,31 @@ drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
   ];
 
   let y = baseY;
+
   lines.forEach(line => {
     ctx.fillText(line, startX, y);
-    y += 32;
+    y += 38; // 👉 spacing cómodo
   });
 },
 
 drawLogo(ctx, img, width, panelY) {
-  const c = this.getFlyerColors();
-  const maxW = 260;
-  const maxH = 260;
+  const maxW = 240;   // 👉 más grande
+  const maxH = 240;
 
   const ratio = Math.min(maxW / img.width, maxH / img.height);
   const drawW = img.width * ratio;
   const drawH = img.height * ratio;
 
-  const x = width - drawW - 70;
-  const y = panelY + 10;
+  // 👉 más a la derecha (menos margen)
+  const x = width - drawW - 40;
+
+  // 👉 MUCHO más arriba (flotando)
+  const y = panelY - 40;
 
   ctx.save();
 
-  ctx.fillStyle = c.logoBg;
+  // fondo suave
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
   this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
   ctx.fill();
 
