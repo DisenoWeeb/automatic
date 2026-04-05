@@ -374,7 +374,7 @@ async getBestAvailableImageUrl(urls) {
   ctx.lineWidth = 4;
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.stroke();
-}
+},
   drawTopDecoration(ctx, width, height) {
     ctx.save();
 
