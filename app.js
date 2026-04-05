@@ -552,4 +552,382 @@ const App = {
     ctx.stroke();
   },
 
-  
+    
+    const maxWidth = width - 160;
+    ctx.fillStyle = '#6f2c67';
+    ctx.font = 'bold 58px Montserrat, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    const lines = this.wrapText(ctx, (titulo || 'Flyer').toUpperCase(), maxWidth);
+    let y = 64;
+
+    lines.slice(0, 2).forEach(line => {
+      ctx.fillText(line, width / 2, y);
+      y += 66;
+    });
+  },
+
+  drawBottomPanel(ctx, width, height, y, panelH) {
+    const g = ctx.createLinearGradient(0, y, width, height);
+    g.addColorStop(0, 'rgba(112, 53, 120, 0.90)');
+    g.addColorStop(1, 'rgba(78, 30, 88, 0.98)');
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, y + 42);
+    ctx.bezierCurveTo(width * 0.18, y - 20, width * 0.38, y + 82, width * 0.55, y + 18);
+    ctx.bezierCurveTo(width * 0.72, y - 28, width * 0.88, y + 46, width, y + 8);
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    ctx.beginPath();
+    ctx.arc(92, y + 118, 72, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(width - 120, y + 54, 60, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  drawBodyText(ctx, texto, width, startY, panelY) {
+    const maxWidth = width - 180;
+    const availableH = Math.max(0, panelY - startY - 24);
+    if (availableH < 30) return;
+
+    const maxLines = Math.max(1, Math.floor(availableH / 36));
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '500 28px Montserrat, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    const lines = this.wrapText(ctx, texto, maxWidth);
+    let y = startY;
+
+    lines.slice(0, maxLines).forEach(line => {
+      ctx.fillText(line, 90, y);
+      y += 36;
+    });
+  },
+
+  drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
+    const startX = 90;
+    const baseY = panelY + 110;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '600 25px Montserrat, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    const lines = [
+      `Instagram: ${instagram}`,
+      `Web: ${web}`,
+      `WhatsApp: ${whatsapp}`,
+      `Ubicación: ${ubicacion}`
+    ];
+
+    let y = baseY;
+    lines.forEach(line => {
+      ctx.fillText(line, startX, y);
+      y += 32;
+    });
+  },
+
+  drawLogo(ctx, img, width, panelY) {
+    const maxW = 170;
+    const maxH = 170;
+
+    const ratio = Math.min(maxW / img.width, maxH / img.height);
+    const drawW = img.width * ratio;
+    const drawH = img.height * ratio;
+
+    const x = width - drawW - 70;
+    const y = panelY + 66;
+
+    ctx.save();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
+    ctx.fill();
+
+    ctx.drawImage(img, x, y, drawW, drawH);
+    ctx.restore();
+  },
+
+  wrapText(ctx, text, maxWidth) {
+    if (!text) return [];
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let current = '';
+
+    for (const word of words) {
+      const testLine = current ? `${current} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+
+      if (metrics.width <= maxWidth) {
+        current = testLine;
+      } else {
+        if (current) lines.push(current);
+        current = word;
+      }
+    }
+
+    if (current) lines.push(current);
+    return lines;
+  },
+
+  roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  },
+
+  async generarFlyer() {
+    const e = this.elements;
+
+    if (!this.state.editor.img) {
+      this.showError('Primero subí una imagen');
+      return;
+    }
+
+    try {
+      this.setLoading(true, 'Generando flyer final...');
+
+      this.renderPreview();
+
+      await Backend.registrar({
+        userId: this.state.userId,
+        tipo: 'imagen',
+        titulo: this.getFormData().titulo,
+        creditos: CONFIG.CREDITOS_IMAGEN
+      });
+
+      this.saveLocalHistory({
+        titulo: this.getFormData().titulo,
+        tipo: 'imagen',
+        creditos: CONFIG.CREDITOS_IMAGEN,
+        fecha: new Date().toISOString()
+      });
+
+      this.renderLocalHistory();
+
+      if (e.resultSection) {
+        e.resultSection.classList.remove('hidden');
+        e.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } catch (err) {
+      console.error(err);
+      this.showError(err.message || 'Error al generar el flyer');
+    } finally {
+      this.setLoading(false);
+    }
+  },
+
+  async descargarImagen() {
+    if (!this.state.generatedImage) {
+      this.renderPreview();
+    }
+
+    const a = document.createElement('a');
+    a.href = this.state.generatedImage;
+    a.download = 'flyer-dra-bruzera.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  },
+
+  async compartirImagen() {
+    if (!this.state.generatedImage) {
+      this.renderPreview();
+    }
+
+    try {
+      const file = await this.dataURLtoFile(this.state.generatedImage, 'flyer-dra-bruzera.png');
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Flyer Dra. Bruzera',
+          files: [file]
+        });
+      } else {
+        this.showError('Tu dispositivo no permite compartir archivos desde el navegador');
+      }
+    } catch (err) {
+      console.error(err);
+      this.showError('No se pudo compartir la imagen');
+    }
+  },
+
+  saveLocalHistory(item) {
+    const raw = localStorage.getItem(CONFIG.STORAGE_HISTORY);
+    const history = raw ? JSON.parse(raw) : [];
+    history.unshift(item);
+    localStorage.setItem(CONFIG.STORAGE_HISTORY, JSON.stringify(history.slice(0, 20)));
+  },
+
+  renderLocalHistory() {
+    const box = this.elements.historyList;
+    if (!box) return;
+
+    const raw = localStorage.getItem(CONFIG.STORAGE_HISTORY);
+    const history = raw ? JSON.parse(raw) : [];
+
+    if (!history.length) {
+      box.innerHTML = '<div class="history-empty">Todavía no hay registros locales</div>';
+      return;
+    }
+
+    box.innerHTML = history.map(item => {
+      const fecha = new Date(item.fecha).toLocaleString('es-AR');
+      return `
+        <div class="history-item">
+          <strong>${this.escapeHtml(item.titulo || 'Sin título')}</strong>
+          <div>Tipo: ${this.escapeHtml(item.tipo || '-')}</div>
+          <div>Créditos: ${this.escapeHtml(String(item.creditos || 0))}</div>
+          <div>Fecha: ${this.escapeHtml(fecha)}</div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  },
+
+  dataURLtoFile(dataUrl, filename) {
+    return fetch(dataUrl)
+      .then(res => res.blob())
+      .then(blob => new File([blob], filename, { type: blob.type || 'image/png' }));
+  },
+
+  loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  },
+
+  setLoading(isLoading, text = 'Cargando...') {
+    const e = this.elements;
+
+    if (e.loader) {
+      e.loader.classList.toggle('hidden', !isLoading);
+    }
+
+    if (e.loaderText) {
+      e.loaderText.textContent = text;
+    }
+
+    if (e.btnGenerar) {
+      e.btnGenerar.disabled = isLoading;
+    }
+  },
+
+  showError(message) {
+    alert(message);
+  },
+
+  escapeHtml(str) {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+};
+
+/* =========================
+   JSONP
+   ========================= */
+
+function jsonpRequest(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    const script = document.createElement('script');
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout en JSONP'));
+    }, 20000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try {
+        delete window[callbackName];
+      } catch (_) {
+        window[callbackName] = undefined;
+      }
+    }
+
+    window[callbackName] = function(data) {
+      cleanup();
+      if (data && data.success === false) {
+        reject(new Error(data.error || 'Error del servidor'));
+        return;
+      }
+      resolve(data);
+    };
+
+    script.onerror = function() {
+      cleanup();
+      reject(new Error('Error cargando JSONP'));
+    };
+
+    const sep = url.includes('?') ? '&' : '?';
+    script.src = url + sep + 'callback=' + callbackName + '&_=' + Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+/* =========================
+   Backend
+   ========================= */
+
+const Backend = {
+  init(userId) {
+    const url =
+      CONFIG.API_URL +
+      '?action=init' +
+      '&userId=' + encodeURIComponent(userId);
+
+    return jsonpRequest(url);
+  },
+
+  registrar({ userId, tipo, titulo, creditos }) {
+    const url =
+      CONFIG.API_URL +
+      '?action=registrar' +
+      '&userId=' + encodeURIComponent(userId) +
+      '&tipo=' + encodeURIComponent(tipo) +
+      '&titulo=' + encodeURIComponent(titulo) +
+      '&creditos=' + encodeURIComponent(creditos);
+
+    return jsonpRequest(url);
+  }
+};
+
+/* =========================
+   Init
+   ========================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
