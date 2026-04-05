@@ -506,6 +506,7 @@ getFlyerColors() {
     }
 
     this.drawContactData(ctx, {
+       
       instagram: data.instagram,
       web: data.web,
       whatsapp: data.whatsapp,
@@ -663,6 +664,7 @@ drawBottomPanel(ctx, width, height, y, panelH) {
 },
 
 drawBodyText(ctx, texto, width, startY, panelY) {
+   const c = this.getFlyerColors();
   const maxWidth = width - 220;
   const availableH = Math.max(0, panelY - startY - 24);
   if (availableH < 30) return;
@@ -672,7 +674,7 @@ drawBodyText(ctx, texto, width, startY, panelY) {
 
   ctx.fillStyle = c.bodyText;
   ctx.font = '500 34px Montserrat, Arial, sans-serif';
-  ctx.textAlign = 'left';
+  ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
 
   const lines = this.wrapText(ctx, texto, maxWidth);
@@ -688,7 +690,8 @@ drawBodyText(ctx, texto, width, startY, panelY) {
 },
    
 drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
-  const startX = 130;              // 👉 más a la derecha
+   const c = this.getFlyerColors();
+  const startX = 110;              // 👉 más a la derecha
   const baseY = panelY + 60;       // 👉 más arriba
 
   ctx.fillStyle = c.contactText;
