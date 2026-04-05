@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dra. Bruzera - Flyer 1</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="app-shell">
+
+      <header class="app-header">
+        <div class="app-header-left">
+          <button class="menu-btn" type="button" aria-label="Menú">☰</button>
+          <div class="user-badge">Usuario: <span id="userIdBox">---</span></div>
+        </div>
+      </header>
+
+      <section class="layout">
+        <div class="card preview-card">
+          <div class="preview-header">
+          </div>
+
+          <div class="preview-stage-wrap">
+            <div class="preview-stage">
+              <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+            </div>
+          </div>
+        </div>
+        
+           <div class="preview-actions-top">
+  <label for="mainImageGallery" class="quick-action">Elegir foto</label>
+  <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
+  <label for="logoImage" class="quick-action secondary">Subir logo</label>
+</div>
+           <div class="actions actions-main">
+                <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">Aplicar IA</button>
+           </div>
+        
+        <div class="stack">
+          <div class="card form-card">
+            <div class="section-head">
+              <h2>+ Acciones</h2>
+              <p>Seguí editando</p>
+            </div>
+
+            <div class="stack">
+              
+             <input type="file" id="mainImageGallery" accept="image/*" hidden>
+<input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
+<input type="file" id="logoImage" accept="image/*" hidden>
+              
+             <details class="details-card">
+  <summary>Titulo + Desc. + Contacto</summary>
+
+  <div class="details-body">
+    <div class="field">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
+    </div>
+
+    <div class="field">
+      <label for="texto">Texto</label>
+      <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="instagram">Instagram</label>
+        <input type="text" id="instagram" value="@drabruzera">
+      </div>
+
+      <div class="field">
+        <label for="whatsapp">WhatsApp</label>
+        <input type="tel" id="whatsapp" value="343 5303848">
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="web">Web</label>
+        <input type="text" id="web" value="www.bruzera.turnox.pro">
+      </div>
+
+      <div class="field">
+        <label for="ubicacion">Ubicación</label>
+        <input type="text" id="ubicacion" value="José Venturino 1239">
+      </div>
+    </div>
+  </div>
+</details>
+
+              
+
+              <div class="actions actions-result u-hidden" id="resultActions">
+                <button class="btn btn-secondary" id="btnNuevo" type="button">Nuevo</button>
+                <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
+                <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
+              </div>
+
+              <div class="loader hidden" id="loader">
+                <span id="loaderText">Generando flyer...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Elementos ocultos para no romper la lógica actual -->
+          <div class="u-hidden">
+            <img id="previewMain" alt="Preview imagen principal">
+            <img id="previewLogo" alt="Preview logo">
+            <div id="resultSection" class="resultSection"></div>
+            <div id="historyList" class="history"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-space"></div>
+    </div>
+  </div>
+
+  <script src="./app2.js"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const btnIA = document.getElementById('btnGenerar');
+  const resultActions = document.getElementById('resultActions');
+  const btnNuevo = document.getElementById('btnNuevo');
+
+  if (!btnIA || !resultActions) return;
+
+  // 👉 Cuando se hace click en Aplicar IA
+  btnIA.addEventListener('click', () => {
+    // esperamos a que termine el proceso (ajustá tiempo si querés)
+    setTimeout(() => {
+      btnIA.style.display = 'none';
+      resultActions.classList.remove('u-hidden');
+    }, 1500);
+  });
+
+  // 👉 Botón NUEVO (reset)
+  if (btnNuevo) {
+    btnNuevo.addEventListener('click', () => {
+      location.reload(); // simple y efectivo
+    });
+  }
+
+});
+</script>
+</body>
+</html>
