@@ -178,21 +178,35 @@ const App = {
       e.btnCompartir.addEventListener('click', () => this.compartirImagen());
     }
   },
- 
-  bindCanvasInteractions() {
-    if (!this.canvas) return;
+ dataURLtoExactFile(dataUrl, filename) {
+  const arr = dataUrl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
 
-    const getPoint = (clientX, clientY) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const scaleX = this.canvas.width / rect.width;
-      const scaleY = this.canvas.height / rect.height;
-      return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
-      };
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return Promise.resolve(new File([u8arr], filename, { type: mime }));
+},
+
+bindCanvasInteractions() {
+  if (!this.canvas) return;
+
+  const getPoint = (clientX, clientY) => {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
     };
+  };
 
-    const startDrag = (x, y) => {
+  const startDrag = (x, y) => {
       this.state.editor.dragging = true;
       this.state.editor.lastX = x;
       this.state.editor.lastY = y;
