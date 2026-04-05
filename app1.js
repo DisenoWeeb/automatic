@@ -436,7 +436,33 @@ const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.sc
     ed.offsetX = Math.min(maxX, Math.max(minX, ed.offsetX));
     ed.offsetY = Math.min(maxY, Math.max(minY, ed.offsetY));
   },
+getFlyerColors() {
+  const s = getComputedStyle(document.documentElement);
 
+  return {
+    bg1: s.getPropertyValue('--flyer-bg-1').trim(),
+    bg2: s.getPropertyValue('--flyer-bg-2').trim(),
+    bg3: s.getPropertyValue('--flyer-bg-3').trim(),
+    bg4: s.getPropertyValue('--flyer-bg-4').trim(),
+
+    title: s.getPropertyValue('--flyer-title').trim(),
+
+    panel1: s.getPropertyValue('--flyer-panel-1').trim(),
+    panel2: s.getPropertyValue('--flyer-panel-2').trim(),
+
+    text: s.getPropertyValue('--flyer-text').trim(),
+
+    frame: s.getPropertyValue('--flyer-frame').trim(),
+    frameSoft: s.getPropertyValue('--flyer-frame-soft').trim(),
+
+    placeholder: s.getPropertyValue('--flyer-placeholder').trim(),
+    logoBg: s.getPropertyValue('--flyer-logo-bg').trim(),
+
+    top1: s.getPropertyValue('--flyer-top-1').trim(),
+    top2: s.getPropertyValue('--flyer-top-2').trim(),
+    top3: s.getPropertyValue('--flyer-top-3').trim()
+  };
+},
   renderPreview() {
     if (!this.ctx || !this.canvas) return;
 
@@ -494,201 +520,214 @@ const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.sc
     this.state.generatedImage = this.canvas.toDataURL('image/png', 1);
   },
 
-  drawBackground(ctx, width, height) {
-    const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, '#f3eefb');
-    gradient.addColorStop(0.35, '#eadcf8');
-    gradient.addColorStop(0.7, '#d6b8f3');
-    gradient.addColorStop(1, '#b98de8');
+drawBackground(ctx, width, height) {
+  const c = this.getFlyerColors();
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, c.bg1);
+  gradient.addColorStop(0.35, c.bg2);
+  gradient.addColorStop(0.72, c.bg3);
+  gradient.addColorStop(1, c.bg4);
 
-    for (let i = 0; i < 18; i++) {
-      const x = (width / 18) * i;
-      ctx.beginPath();
-      ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.fill();
-    }
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
 
-    for (let i = 0; i < 14; i++) {
-      const y = 200 + i * 70;
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
-      ctx.fillRect(0, y, width, 8);
-    }
-  },
-
-  drawTopDecoration(ctx, width, height) {
-    ctx.save();
-
-    const g = ctx.createLinearGradient(0, 0, width, 0);
-    g.addColorStop(0, 'rgba(255,255,255,0.65)');
-    g.addColorStop(0.5, 'rgba(255,255,255,0.20)');
-    g.addColorStop(1, 'rgba(255,255,255,0.65)');
-
-    ctx.fillStyle = g;
+  for (let i = 0; i < 18; i++) {
+    const x = (width / 18) * i;
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(width, 0);
-    ctx.lineTo(width, 78);
-    ctx.bezierCurveTo(width * 0.72, 114, width * 0.28, 38, 0, 110);
-    ctx.closePath();
+    ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
+    ctx.fillStyle = c.bubble;
     ctx.fill();
+  }
 
-    ctx.restore();
-  },
+  for (let i = 0; i < 14; i++) {
+    const y = 200 + i * 70;
+    ctx.fillStyle = i % 2 === 0 ? c.line1 : c.line2;
+    ctx.fillRect(0, y, width, 8);
+  }
+},
 
-  drawPhotoPlaceholder(ctx, photo) {
-    ctx.save();
-    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-    ctx.clip();
+drawTopDecoration(ctx, width, height) {
+  const c = this.getFlyerColors();
 
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.fillRect(photo.x, photo.y, photo.w, photo.h);
+  ctx.save();
 
-    ctx.restore();
+  const g = ctx.createLinearGradient(0, 0, width, 0);
+  g.addColorStop(0, c.top1);
+  g.addColorStop(0.5, c.top2);
+  g.addColorStop(1, c.top3);
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.88)';
-    ctx.lineWidth = 4;
-    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-    ctx.stroke();
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(width, 0);
+  ctx.lineTo(width, 78);
+  ctx.bezierCurveTo(width * 0.72, 114, width * 0.28, 38, 0, 110);
+  ctx.closePath();
+  ctx.fill();
 
-    ctx.fillStyle = 'rgba(111,44,103,0.75)';
-    ctx.font = '600 34px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Subí una imagen y acomodala con zoom + arrastre', photo.x + photo.w / 2, photo.y + photo.h / 2);
-  },
+  ctx.restore();
+},
 
-  drawMainImage(ctx, img, photo) {
-    const ed = this.state.editor;
+drawPhotoPlaceholder(ctx, photo) {
+  const c = this.getFlyerColors();
 
-    this.clampImagePosition();
+  ctx.save();
+  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
+  ctx.clip();
 
-    ctx.save();
-    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-    ctx.clip();
-    ctx.drawImage(img, ed.offsetX, ed.offsetY, img.width * ed.scale, img.height * ed.scale);
-    ctx.restore();
+  ctx.fillStyle = c.placeholderFill;
+  ctx.fillRect(photo.x, photo.y, photo.w, photo.h);
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.88)';
-    ctx.lineWidth = 4;
-    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-    ctx.stroke();
+  ctx.restore();
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.24)';
-    ctx.lineWidth = 2;
-    this.roundRect(ctx, photo.x + 14, photo.y + 14, photo.w - 28, photo.h - 28, 26);
-    ctx.stroke();
-  },
+  ctx.strokeStyle = c.frame;
+  ctx.lineWidth = 4;
+  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
+  ctx.stroke();
 
-    
-     drawTitle(ctx, titulo, width) {
-    const maxWidth = width - 160;
-    ctx.fillStyle = '#6f2c67';
-    ctx.font = 'bold 58px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+  ctx.fillStyle = c.placeholderText;
+  ctx.font = '600 34px Montserrat, Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Subí una imagen y acomodala con zoom + arrastre', photo.x + photo.w / 2, photo.y + photo.h / 2);
+},
 
-    const lines = this.wrapText(ctx, (titulo || 'Flyer').toUpperCase(), maxWidth);
-    let y = 64;
+drawMainImage(ctx, img, photo) {
+  const c = this.getFlyerColors();
+  const ed = this.state.editor;
 
-    lines.slice(0, 2).forEach(line => {
-      ctx.fillText(line, width / 2, y);
-      y += 66;
-    });
-  },
+  this.clampImagePosition();
 
-  drawBottomPanel(ctx, width, height, y, panelH) {
-    const g = ctx.createLinearGradient(0, y, width, height);
-    g.addColorStop(0, 'rgba(112, 53, 120, 0.90)');
-    g.addColorStop(1, 'rgba(78, 30, 88, 0.98)');
+  ctx.save();
+  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
+  ctx.clip();
+  ctx.drawImage(img, ed.offsetX, ed.offsetY, img.width * ed.scale, img.height * ed.scale);
+  ctx.restore();
 
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(0, y + 42);
-    ctx.bezierCurveTo(width * 0.18, y - 20, width * 0.38, y + 82, width * 0.55, y + 18);
-    ctx.bezierCurveTo(width * 0.72, y - 28, width * 0.88, y + 46, width, y + 8);
-    ctx.lineTo(width, height);
-    ctx.lineTo(0, height);
-    ctx.closePath();
-    ctx.fill();
+  ctx.strokeStyle = c.frame;
+  ctx.lineWidth = 4;
+  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
+  ctx.stroke();
 
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    ctx.beginPath();
-    ctx.arc(92, y + 118, 72, 0, Math.PI * 2);
-    ctx.fill();
+  ctx.strokeStyle = c.frameSoft;
+  ctx.lineWidth = 2;
+  this.roundRect(ctx, photo.x + 14, photo.y + 14, photo.w - 28, photo.h - 28, 26);
+  ctx.stroke();
+},
 
-    ctx.beginPath();
-    ctx.arc(width - 120, y + 54, 60, 0, Math.PI * 2);
-    ctx.fill();
-  },
+drawTitle(ctx, titulo, width) {
+  const c = this.getFlyerColors();
+  const maxWidth = width - 160;
 
-  drawBodyText(ctx, texto, width, startY, panelY) {
-    const maxWidth = width - 180;
-    const availableH = Math.max(0, panelY - startY - 24);
-    if (availableH < 30) return;
+  ctx.fillStyle = c.title;
+  ctx.font = '800 58px Montserrat, Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
 
-    const maxLines = Math.max(1, Math.floor(availableH / 36));
+  const lines = this.wrapText(ctx, (titulo || 'Flyer').toUpperCase(), maxWidth);
+  let y = 64;
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '500 28px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
+  lines.slice(0, 2).forEach(line => {
+    ctx.fillText(line, width / 2, y);
+    y += 66;
+  });
+},
 
-    const lines = this.wrapText(ctx, texto, maxWidth);
-    let y = startY;
+drawBottomPanel(ctx, width, height, y, panelH) {
+  const c = this.getFlyerColors();
 
-    lines.slice(0, maxLines).forEach(line => {
-      ctx.fillText(line, 90, y);
-      y += 36;
-    });
-  },
+  const g = ctx.createLinearGradient(0, y, width, height);
+  g.addColorStop(0, c.panel1);
+  g.addColorStop(1, c.panel2);
 
-  drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
-    const startX = 90;
-    const baseY = panelY + 110;
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(0, y + 42);
+  ctx.bezierCurveTo(width * 0.18, y - 20, width * 0.38, y + 82, width * 0.55, y + 18);
+  ctx.bezierCurveTo(width * 0.72, y - 28, width * 0.88, y + 46, width, y + 8);
+  ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
+  ctx.closePath();
+  ctx.fill();
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '600 25px Montserrat, Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
+  ctx.fillStyle = c.panelGlow;
+  ctx.beginPath();
+  ctx.arc(92, y + 118, 72, 0, Math.PI * 2);
+  ctx.fill();
 
-    const lines = [
-      `Instagram: ${instagram}`,
-      `Web: ${web}`,
-      `WhatsApp: ${whatsapp}`,
-      `Ubicación: ${ubicacion}`
-    ];
+  ctx.beginPath();
+  ctx.arc(width - 120, y + 54, 60, 0, Math.PI * 2);
+  ctx.fill();
+},
 
-    let y = baseY;
-    lines.forEach(line => {
-      ctx.fillText(line, startX, y);
-      y += 32;
-    });
-  },
+drawBodyText(ctx, texto, width, startY, panelY) {
+  const c = this.getFlyerColors();
+  const maxWidth = width - 180;
+  const availableH = Math.max(0, panelY - startY - 24);
+  if (availableH < 30) return;
 
-  drawLogo(ctx, img, width, panelY) {
-    const maxW = 170;
-    const maxH = 170;
+  const maxLines = Math.max(1, Math.floor(availableH / 36));
 
-    const ratio = Math.min(maxW / img.width, maxH / img.height);
-    const drawW = img.width * ratio;
-    const drawH = img.height * ratio;
+  ctx.fillStyle = c.text;
+  ctx.font = '500 28px Montserrat, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
 
-    const x = width - drawW - 70;
-    const y = panelY + 66;
+  const lines = this.wrapText(ctx, texto, maxWidth);
+  let y = startY;
 
-    ctx.save();
+  lines.slice(0, maxLines).forEach(line => {
+    ctx.fillText(line, 90, y);
+    y += 36;
+  });
+},
 
-    ctx.fillStyle = 'rgba(255,255,255,0.16)';
-    this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
-    ctx.fill();
+drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
+  const c = this.getFlyerColors();
+  const startX = 90;
+  const baseY = panelY + 110;
 
-    ctx.drawImage(img, x, y, drawW, drawH);
-    ctx.restore();
-  },
+  ctx.fillStyle = c.text;
+  ctx.font = '600 25px Montserrat, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+
+  const lines = [
+    `Instagram: ${instagram}`,
+    `Web: ${web}`,
+    `WhatsApp: ${whatsapp}`,
+    `Ubicación: ${ubicacion}`
+  ];
+
+  let y = baseY;
+  lines.forEach(line => {
+    ctx.fillText(line, startX, y);
+    y += 32;
+  });
+},
+
+drawLogo(ctx, img, width, panelY) {
+  const c = this.getFlyerColors();
+  const maxW = 170;
+  const maxH = 170;
+
+  const ratio = Math.min(maxW / img.width, maxH / img.height);
+  const drawW = img.width * ratio;
+  const drawH = img.height * ratio;
+
+  const x = width - drawW - 70;
+  const y = panelY + 66;
+
+  ctx.save();
+
+  ctx.fillStyle = c.logoBg;
+  this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
+  ctx.fill();
+
+  ctx.drawImage(img, x, y, drawW, drawH);
+  ctx.restore();
+},
 
   wrapText(ctx, text, maxWidth) {
     if (!text) return [];
