@@ -116,7 +116,7 @@ const App = {
     this.ctx = canvas.getContext('2d');
   },
 
-  bindEvents() {
+ bindEvents() {
   const e = this.elements;
 
   const handleMainImageChange = async (ev) => {
@@ -188,47 +188,7 @@ const App = {
   if (e.btnCompartir) {
     e.btnCompartir.addEventListener('click', () => this.compartirImagen());
   }
-}
-  
-    if (e.logoImageInput) {
-      e.logoImageInput.addEventListener('change', async (ev) => {
-        const file = ev.target.files && ev.target.files[0];
-        if (!file) return;
-
-        try {
-          const dataUrl = await this.fileToDataURL(file);
-          this.state.logoImageData = dataUrl;
-          if (e.previewLogo) e.previewLogo.src = dataUrl;
-
-          const img = await this.loadImage(dataUrl);
-          this.state.editor.logoImg = img;
-          this.renderPreview();
-        } catch (err) {
-          console.error(err);
-          this.showError('No se pudo leer el logo');
-        }
-      });
-    }
-
-    ['input', 'change'].forEach(evt => {
-      ['titulo', 'texto', 'instagram', 'web', 'whatsapp', 'ubicacion'].forEach(key => {
-        const el = e[key];
-        if (el) el.addEventListener(evt, () => this.renderPreview());
-      });
-    });
-
-    if (e.btnGenerar) {
-      e.btnGenerar.addEventListener('click', () => this.generarFlyer());
-    }
-
-    if (e.btnDescargar) {
-      e.btnDescargar.addEventListener('click', () => this.descargarImagen());
-    }
-
-    if (e.btnCompartir) {
-      e.btnCompartir.addEventListener('click', () => this.compartirImagen());
-    }
-  },
+},
  dataURLtoExactFile(dataUrl, filename) {
   const arr = dataUrl.split(',');
   const mimeMatch = arr[0].match(/:(.*?);/);
