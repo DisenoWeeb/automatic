@@ -123,5 +123,32 @@
   </div>
 
   <script src="./app.js"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const btnIA = document.getElementById('btnGenerar');
+  const resultActions = document.getElementById('resultActions');
+  const btnNuevo = document.getElementById('btnNuevo');
+
+  if (!btnIA || !resultActions) return;
+
+  // 👉 Cuando se hace click en Aplicar IA
+  btnIA.addEventListener('click', () => {
+    // esperamos a que termine el proceso (ajustá tiempo si querés)
+    setTimeout(() => {
+      btnIA.style.display = 'none';
+      resultActions.classList.remove('u-hidden');
+    }, 1500);
+  });
+
+  // 👉 Botón NUEVO (reset)
+  if (btnNuevo) {
+    btnNuevo.addEventListener('click', () => {
+      location.reload(); // simple y efectivo
+    });
+  }
+
+});
+</script>
 </body>
 </html>
