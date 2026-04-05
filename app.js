@@ -1014,8 +1014,11 @@ const CloudinaryUpload = {
 };
 const CloudinaryAI = {
   buildOriginalOptimizedUrl(secureUrl) {
-  return secureUrl.replace('/upload/', '/upload/e_enhance/f_auto,q_auto/');
-},
+    return secureUrl.replace(
+      '/upload/',
+      '/upload/e_auto_enhance:enhance-colors_true/e_improve/f_auto,q_auto/'
+    );
+  },
 
   buildBgRemovalUrl(secureUrl) {
     return secureUrl.replace('/upload/', '/upload/e_background_removal/f_auto,q_auto/');
