@@ -729,7 +729,7 @@ const App = {
 
     if (CONFIG.USE_CLOUDINARY_AI) {
       this.setLoading(true, 'Aplicando IA Cloudinary...');
-      aiUrl = CloudinaryAI.buildGenFillUrl(publicId);
+     aiUrl = CloudinaryAI.buildOriginalOptimizedUrl(publicId);
       console.log('aiUrl:', aiUrl);
 
       try {
@@ -1001,13 +1001,6 @@ const CloudinaryUpload = {
   }
 };
 const CloudinaryAI = {
-  buildGenFillUrl(publicId) {
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-      `c_pad,b_gen_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/` +
-      `f_auto,q_auto/` +
-      `${publicId}`;
-  },
-
   buildOriginalOptimizedUrl(publicId) {
     return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
       `f_auto,q_auto/` +
@@ -1018,9 +1011,15 @@ const CloudinaryAI = {
     return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
       `e_background_removal/f_auto,q_auto/` +
       `${publicId}`;
+  },
+
+  buildGenFillUrl(publicId) {
+    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
+      `c_pad,b_gen_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/` +
+      `f_auto,q_auto/` +
+      `${publicId}`;
   }
 };
-
 /* =========================
    Backend
    ========================= */
