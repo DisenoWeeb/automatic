@@ -329,51 +329,60 @@ async getBestAvailableImageUrl(urls) {
 
   drawMainImage(ctx, img, width, height) {
   const frameX = 60;
-  const frameY = 180;
   const frameW = width - 120;
-  const frameH = 780;
+  const frameY = 180;
+
+  const imgRatio = img.width / img.height;
+
+  let frameH;
+
+  // horizontal
+  if (imgRatio >= 1.5) {
+    frameH = 520;
+  }
+  // casi cuadrada
+  else if (imgRatio >= 0.9) {
+    frameH = 680;
+  }
+  // vertical
+  else {
+    frameH = 780;
+  }
 
   ctx.save();
 
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.clip();
 
-  const imgRatio = img.width / img.height;
   const boxRatio = frameW / frameH;
 
   let drawW, drawH, drawX, drawY;
 
-  // 🔥 COVER con inteligencia
+  // cover
   if (imgRatio > boxRatio) {
-    // Imagen más ancha → cortar lados
     drawH = frameH;
     drawW = frameH * imgRatio;
     drawX = frameX - (drawW - frameW) / 2;
-
-    // 🔥 leve bias vertical (no centrar perfecto)
     drawY = frameY;
   } else {
-    // Imagen más alta → cortar arriba/abajo
     drawW = frameW;
     drawH = frameW / imgRatio;
     drawX = frameX;
-
-    // 🔥 CLAVE: NO centrar → subir la imagen
-    const overflow = drawH - frameH;
-
-    // 👉 0.35 = recorta más abajo que arriba (evita cortar caras)
-    drawY = frameY - overflow * 0.35;
+    drawY = frameY - (drawH - frameH) * 0.35;
   }
 
   ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
   ctx.restore();
 
-  // borde
   ctx.strokeStyle = 'rgba(255,255,255,0.8)';
   ctx.lineWidth = 4;
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.10)';
+  this.roundRect(ctx, frameX + 14, frameY + 14, frameW - 28, frameH - 28, 28);
+  ctx.fill();
 },
   drawTopDecoration(ctx, width, height) {
     ctx.save();
