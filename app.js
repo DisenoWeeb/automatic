@@ -695,7 +695,7 @@ const App = {
     ctx.closePath();
   },
 
-  async generarFlyer() {
+ async generarFlyer() {
   if (!this.state.editor.img || !this.state.mainImageData) {
     this.showError('Primero subí una imagen');
     return;
@@ -723,19 +723,17 @@ const App = {
     console.log('secure_url real:', uploadRes.secure_url);
 
     const originalUrl = uploadRes.secure_url;
-    const publicId = uploadRes.public_id;
-
     let aiUrl = originalUrl;
 
     if (CONFIG.USE_CLOUDINARY_AI) {
-      this.setLoading(true, 'Aplicando IA Cloudinary...');
-     aiUrl = CloudinaryAI.buildOriginalOptimizedUrl(publicId);
+      this.setLoading(true, 'Aplicando optimización Cloudinary...');
+      aiUrl = CloudinaryAI.buildOriginalOptimizedUrl(originalUrl);
       console.log('aiUrl:', aiUrl);
 
       try {
         await this.loadImage(aiUrl);
       } catch (err) {
-        console.warn('Gen Fill falló, uso imagen original:', err);
+        console.warn('Optimización Cloudinary falló, uso imagen original:', err);
         aiUrl = originalUrl;
       }
     }
@@ -760,8 +758,7 @@ const App = {
       creditos: CONFIG.CREDITOS_IMAGEN,
       fecha: new Date().toISOString(),
       originalUrl,
-      aiUrl,
-      publicId
+      aiUrl
     });
 
     this.renderLocalHistory();
@@ -786,27 +783,27 @@ const App = {
     a.remove();
   },
 
-  async compartirImagen() {
-    if (!this.state.generatedImage) {
-      this.renderPreview();
-    }
+ async compartirImagen() {
+  if (!this.state.generatedImage) {
+    this.renderPreview();
+  }
 
-    try {
-      const file = await this.dataURLtoFile(this.state.generatedImage, 'flyer-dra-bruzera.png');
+  try {
+    const file = await this.dataURLtoExactFile(this.state.generatedImage, 'flyer-dra-bruzera.png');
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Flyer Dra. Bruzera',
-          files: [file]
-        });
-      } else {
-        this.showError('Tu dispositivo no permite compartir archivos desde el navegador');
-      }
-    } catch (err) {
-      console.error(err);
-      this.showError('No se pudo compartir la imagen');
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: 'Flyer Dra. Bruzera',
+        files: [file]
+      });
+    } else {
+      this.showError('Tu dispositivo no permite compartir archivos desde el navegador');
     }
-  },
+  } catch (err) {
+    console.error(err);
+    this.showError('No se pudo compartir la imagen');
+  }
+},
 
   saveLocalHistory(item) {
     const raw = localStorage.getItem(CONFIG.STORAGE_HISTORY);
@@ -918,6 +915,20 @@ const App = {
   }
 };
 
+dataURLtoExactFile(dataUrl, filename) {
+  const arr = dataUrl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return Promise.resolve(new File([u8arr], filename, { type: mime }));
+},
 /* =========================
    JSONP
    ========================= */
@@ -1001,23 +1012,19 @@ const CloudinaryUpload = {
   }
 };
 const CloudinaryAI = {
-  buildOriginalOptimizedUrl(publicId) {
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-      `f_auto,q_auto/` +
-      `${publicId}`;
+  buildOriginalOptimizedUrl(secureUrl) {
+    return secureUrl.replace('/upload/', '/upload/f_auto,q_auto/');
   },
 
-  buildBgRemovalUrl(publicId) {
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-      `e_background_removal/f_auto,q_auto/` +
-      `${publicId}`;
+  buildBgRemovalUrl(secureUrl) {
+    return secureUrl.replace('/upload/', '/upload/e_background_removal/f_auto,q_auto/');
   },
 
-  buildGenFillUrl(publicId) {
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-      `c_pad,b_gen_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/` +
-      `f_auto,q_auto/` +
-      `${publicId}`;
+  buildGenFillUrl(secureUrl) {
+    return secureUrl.replace(
+      '/upload/',
+      `/upload/c_pad,b_gen_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/f_auto,q_auto/`
+    );
   }
 };
 /* =========================
