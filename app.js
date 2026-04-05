@@ -553,6 +553,7 @@ const App = {
   },
 
     
+     drawTitle(ctx, titulo, width) {
     const maxWidth = width - 160;
     ctx.fillStyle = '#6f2c67';
     ctx.font = 'bold 58px Montserrat, Arial, sans-serif';
@@ -691,15 +692,13 @@ const App = {
   },
 
   async generarFlyer() {
-    const e = this.elements;
-
     if (!this.state.editor.img) {
       this.showError('Primero subí una imagen');
       return;
     }
 
     try {
-      this.setLoading(true, 'Generando flyer final...');
+      this.setLoading(true, 'Guardando...');
 
       this.renderPreview();
 
@@ -718,14 +717,10 @@ const App = {
       });
 
       this.renderLocalHistory();
-
-      if (e.resultSection) {
-        e.resultSection.classList.remove('hidden');
-        e.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      alert('Flyer listo para descargar');
     } catch (err) {
       console.error(err);
-      this.showError(err.message || 'Error al generar el flyer');
+      this.showError(err.message || 'Error al guardar');
     } finally {
       this.setLoading(false);
     }
