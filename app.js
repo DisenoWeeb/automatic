@@ -1,16 +1,16 @@
 /* =========================
-   DRA. BRUZERA - VETERINARIA MODERNA
-   Frontend optimizado
+   DRA. BRUZERA - app.js
+   Frontend sin IA
    ========================= */
 
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbyVS35VZ8GmXFUsq787A23ec74wnYKhK07_eRO7BQp5zVT_Jv_DJijt41VHthVXbZzdVQ/exec',
   STORAGE_USER_ID: 'dra_bruzera_user_id',
   STORAGE_HISTORY: 'dra_bruzera_history',
-  CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
+   CLOUDINARY_CLOUD_NAME: 'dwgwbdtud',
   CLOUDINARY_UPLOAD_PRESET: 'dra_bruzera_unsigned',
-  CLOUDINARY_FOLDER: 'dra_bruzera',
-  IMAGE_MODE: 'smart',
+   CLOUDINARY_FOLDER: 'dra_bruzera',
+   IMAGE_MODE: 'smart', // smart | safe_pad | face | contain
   OUTPUT_WIDTH: 1080,
   OUTPUT_HEIGHT: 1350,
   CREDITOS_IMAGEN: 1,
@@ -39,21 +39,27 @@ const App = {
     this.elements = {
       mainImageInput: document.getElementById('mainImage'),
       logoImageInput: document.getElementById('logoImage'),
+
       titulo: document.getElementById('titulo'),
       texto: document.getElementById('texto'),
       instagram: document.getElementById('instagram'),
       web: document.getElementById('web'),
       whatsapp: document.getElementById('whatsapp'),
       ubicacion: document.getElementById('ubicacion'),
+
       previewMain: document.getElementById('previewMain'),
       previewLogo: document.getElementById('previewLogo'),
+
       btnGenerar: document.getElementById('btnGenerar'),
       btnDescargar: document.getElementById('btnDescargar'),
       btnCompartir: document.getElementById('btnCompartir'),
+
       loader: document.getElementById('loader'),
       loaderText: document.getElementById('loaderText'),
+
       resultSection: document.getElementById('resultSection'),
       resultImage: document.getElementById('resultImage'),
+
       historyList: document.getElementById('historyList'),
       userIdBox: document.getElementById('userIdBox')
     };
@@ -66,6 +72,7 @@ const App = {
       e.mainImageInput.addEventListener('change', async (ev) => {
         const file = ev.target.files && ev.target.files[0];
         if (!file) return;
+
         try {
           const dataUrl = await this.fileToDataURL(file);
           this.state.mainImageData = dataUrl;
@@ -81,6 +88,7 @@ const App = {
       e.logoImageInput.addEventListener('change', async (ev) => {
         const file = ev.target.files && ev.target.files[0];
         if (!file) return;
+
         try {
           const dataUrl = await this.fileToDataURL(file);
           this.state.logoImageData = dataUrl;
@@ -107,11 +115,14 @@ const App = {
 
   ensureUserId() {
     let userId = localStorage.getItem(CONFIG.STORAGE_USER_ID);
+
     if (!userId) {
       userId = this.generateUserId();
       localStorage.setItem(CONFIG.STORAGE_USER_ID, userId);
     }
+
     this.state.userId = userId;
+
     if (this.elements.userIdBox) {
       this.elements.userIdBox.textContent = userId;
     }
@@ -131,109 +142,108 @@ const App = {
   },
 
   async generarFlyer() {
-    const e = this.elements;
+  const e = this.elements;
 
-    if (!this.state.mainImageData) {
-      this.showError('Primero subí una imagen');
-      return;
+  if (!this.state.mainImageData) {
+    this.showError('Primero subí una imagen');
+    return;
+  }
+
+  const titulo = (e.titulo && e.titulo.value.trim()) || 'Flyer';
+  const texto = (e.texto && e.texto.value.trim()) || '';
+  const instagram = (e.instagram && e.instagram.value.trim()) || '@drabruzera';
+  const web = (e.web && e.web.value.trim()) || 'www.bruzera.turnox.pro';
+  const whatsapp = (e.whatsapp && e.whatsapp.value.trim()) || '343 5303848';
+  const ubicacion = (e.ubicacion && e.ubicacion.value.trim()) || 'José Venturino 1239';
+
+  try {
+    this.setLoading(true, 'Subiendo imagen y optimizando...');
+
+    const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
+   const uploaded = await CloudinaryUpload.upload(mainFile, 'dra_bruzera');
+
+    let finalMainImageUrl = null;
+
+if (CONFIG.IMAGE_MODE === 'smart') {
+  finalMainImageUrl = await this.getBestAvailableImageUrl([
+    CloudinaryUpload.buildSmartFlyerUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
+  ]);
+} else if (CONFIG.IMAGE_MODE === 'safe_pad') {
+  finalMainImageUrl = await this.getBestAvailableImageUrl([
+    CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
+  ]);
+} else if (CONFIG.IMAGE_MODE === 'face') {
+  finalMainImageUrl = await this.getBestAvailableImageUrl([
+    CloudinaryUpload.buildFacePriorityUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
+  ]);
+} else {
+  finalMainImageUrl = await this.getBestAvailableImageUrl([
+    CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
+  ]);
+}    let finalLogo = null;
+
+    if (this.state.logoImageData) {
+      try {
+        const logoFile = await this.dataURLtoFile(this.state.logoImageData, 'logo.png');
+        const logoUploaded = await CloudinaryUpload.upload(logoFile, 'dra_bruzera');
+        finalLogo = logoUploaded.secureUrl;
+      } catch (err) {
+        console.warn('No se pudo subir el logo, sigo sin logo:', err);
+      }
     }
 
-    const titulo = (e.titulo && e.titulo.value.trim()) || 'Flyer';
-    const texto = (e.texto && e.texto.value.trim()) || '';
-    const instagram = (e.instagram && e.instagram.value.trim()) || '@drabruzera';
-    const web = (e.web && e.web.value.trim()) || 'www.bruzera.turnox.pro';
-    const whatsapp = (e.whatsapp && e.whatsapp.value.trim()) || '343 5303848';
-    const ubicacion = (e.ubicacion && e.ubicacion.value.trim()) || 'José Venturino 1239';
+    await Backend.registrar({
+      userId: this.state.userId,
+      tipo: 'imagen',
+      titulo,
+      creditos: CONFIG.CREDITOS_IMAGEN
+    });
 
-    try {
-      this.setLoading(true, 'Subiendo imagen y optimizando...');
+    this.setLoading(true, 'Armando flyer final...');
 
-      const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
-      const uploaded = await CloudinaryUpload.upload(mainFile, 'dra_bruzera');
+    const finalDataUrl = await this.componerFlyer({
+      mainImage: finalMainImageUrl,
+      logoImage: finalLogo,
+      titulo,
+      texto,
+      instagram,
+      web,
+      whatsapp,
+      ubicacion
+    });
 
-      let finalMainImageUrl = null;
+    this.state.generatedImage = finalDataUrl;
 
-      if (CONFIG.IMAGE_MODE === 'smart') {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildSmartFlyerUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      } else if (CONFIG.IMAGE_MODE === 'safe_pad') {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      } else if (CONFIG.IMAGE_MODE === 'face') {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildFacePriorityUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildSafePadUrl(uploaded.secureUrl),
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      } else {
-        finalMainImageUrl = await this.getBestAvailableImageUrl([
-          CloudinaryUpload.buildContainUrl(uploaded.secureUrl)
-        ]);
-      }
-
-      let finalLogo = null;
-      if (this.state.logoImageData) {
-        try {
-          const logoFile = await this.dataURLtoFile(this.state.logoImageData, 'logo.png');
-          const logoUploaded = await CloudinaryUpload.upload(logoFile, 'dra_bruzera');
-          finalLogo = logoUploaded.secureUrl;
-        } catch (err) {
-          console.warn('No se pudo subir el logo, sigo sin logo:', err);
-        }
-      }
-
-      await Backend.registrar({
-        userId: this.state.userId,
-        tipo: 'imagen',
-        titulo,
-        creditos: CONFIG.CREDITOS_IMAGEN
-      });
-
-      this.setLoading(true, 'Armando flyer final...');
-
-      const finalDataUrl = await this.componerFlyer({
-        mainImage: finalMainImageUrl,
-        logoImage: finalLogo,
-        titulo,
-        texto,
-        instagram,
-        web,
-        whatsapp,
-        ubicacion
-      });
-
-      this.state.generatedImage = finalDataUrl;
-
-      if (e.resultImage) {
-        e.resultImage.src = finalDataUrl;
-      }
-
-      if (e.resultSection) {
-        e.resultSection.classList.remove('hidden');
-        e.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      this.saveLocalHistory({
-        titulo,
-        tipo: 'imagen',
-        creditos: CONFIG.CREDITOS_IMAGEN,
-        fecha: new Date().toISOString()
-      });
-
-      this.renderLocalHistory();
-
-    } catch (err) {
-      console.error(err);
-      this.showError(err.message || 'Error al generar el flyer');
-    } finally {
-      this.setLoading(false);
+    if (e.resultImage) {
+      e.resultImage.src = finalDataUrl;
     }
-  },
+
+    if (e.resultSection) {
+      e.resultSection.classList.remove('hidden');
+      e.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    this.saveLocalHistory({
+      titulo,
+      tipo: 'imagen',
+      creditos: CONFIG.CREDITOS_IMAGEN,
+      fecha: new Date().toISOString()
+    });
+
+    this.renderLocalHistory();
+
+  } catch (err) {
+    console.error(err);
+    this.showError(err.message || 'Error al generar el flyer');
+  } finally {
+    this.setLoading(false);
+  }
+},
 
   async componerFlyer({ mainImage, logoImage, titulo, texto, instagram, web, whatsapp, ubicacion }) {
     const canvas = document.createElement('canvas');
@@ -279,367 +289,229 @@ const App = {
     return canvas.toDataURL('image/png', 1);
   },
 
-  drawBackground(ctx, width, height) {
-    // Gradiente suave de fondo
-    const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, '#f8f6fc');
-    gradient.addColorStop(0.3, '#f0ebf5');
-    gradient.addColorStop(0.7, '#e8e0f0');
-    gradient.addColorStop(1, '#362A6F');
+ drawBackground(ctx, width, height) {
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+  // 🎨 NUEVA PALETA (más marca)
+  gradient.addColorStop(0, '#f3e8ff');   // violeta muy claro
+  gradient.addColorStop(0.35, '#e9d5ff'); // lavanda
+  gradient.addColorStop(0.7, '#d8b4fe');  // violeta suave
+  gradient.addColorStop(1, '#c084fc');    // violeta marca
 
-    // Patrón de huellas sutil
-    ctx.save();
-    ctx.globalAlpha = 0.03;
-    ctx.fillStyle = '#362A6F';
-    
-    for (let i = 0; i < 8; i++) {
-      const x = (width / 8) * i + 40;
-      const y = 150 + (i % 2) * 200;
-      this.drawPawPrint(ctx, x, y, 25 + (i % 3) * 8);
-    }
-    ctx.restore();
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
 
-    // Líneas onduladas modernas
-    ctx.strokeStyle = 'rgba(196,38,133,0.08)';
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      ctx.moveTo(0, 400 + i * 180);
-      ctx.bezierCurveTo(width * 0.3, 350 + i * 180, width * 0.7, 450 + i * 180, width, 400 + i * 180);
-      ctx.stroke();
-    }
-  },
-
-  drawPawPrint(ctx, x, y, size) {
-    // Almohadilla principal
+  // 🌿 ondas suaves (igual pero mejor contraste)
+  for (let i = 0; i < 18; i++) {
+    const x = (width / 18) * i;
     ctx.beginPath();
-    ctx.ellipse(x, y, size, size * 0.8, 0, 0, Math.PI * 2);
+    ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
+
+    // un poco más visible
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
     ctx.fill();
-    
-    // Dedos
-    const toeSize = size * 0.35;
-    const positions = [
-      {dx: -size*0.6, dy: -size*0.9, rot: -0.3},
-      {dx: -size*0.2, dy: -size*1.1, rot: -0.1},
-      {dx: size*0.2, dy: -size*1.1, rot: 0.1},
-      {dx: size*0.6, dy: -size*0.9, rot: 0.3}
-    ];
-    
-    positions.forEach(pos => {
-      ctx.save();
-      ctx.translate(x + pos.dx, y + pos.dy);
-      ctx.rotate(pos.rot);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, toeSize, toeSize * 1.2, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    });
-  },
+  }
 
-  drawTopDecoration(ctx, width, height) {
-    ctx.save();
-    
-    // Glassmorphism effect
-    const gradient = ctx.createLinearGradient(0, 0, width, 120);
-    gradient.addColorStop(0, 'rgba(54,42,111,0.85)');
-    gradient.addColorStop(0.5, 'rgba(196,38,133,0.75)');
-    gradient.addColorStop(1, 'rgba(54,42,111,0.85)');
-    
-    ctx.fillStyle = gradient;
-    
-    // Forma moderna con curva suave
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(width, 0);
-    ctx.lineTo(width, 75);
-    ctx.quadraticCurveTo(width * 0.5, 110, 0, 75);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Línea de acento magenta
-    ctx.strokeStyle = '#C42685';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, 75);
-    ctx.quadraticCurveTo(width * 0.5, 110, width, 75);
-    ctx.stroke();
-    
-    ctx.restore();
-  },
-
-  drawMainImage(ctx, img, width, height) {
-    const frameX = 60;
-    const frameY = 140;
-    const frameW = width - 120;
-    const frameH = 680;
-    
-    this._lastFrame = { x: frameX, y: frameY, w: frameW, h: frameH };
-
-    ctx.save();
-    
-    // Sombra moderna difusa
-    ctx.shadowColor = 'rgba(54,42,111,0.15)';
-    ctx.shadowBlur = 30;
-    ctx.shadowOffsetY = 15;
-    
-    // Marco con borde redondeado
-    this.roundRect(ctx, frameX, frameY, frameW, frameH, 40);
-    ctx.clip();
-    
-    ctx.shadowColor = 'transparent';
-
-    // Cover adaptativo
-    const imgRatio = img.width / img.height;
-    const boxRatio = frameW / frameH;
-    let drawW, drawH, drawX, drawY;
-
-    if (imgRatio > boxRatio) {
-      drawH = frameH;
-      drawW = drawH * imgRatio;
-      drawX = frameX - (drawW - frameW) / 2;
-      drawY = frameY;
-    } else {
-      drawW = frameW;
-      drawH = drawW / imgRatio;
-      drawX = frameX;
-      drawY = frameY - (drawH - frameH) * 0.3;
+  // 🎛️ líneas sutiles
+  for (let i = 0; i < 14; i++) {
+    const y = 200 + i * 70;
+    ctx.fillStyle = i % 2 === 0 
+      ? 'rgba(255,255,255,0.05)' 
+      : 'rgba(255,255,255,0.025)';
+    ctx.fillRect(0, y, width, 8);
+  }
+},
+async getBestAvailableImageUrl(urls) {
+  for (const url of urls) {
+    try {
+      await this.loadImage(url);
+      return url;
+    } catch (err) {
+      console.warn('Fallback de imagen Cloudinary:', url, err);
     }
+  }
 
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-    ctx.restore();
+  throw new Error('No se pudo cargar ninguna versión optimizada de la imagen');
+},
 
-    // Doble borde moderno
-    ctx.save();
-    ctx.strokeStyle = 'rgba(196,38,133,0.4)';
-    ctx.lineWidth = 2;
-    this.roundRect(ctx, frameX - 4, frameY - 4, frameW + 8, frameH + 8, 44);
-    ctx.stroke();
-    
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    ctx.lineWidth = 1;
-    this.roundRect(ctx, frameX, frameY, frameW, frameH, 40);
-    ctx.stroke();
-    ctx.restore();
-  },
+drawMainImage(ctx, img, width, height) {
+  const frameX = 60;
+  const frameY = 180;
+  const frameW = width - 120;
 
+  const imgRatio = img.width / img.height;
+
+  // altura del bloque según proporción de la foto
+  let frameH = frameW / imgRatio;
+
+  // límites para no romper el diseño del flyer
+  frameH = Math.max(480, Math.min(frameH, 820));
+
+  this._lastFrame = {
+    x: frameX,
+    y: frameY,
+    w: frameW,
+    h: frameH
+  };
+
+  ctx.save();
+
+  this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
+  ctx.clip();
+
+  const boxRatio = frameW / frameH;
+
+  let drawW, drawH, drawX, drawY;
+
+  // COVER sin deformar
+  if (imgRatio > boxRatio) {
+    // la imagen es más ancha que el marco
+    drawH = frameH;
+    drawW = drawH * imgRatio;
+    drawX = frameX - (drawW - frameW) / 2;
+    drawY = frameY;
+  } else {
+    // la imagen es más alta que el marco
+    drawW = frameW;
+    drawH = drawW / imgRatio;
+    drawX = frameX;
+    drawY = frameY - (drawH - frameH) * 0.35;
+  }
+
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+  ctx.restore();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = 4;
+  this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
+  ctx.stroke();
+},
+
+
+   
+   drawTopDecoration(ctx, width, height) {
+  ctx.save();
+
+  const g = ctx.createLinearGradient(0, 0, width, 0);
+  g.addColorStop(0, 'rgba(255,255,255,0.75)');
+  g.addColorStop(0.5, 'rgba(255,255,255,0.28)');
+  g.addColorStop(1, 'rgba(255,255,255,0.75)');
+
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(width, 0);
+  ctx.lineTo(width, 90);
+  ctx.bezierCurveTo(width * 0.75, 160, width * 0.25, 20, 0, 120);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+},
   drawBottomPanel(ctx, width, height) {
-    const y = this._lastFrame.y + this._lastFrame.h + 50;
-    const panelH = height - y - 40;
-    const margin = 40;
+    const panelH = 230;
+    const y = Math.max(height - panelH, this._lastFrame.y + this._lastFrame.h + 120);
 
-    ctx.save();
-    
-    // Card blanca con sombra
-    ctx.shadowColor = 'rgba(54,42,111,0.12)';
-    ctx.shadowBlur = 25;
-    ctx.shadowOffsetY = 8;
-    
-    // Fondo blanco con esquinas redondeadas
-    ctx.fillStyle = '#ffffff';
-    this.roundRect(ctx, margin, y, width - margin * 2, panelH, 30);
-    ctx.fill();
-    
-    ctx.shadowColor = 'transparent';
-    
-    // Barra de color en la parte superior
-    const barGradient = ctx.createLinearGradient(margin, y, width - margin, y);
-    barGradient.addColorStop(0, '#362A6F');
-    barGradient.addColorStop(0.5, '#C42685');
-    barGradient.addColorStop(1, '#362A6F');
-    
-    ctx.fillStyle = barGradient;
+    const g = ctx.createLinearGradient(0, y, width, height);
+    g.addColorStop(0, 'rgba(126, 61, 118, 0.88)');
+    g.addColorStop(1, 'rgba(88, 34, 92, 0.96)');
+
+    ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.moveTo(margin + 30, y);
-    ctx.lineTo(width - margin - 30, y);
-    ctx.quadraticCurveTo(width - margin, y, width - margin, y + 30);
-    ctx.lineTo(width - margin, y + 6);
-    ctx.lineTo(margin, y + 6);
-    ctx.lineTo(margin, y + 30);
-    ctx.quadraticCurveTo(margin, y, margin + 30, y);
+    ctx.moveTo(0, y + 40);
+    ctx.bezierCurveTo(width * 0.18, y - 20, width * 0.38, y + 85, width * 0.55, y + 15);
+    ctx.bezierCurveTo(width * 0.72, y - 35, width * 0.88, y + 45, width, y);
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
     ctx.closePath();
     ctx.fill();
-    
-    // Círculos decorativos sutiles
-    ctx.fillStyle = 'rgba(54,42,111,0.04)';
+
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.beginPath();
-    ctx.arc(margin + 60, y + panelH - 60, 50, 0, Math.PI * 2);
+    ctx.arc(100, y + 120, 90, 0, Math.PI * 2);
     ctx.fill();
-    
-    ctx.fillStyle = 'rgba(196,38,133,0.06)';
+
     ctx.beginPath();
-    ctx.arc(width - margin - 80, y + 40, 35, 0, Math.PI * 2);
+    ctx.arc(width - 120, y + 50, 70, 0, Math.PI * 2);
     ctx.fill();
-    
-    ctx.restore();
   },
 
   drawTitle(ctx, titulo, width) {
-    const maxWidth = width - 100;
-    
-    ctx.save();
-    
-    // Sombra sutil
-    ctx.shadowColor = 'rgba(54,42,111,0.15)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    
-    ctx.fillStyle = '#362A6F';
-    ctx.font = 'bold 52px Montserrat, Arial, sans-serif';
+    const maxWidth = width - 140;
+    ctx.fillStyle = '#6f2c67';
+    ctx.font = 'bold 58px Montserrat, Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
     const lines = this.wrapText(ctx, titulo.toUpperCase(), maxWidth);
-    let y = 45;
 
-    lines.slice(0, 2).forEach((line, index) => {
+    let y = 70;
+    lines.slice(0, 2).forEach(line => {
       ctx.fillText(line, width / 2, y);
-      
-      // Subrayado decorativo
-      if (index === 0) {
-        const metrics = ctx.measureText(line);
-        const lineWidth = metrics.width;
-        const startX = (width - lineWidth) / 2;
-        
-        ctx.fillStyle = '#C42685';
-        ctx.fillRect(startX, y + 58, lineWidth, 5);
-        
-        // Punto decorativo
-        ctx.beginPath();
-        ctx.arc(startX + lineWidth + 8, y + 60, 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = '#362A6F';
-      }
-      y += 62;
+      y += 66;
     });
-    
-    ctx.restore();
   },
 
-  drawBodyText(ctx, texto, width, height) {
-    const maxWidth = width - 160;
-    const startY = this._lastFrame.y + this._lastFrame.h + 80;
-
-    ctx.save();
-    
-    ctx.fillStyle = '#4a4a4a';
-    ctx.font = '400 26px Montserrat, Arial, sans-serif';
+      drawBodyText(ctx, texto, width, height) {
+    const maxWidth = width - 180;
+    const startY = this._lastFrame.y + this._lastFrame.h + 40;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '500 28px Montserrat, Arial, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
     const lines = this.wrapText(ctx, texto, maxWidth);
     let y = startY;
 
-    lines.slice(0, 3).forEach((line) => {
-      // Bullet moderno
-      ctx.fillStyle = '#C42685';
-      this.roundRect(ctx, 65, y + 8, 8, 8, 2);
-      ctx.fill();
-      
-      ctx.fillStyle = '#4a4a4a';
-      ctx.fillText(line, 85, y);
+    lines.slice(0, 4).forEach(line => {
+      ctx.fillText(line, 90, y);
       y += 36;
     });
-    
-    ctx.restore();
   },
 
   drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, height }) {
-    const cardY = this._lastFrame.y + this._lastFrame.h + 50;
-    const cardH = height - cardY - 40;
-    const centerY = cardY + cardH - 75;
-    
-    ctx.save();
-    
-    // Layout en grid: 2 columnas
-    const col1X = 80;
-    const col2X = width / 2 + 20;
-    const startY = centerY - 20;
-    
-    const items = [
-      { icon: 'IG', text: instagram, color: '#C42685', x: col1X, y: startY },
-      { icon: 'WEB', text: web, color: '#362A6F', x: col2X, y: startY },
-      { icon: 'WA', text: whatsapp, color: '#362A6F', x: col1X, y: startY + 35 },
-      { icon: 'LOC', text: ubicacion, color: '#362A6F', x: col2X, y: startY + 35 }
+    const startX = 90;
+    const baseY = height - 132;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '600 25px Montserrat, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    const lines = [
+      `Instagram: ${instagram}`,
+      `Web: ${web}`,
+      `WhatsApp: ${whatsapp}`,
+      `Ubicación: ${ubicacion}`
     ];
 
-    items.forEach(item => {
-      // Badge del icono
-      ctx.fillStyle = item.color;
-      this.roundRect(ctx, item.x, item.y, 28, 22, 4);
-      ctx.fill();
-      
-      // Texto del icono
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10px Montserrat, Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(item.icon, item.x + 14, item.y + 11);
-      
-      // Texto del valor
-      ctx.fillStyle = '#555555';
-      ctx.font = '500 20px Montserrat, Arial, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(item.text, item.x + 38, item.y + 16);
+    let y = baseY;
+    lines.forEach(line => {
+      ctx.fillText(line, startX, y);
+      y += 32;
     });
-    
-    ctx.restore();
   },
 
   drawLogo(ctx, img, width, height) {
-    const size = 130;
-    const x = width - size - 70;
-    const y = height - size - 55;
+    const maxW = 170;
+    const maxH = 170;
 
-    ctx.save();
-    
-    // Círculo de fondo con gradiente
-    const gradient = ctx.createLinearGradient(x, y, x + size, y + size);
-    gradient.addColorStop(0, '#362A6F');
-    gradient.addColorStop(1, '#C42685');
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(x + size/2, y + size/2, size/2 + 8, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Círculo blanco interior
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Clip para la imagen
-    ctx.beginPath();
-    ctx.arc(x + size/2, y + size/2, size/2 - 4, 0, Math.PI * 2);
-    ctx.clip();
-    
-    // Dibujar logo centrado
-    const ratio = Math.min((size-8) / img.width, (size-8) / img.height);
+    const ratio = Math.min(maxW / img.width, maxH / img.height);
     const drawW = img.width * ratio;
     const drawH = img.height * ratio;
-    const drawX = x + (size - drawW) / 2;
-    const drawY = y + (size - drawH) / 2;
-    
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-    
-    ctx.restore();
-  },
 
-  async getBestAvailableImageUrl(urls) {
-    for (const url of urls) {
-      try {
-        await this.loadImage(url);
-        return url;
-      } catch (err) {
-        console.warn('Fallback de imagen Cloudinary:', url, err);
-      }
-    }
-    throw new Error('No se pudo cargar ninguna versión optimizada de la imagen');
+    const x = width - drawW - 70;
+    const y = height - drawH - 40;
+
+    ctx.save();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
+    ctx.fill();
+
+    ctx.drawImage(img, x, y, drawW, drawH);
+    ctx.restore();
   },
 
   wrapText(ctx, text, maxWidth) {
@@ -758,16 +630,15 @@ const App = {
       .then(blob => new File([blob], filename, { type: blob.type || 'image/png' }));
   },
 
-  loadImage(src) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = src;
-    });
-  },
-
+ loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+},
   setLoading(isLoading, text = 'Cargando...') {
     const e = this.elements;
 
@@ -868,11 +739,9 @@ const Backend = {
     return jsonpRequest(url);
   }
 };
-
 /* =========================
-   Cloudinary
+   Claudinary
    ========================= */
-
 const CloudinaryUpload = {
   async upload(file, folder = CONFIG.CLOUDINARY_FOLDER) {
     const formData = new FormData();
