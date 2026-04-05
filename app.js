@@ -369,6 +369,25 @@ async getBestAvailableImageUrl(urls) {
   this.roundRect(ctx, frameX, frameY, frameW, frameH, 36);
   ctx.stroke();
 },
+   drawTopDecoration(ctx, width, height) {
+  ctx.save();
+
+  const g = ctx.createLinearGradient(0, 0, width, 0);
+  g.addColorStop(0, 'rgba(255,255,255,0.75)');
+  g.addColorStop(0.5, 'rgba(255,255,255,0.28)');
+  g.addColorStop(1, 'rgba(255,255,255,0.75)');
+
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(width, 0);
+  ctx.lineTo(width, 90);
+  ctx.bezierCurveTo(width * 0.75, 160, width * 0.25, 20, 0, 120);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+},
   drawBottomPanel(ctx, width, height) {
     const panelH = 230;
     const y = Math.max(height - panelH, this._lastFrame.y + this._lastFrame.h + 120);
