@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dra. Bruzera - Flyers</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -229,11 +230,23 @@
       overflow: hidden;
     }
 
-    .result-frame img {
+    .result-frame canvas {
       display: block;
       width: 100%;
       height: auto;
       border-radius: 18px;
+      background: #f3eefb;
+    }
+
+    .result-placeholder {
+      background: rgba(255,255,255,.75);
+      border: 1px dashed rgba(110, 47, 102, .18);
+      border-radius: 18px;
+      padding: 14px;
+      color: #66405f;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
     }
 
     .history {
@@ -285,7 +298,6 @@
     </div>
 
     <div class="grid">
-      <!-- COLUMNA IZQUIERDA -->
       <div class="card">
         <h2>Configuración</h2>
 
@@ -349,9 +361,7 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="btnGenerar">
-  Guardar flyer
-</button>
+            <button class="btn btn-primary" id="btnGenerar" type="button">Guardar flyer</button>
             <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar PNG</button>
             <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
           </div>
@@ -367,16 +377,19 @@
         </div>
       </div>
 
-      <!-- COLUMNA DERECHA -->
       <div class="stack">
         <div class="card result-card">
           <h2>Resultado</h2>
 
-        <div class="result-frame">
-  <canvas id="flyerCanvas"></canvas>
-</div>
+          <div class="result-frame">
+            <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+          </div>
 
-          <div id="resultSection">
+          <div class="result-placeholder" id="resultPlaceholder">
+            Subí una imagen y acomodala con zoom + arrastre para ver el flyer.
+          </div>
+
+          <div id="resultSection" class="hidden">
             <div class="chip">Flyer generado correctamente</div>
           </div>
         </div>
@@ -391,7 +404,6 @@
     </div>
   </div>
 
-  <!-- Tu app.js -->
   <script src="./app.js"></script>
 </body>
 </html>
