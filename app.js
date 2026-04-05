@@ -981,12 +981,11 @@ const CloudinaryUpload = {
 };
 const CloudinaryAI = {
   buildGenFillUrl(publicId) {
-    return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
-      `c_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto/` +
-      `e_gen_fill/` +
-      `f_auto,q_auto/` +
-      `${publicId}.png`;
-  },
+  return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
+    `c_pad,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto,b_gen_fill/` +
+    `f_auto,q_auto/` +
+    `${publicId}`;
+},
 
   buildBgRemovalUrl(publicId) {
     return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
