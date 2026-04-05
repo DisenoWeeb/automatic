@@ -702,10 +702,25 @@ const App = {
   }
 
   try {
-    this.setLoading(true, 'Subiendo imagen...');
+    this.setLoading(true, 'Preparando imagen...');
+
+    console.log('mainImageData existe:', !!this.state.mainImageData);
+    console.log('mainImageData tipo:', typeof this.state.mainImageData);
+    console.log('mainImageData inicio:', String(this.state.mainImageData).slice(0, 80));
 
     const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.png');
+
+    console.log('mainFile:', mainFile);
+    console.log('mainFile.size:', mainFile.size);
+    console.log('mainFile.type:', mainFile.type);
+
+    this.setLoading(true, 'Subiendo imagen...');
+
     const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
+
+    console.log('uploadRes:', uploadRes);
+    console.log('public_id real:', uploadRes.public_id);
+    console.log('secure_url real:', uploadRes.secure_url);
 
     const originalUrl = uploadRes.secure_url;
     const publicId = uploadRes.public_id;
@@ -715,11 +730,10 @@ const App = {
     if (CONFIG.USE_CLOUDINARY_AI) {
       this.setLoading(true, 'Aplicando IA Cloudinary...');
       aiUrl = CloudinaryAI.buildGenFillUrl(publicId);
-      // Si querés probar fondo removido en vez de gen fill:
-      // aiUrl = CloudinaryAI.buildBgRemovalUrl(publicId);
+      console.log('aiUrl:', aiUrl);
     }
 
-    this.setLoading(true, 'Renderizando flyer...');
+    this.setLoading(true, 'Cargando imagen final...');
 
     const aiImg = await this.loadImage(aiUrl);
     this.state.editor.img = aiImg;
@@ -746,13 +760,12 @@ const App = {
     this.renderLocalHistory();
     alert('Flyer listo para descargar');
   } catch (err) {
-    console.error(err);
+    console.error('❌ generarFlyer error:', err);
     this.showError(err.message || 'Error generando flyer');
   } finally {
     this.setLoading(false);
   }
 },
-
   async descargarImagen() {
     if (!this.state.generatedImage) {
       this.renderPreview();
@@ -830,10 +843,19 @@ const App = {
   },
 
   dataURLtoFile(dataUrl, filename) {
-    return fetch(dataUrl)
-      .then(res => res.blob())
-      .then(blob => new File([blob], filename, { type: blob.type || 'image/png' }));
-  },
+  const arr = dataUrl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return Promise.resolve(new File([u8arr], filename, { type: mime }));
+},
 
   loadImage(src) {
     return new Promise((resolve, reject) => {
@@ -918,17 +940,22 @@ function jsonpRequest(url) {
     document.body.appendChild(script);
   });
 }
-/* =========================
-   Claudinary
-   ========================= */
+
 /* =========================
    Cloudinary
    ========================= */
 
 const CloudinaryUpload = {
   async upload(file, folder = CONFIG.CLOUDINARY_FOLDER) {
+    console.log('⬆️ Subiendo a Cloudinary...');
+    console.log('file:', file);
+    console.log('file.name:', file.name);
+    console.log('file.type:', file.type);
+    console.log('file.size:', file.size);
+    console.log('folder:', folder);
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name || 'image.png');
     formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
     formData.append('folder', folder);
 
@@ -942,14 +969,16 @@ const CloudinaryUpload = {
 
     const data = await res.json();
 
+    console.log('☁️ Cloudinary status:', res.status);
+    console.log('☁️ Cloudinary response:', data);
+
     if (!res.ok || !data.secure_url) {
-      throw new Error(data.error?.message || 'No se pudo subir a Cloudinary');
+      throw new Error(data?.error?.message || 'No se pudo subir a Cloudinary');
     }
 
     return data;
   }
 };
-
 const CloudinaryAI = {
   buildGenFillUrl(publicId) {
     return `https://res.cloudinary.com/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload/` +
