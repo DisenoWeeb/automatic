@@ -670,8 +670,8 @@ drawBodyText(ctx, texto, width, startY, panelY) {
   const maxLines = Math.max(1, Math.floor(availableH / 36));
 
   ctx.fillStyle = c.text;
-  ctx.font = '500 28px Montserrat, Arial, sans-serif';
-  ctx.textAlign = 'left';
+  ctx.font = '500 36px Montserrat, Arial, sans-serif';
+  ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
 
   const lines = this.wrapText(ctx, texto, maxWidth);
@@ -685,11 +685,11 @@ drawBodyText(ctx, texto, width, startY, panelY) {
 
 drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
   const c = this.getFlyerColors();
-  const startX = 90;
+  const startX = 10;
   const baseY = panelY + 110;
 
   ctx.fillStyle = c.text;
-  ctx.font = '600 25px Montserrat, Arial, sans-serif';
+  ctx.font = '600 30px Montserrat, Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
