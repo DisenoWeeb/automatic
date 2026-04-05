@@ -502,7 +502,7 @@ getFlyerColors() {
     this.drawBottomPanel(ctx, width, height, photo.panelY, photo.panelH);
 
     if (data.texto) {
-      this.drawBodyText(ctx, data.texto, width, photo.bodyStartY, photo.panelY);
+      this.drawBodyText(ctx, data.texto, photo, photo.bodyStartY, photo.panelY);
     }
 
     this.drawContactData(ctx, {
@@ -663,28 +663,35 @@ drawBottomPanel(ctx, width, height, y, panelH) {
   ctx.fill();
 },
 
-drawBodyText(ctx, texto, width, startY, panelY) {
-   const c = this.getFlyerColors();
-  const maxWidth = width - 220;
-  const availableH = Math.max(0, panelY - startY - 24);
+drawBodyText(ctx, texto, photo, startY, panelY) {
+  const c = this.getFlyerColors();
+  if (!texto) return;
+
+  // ancho útil alineado con la foto
+  const maxWidth = photo.w - 30;
+
+  // altura disponible hasta antes del panel
+  const availableH = Math.max(0, panelY - startY - 18);
   if (availableH < 30) return;
 
-  const lineHeight = 42;
+  const lineHeight = 46; // más grande y con más aire
   const maxLines = Math.max(1, Math.floor(availableH / lineHeight));
 
   ctx.fillStyle = c.bodyText;
-  ctx.font = '500 34px Montserrat, Arial, sans-serif';
+  ctx.font = '500 38px Montserrat, Arial, sans-serif'; // más grande
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
 
   const lines = this.wrapText(ctx, texto, maxWidth);
 
-  // 👉 más arriba
-  let y = startY - 20;
+  // centro exacto de la imagen
+  const centerX = photo.x + (photo.w / 2);
+
+  // un poco más arriba
+  let y = startY - 12;
 
   lines.slice(0, maxLines).forEach(line => {
-    // 👉 más a la derecha
-    ctx.fillText(line, 130, y);
+    ctx.fillText(line, centerX, y);
     y += lineHeight;
   });
 },
