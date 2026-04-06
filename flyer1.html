@@ -164,7 +164,7 @@
       box-shadow: var(--shadow-soft);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      font-size: 8px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-soft);
       white-space: nowrap;
@@ -508,6 +508,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
+      width: 100%;
     }
 
     .btn {
@@ -631,6 +632,13 @@
             <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">✦ Aplicar IA</button>
           </div>
 
+          <!-- Result actions: reemplazan al botón IA en el mismo lugar -->
+          <div class="actions actions-result u-hidden" id="resultActions">
+            <button class="btn btn-secondary" id="btnNuevo" type="button">Nuevo</button>
+            <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
+            <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
+          </div>
+
           <!-- Loader -->
           <div class="loader hidden" id="loader">
             <span id="loaderText">Generando flyer...</span>
@@ -681,13 +689,6 @@
                   </div>
                 </div>
               </details>
-
-              <!-- Result actions (se muestran tras Aplicar IA) -->
-              <div class="actions actions-result u-hidden" id="resultActions">
-                <button class="btn btn-secondary" id="btnNuevo" type="button">Nuevo</button>
-                <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
-                <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
-              </div>
             </div>
           </div>
 
