@@ -55,7 +55,9 @@
              <input type="file" id="mainImageGallery" accept="image/*" hidden>
 <input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
 <input type="file" id="logoImage" accept="image/*" hidden>
-              
+              <div class="loader hidden" id="loader">
+                <span id="loaderText">Generando flyer...</span>
+              </div>
              <details class="details-card">
   <summary>Titulo + Desc. + Contacto</summary>
 
@@ -104,9 +106,7 @@
                 <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
               </div>
 
-              <div class="loader hidden" id="loader">
-                <span id="loaderText">Generando flyer...</span>
-              </div>
+              
             </div>
           </div>
 
