@@ -9,7 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css">
+<link id="mainCSS" rel="stylesheet" href="style.css">
+<script>
+  const v = Date.now(); // 🔥 cambia solo siempre
+  document.getElementById('mainCSS').href = 'style.css?v=' + v;
+</script>
 </head>
 <body>
   <div class="preview-scale" id="previewScale">
