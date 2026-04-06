@@ -720,33 +720,6 @@ body.preview-mode .loader-overlay {
    🎨 INDEX
    ========================= */
 
- {
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Montserrat', sans-serif;
-}
-
-body {
-  min-height: 100vh;
-  color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 28%),
-    linear-gradient(145deg, #d7c9e8 0%, #c6b8df 48%, #b8acd9 100%);
-}
-
-a {
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
-}
-
-/* HEADER */
 
 .site-header {
   position: sticky;
