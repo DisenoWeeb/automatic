@@ -4,16 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flyers IA</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header class="site-header">
     <div class="header-inner">
-      <button class="menu-btn" aria-label="Abrir menú">
+      <button class="menu-btn" aria-label="Abrir menú" type="button">
         <span></span>
         <span></span>
         <span></span>
@@ -110,20 +111,15 @@
         <article class="model-card" onclick="window.location.href='${item.file}'">
           <div class="model-preview-wrap">
             <div class="iframe-box">
-              <div style="width:100%; aspect-ratio:9/16; overflow:hidden; border-radius:20px; background:#000;">
-  <iframe 
-    src="flyer1.html"
-    style="
-      width:412px;
-      height:920px;
-      border:0;
-      transform:scale(0.42);
-      transform-origin:top left;
-      pointer-events:none;
-      display:block;
-    ">
-  </iframe>
-</div>
+              <div class="iframe-scale-wrap">
+                <iframe
+                  src="${item.preview}"
+                  title="${item.name}"
+                  loading="lazy"
+                  scrolling="no"
+                  tabindex="-1"
+                ></iframe>
+              </div>
             </div>
             ${item.badge ? `<span class="model-badge">${item.badge}</span>` : ""}
           </div>
