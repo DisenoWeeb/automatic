@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dra. Bruzera - Flyer 1</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css">
+
+  <style>
+    /* ── VARIABLES ─────────────────────────────────────── */
+    :root {
+      --pink: #C42685;
+      --violet: #362A6F;
+      --pink-soft: rgba(196, 38, 133, .13);
+      --violet-soft: rgba(54, 42, 111, .13);
+      --text: #2f245d;
+      --text-soft: #6c6493;
+      --glass: rgba(255,255,255,.72);
+      --glass-strong: rgba(255,255,255,.88);
+      --border: rgba(255,255,255,.38);
+      --border-soft: rgba(54, 42, 111, .10);
+      --shadow: 0 18px 44px rgba(54, 42, 111, .22);
+      --shadow-soft: 0 8px 20px rgba(54, 42, 111, .12);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --btn-h: 42px;
+      --btn-h-main: 46px;
+      --btn-font: 13px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: 'DM Sans', 'Montserrat', sans-serif;
+      background: #f0edf8;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── FONDO ANIMADO ─────────────────────────────────── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 700px 600px at 90% -10%, rgba(196,38,133,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at -5% 90%, rgba(54,42,111,.17) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 400px at 50% 50%, rgba(196,38,133,.07) 0%, transparent 70%);
+      animation: bgShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgShift {
+      from { opacity: 1; }
+      to   { opacity: .75; }
+    }
+
+    /* ── WRAP / SHELL ───────────────────────────────────── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(14px, 3vw, 32px);
+      background: rgba(240,237,248,.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .app-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    /* Logo marca */
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(196,38,133,.32);
+      flex-shrink: 0;
+    }
+
+    .brand-logo svg {
+      width: 16px;
+      height: 16px;
+      fill: #fff;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.03em;
+      line-height: 1;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-soft);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    /* botón menú legacy */
+    .menu-btn {
+      display: none;
+    }
+
+    /* badge usuario */
+    .user-badge {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .user-badge span {
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    /* ── LAYOUT PRINCIPAL ───────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      padding: clamp(16px, 2.5vw, 28px) clamp(14px, 3vw, 32px);
+      flex: 1;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── CARD BASE ──────────────────────────────────────── */
+    .card {
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    /* ── PREVIEW CARD ───────────────────────────────────── */
+    .preview-card {
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 80px;
+      animation: fadeUp .55s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .preview-header {
+      height: 0;
+      /* oculto, legacy */
+    }
+
+    .preview-stage-wrap {
+      padding: 16px;
+    }
+
+    .preview-stage {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: linear-gradient(160deg, var(--pink-soft), var(--violet-soft));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.3);
+    }
+
+    .preview-stage canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ── RIGHT COL ──────────────────────────────────────── */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeUp .55s .1s ease both;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── ACCIONES RÁPIDAS TOP ───────────────────────────── */
+    .preview-actions-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--btn-h);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      text-align: center;
+      padding: 0 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .01em;
+    }
+
+    .quick-action:not(.secondary) {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(196,38,133,.28);
+    }
+
+    .quick-action.secondary {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .quick-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(196,38,133,.30);
+    }
+
+    .quick-action:active {
+      transform: translateY(0);
+    }
+
+    /* ── BOTÓN IA ───────────────────────────────────────── */
+    .actions-main {
+      display: flex;
+    }
+
+    .btn-ia {
+      width: 100%;
+      height: var(--btn-h-main);
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--violet) 100%);
+      box-shadow: 0 10px 28px rgba(196,38,133,.34);
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-ia::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .btn-ia:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(196,38,133,.40);
+    }
+
+    .btn-ia:active {
+      transform: translateY(0);
+    }
+
+    /* ── LOADER ─────────────────────────────────────────── */
+    .loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      background: var(--glass);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+
+    .loader::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(196,38,133,.22);
+      border-top-color: var(--pink);
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader.hidden { display: none; }
+
+    /* ── FORM CARD ──────────────────────────────────────── */
+    .form-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .section-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+
+    .section-head p {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+    }
+
+    /* ── DETAILS ────────────────────────────────────────── */
+    .details-card {
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.55);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .details-card summary {
+      padding: 13px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      transition: background .18s;
+    }
+
+    .details-card summary::after {
+      content: "›";
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-soft);
+      transition: transform .22s ease;
+    }
+
+    .details-card[open] summary::after {
+      transform: rotate(90deg);
+    }
+
+    .details-card summary:hover {
+      background: var(--violet-soft);
+    }
+
+    .details-body {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    /* ── FIELDS ─────────────────────────────────────────── */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.7);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+      resize: none;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: rgba(108,100,147,.45);
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: rgba(196,38,133,.35);
+      box-shadow: 0 0 0 3px rgba(196,38,133,.10);
+      background: #fff;
+    }
+
+    .field textarea {
+      min-height: 80px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── RESULT ACTIONS ─────────────────────────────────── */
+    .actions-result {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      height: var(--btn-h);
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: var(--btn-font);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      letter-spacing: .01em;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(196,38,133,.28);
+    }
+
+    .btn-secondary {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(54,42,111,.18);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .u-hidden,
+    .hidden {
+      display: none !important;
+    }
+
+    /* ── FOOTER SPACE ───────────────────────────────────── */
+    .footer-space {
+      height: 40px;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .preview-actions-top {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .preview-actions-top .quick-action:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .two {
+        grid-template-columns: 1fr;
+      }
+
+      .actions-result {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .actions-result .btn:first-child {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="app-shell">
+
+      <!-- HEADER -->
+      <header class="app-header">
+        <div class="app-header-left">
+
+          <!-- Logo marca -->
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 5h16v2H4V5zm0 4h10v2H4V9zm0 4h16v2H4v-2zm0 4h10v2H4v-2z"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">Flyers IA</div>
+            <div class="brand-tag">Editor</div>
+          </div>
+
+          <div class="user-badge">Usuario: <span id="userIdBox">---</span></div>
+        </div>
+      </header>
+
+      <!-- LAYOUT -->
+      <section class="layout">
+
+        <!-- PREVIEW -->
+        <div class="card preview-card">
+          <div class="preview-header"></div>
+          <div class="preview-stage-wrap">
+            <div class="preview-stage">
+              <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COL -->
+        <div class="stack right-col">
+
+          <!-- Acciones rápidas -->
+          <div class="preview-actions-top">
+            <label for="mainImageGallery" class="quick-action">Elegir foto</label>
+            <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
+            <label for="logoImage" class="quick-action secondary">Subir logo</label>
+          </div>
+
+          <!-- Botón IA -->
+          <div class="actions actions-main">
+            <button class="btn btn-primary btn-ia" id="btnGenerar" type="button">✦ Aplicar IA</button>
+          </div>
+
+          <!-- Loader -->
+          <div class="loader hidden" id="loader">
+            <span id="loaderText">Generando flyer...</span>
+          </div>
+
+          <!-- Form card -->
+          <div class="card form-card">
+            <div class="section-head">
+              <h2>+ Acciones</h2>
+              <p>Seguí editando tu flyer</p>
+            </div>
+
+            <div class="stack">
+              <input type="file" id="mainImageGallery" accept="image/*" hidden>
+              <input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
+              <input type="file" id="logoImage" accept="image/*" hidden>
+
+              <details class="details-card">
+                <summary>Título · Descripción · Contacto</summary>
+                <div class="details-body">
+                  <div class="field">
+                    <label for="titulo">Título</label>
+                    <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
+                  </div>
+                  <div class="field">
+                    <label for="texto">Texto</label>
+                    <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+                  </div>
+                  <div class="two">
+                    <div class="field">
+                      <label for="instagram">Instagram</label>
+                      <input type="text" id="instagram" value="@drabruzera">
+                    </div>
+                    <div class="field">
+                      <label for="whatsapp">WhatsApp</label>
+                      <input type="tel" id="whatsapp" value="343 5303848">
+                    </div>
+                  </div>
+                  <div class="two">
+                    <div class="field">
+                      <label for="web">Web</label>
+                      <input type="text" id="web" value="www.bruzera.turnox.pro">
+                    </div>
+                    <div class="field">
+                      <label for="ubicacion">Ubicación</label>
+                      <input type="text" id="ubicacion" value="José Venturino 1239">
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Result actions (se muestran tras Aplicar IA) -->
+              <div class="actions actions-result u-hidden" id="resultActions">
+                <button class="btn btn-secondary" id="btnNuevo" type="button">Nuevo</button>
+                <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
+                <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Elementos ocultos necesarios para app1.js -->
+          <div class="u-hidden">
+            <img id="previewMain" alt="Preview imagen principal">
+            <img id="previewLogo" alt="Preview logo">
+            <div id="resultSection" class="resultSection"></div>
+            <div id="historyList" class="history"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="footer-space"></div>
+    </div>
+  </div>
+
+  <script src="./app1.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnIA = document.getElementById('btnGenerar');
+      const resultActions = document.getElementById('resultActions');
+      const btnNuevo = document.getElementById('btnNuevo');
+
+      if (!btnIA || !resultActions) return;
+
+      btnIA.addEventListener('click', () => {
+        setTimeout(() => {
+          btnIA.style.display = 'none';
+          resultActions.classList.remove('u-hidden');
+        }, 1500);
+      });
+
+      if (btnNuevo) {
+        btnNuevo.addEventListener('click', () => {
+          location.reload();
+        });
+      }
+    });
+  </script>
+</body>
+</html>
