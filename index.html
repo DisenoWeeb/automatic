@@ -10,47 +10,275 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    
+    .flyers-showcase {
+      width: min(100%, 1600px);
+      margin: 0 auto;
+      padding: 18px 0 26px;
+    }
+
+    .flyers-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 18px 14px;
+    }
+
+    .flyers-title-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .flyers-title {
+      margin: 0;
+      font-size: clamp(20px, 2vw, 28px);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+
+    .flyers-subtitle {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+
+    .drag-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      flex-shrink: 0;
+    }
+
+    .drag-indicator::before {
+      content: "↔";
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .flyers-strip-wrap {
+      position: relative;
+    }
+
     .flyers-strip {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: start;
-}
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 18px 14px;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(54, 42, 111, .26) transparent;
+    }
 
-.flyer-frame {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  position: relative;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.04);
-}
+    .flyers-strip::-webkit-scrollbar {
+      height: 10px;
+    }
 
-.flyer-frame iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-  pointer-events: none;
-}
-   @media (max-width: 640px) {
-  .flyers-strip {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-right: 10px;
-    -webkit-overflow-scrolling: touch;
-  }
+    .flyers-strip::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-  .flyer-frame {
-    flex: 0 0 82vw;
-    max-width: 360px;
-    min-width: 260px;
-  }
-}
+    .flyers-strip::-webkit-scrollbar-thumb {
+      background: rgba(54, 42, 111, .24);
+      border-radius: 999px;
+    }
+
+    .flyers-strip::before {
+      content: "";
+      flex: 0 0 2px;
+    }
+
+    .flyers-strip::after {
+      content: "";
+      flex: 0 0 2px;
+    }
+
+    .flyer-card {
+      flex: 0 0 clamp(210px, 15vw, 245px);
+      min-width: 210px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-xl);
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      scroll-snap-align: start;
+    }
+
+    .flyer-frame {
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      position: relative;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.22);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06)),
+        rgba(255,255,255,.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+    }
+
+    .flyer-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      pointer-events: none;
+      background: transparent;
+    }
+
+    .flyer-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 116px;
+    }
+
+    .flyer-name {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+
+    .flyer-desc {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-soft);
+      min-height: 48px;
+    }
+
+    .flyer-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: var(--btn-h-main);
+      padding: 0 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: var(--btn-font);
+      font-weight: 800;
+      letter-spacing: .01em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      box-shadow: 0 10px 22px rgba(54, 42, 111, .22);
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .flyer-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(54, 42, 111, .28);
+      opacity: .98;
+    }
+
+    .flyer-action:active {
+      transform: translateY(0);
+    }
+
+    @media (min-width: 1280px) {
+      .flyers-showcase {
+        width: min(100%, 1760px);
+      }
+
+      .flyers-strip {
+        gap: 14px;
+      }
+
+      .flyer-card {
+        flex: 0 0 calc((100% - (14px * 5) - 36px) / 6);
+        min-width: 190px;
+        max-width: 235px;
+      }
+    }
+
+    @media (min-width: 1600px) {
+      .flyer-card {
+        flex: 0 0 calc((100% - (14px * 6) - 36px) / 7);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .flyers-topbar {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .flyers-strip {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .flyer-card {
+        flex: 0 0 240px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .flyers-showcase {
+        padding-top: 10px;
+      }
+
+      .flyers-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .flyers-strip {
+        gap: 12px;
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .flyers-strip::before {
+        flex: 0 0 8px;
+      }
+
+      .flyer-card {
+        flex: 0 0 82vw;
+        min-width: 260px;
+        max-width: 340px;
+        padding: 10px;
+      }
+
+      .flyer-info {
+        min-height: auto;
+      }
+
+      .flyer-desc {
+        min-height: auto;
+      }
+
+      .drag-indicator {
+        font-size: 11px;
+        padding: 9px 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -75,7 +303,17 @@
   </header>
 
   <main class="flyers-showcase">
-    <section class="flyers-strip" id="flyersStrip"></section>
+    <div class="flyers-topbar">
+      <div class="flyers-title-box">
+        <h1 class="flyers-title">Elegí tu flyer</h1>
+        <p class="flyers-subtitle">Seleccioná un modelo para empezar a editarlo</p>
+      </div>
+      <div class="drag-indicator">Deslizá para ver más modelos</div>
+    </div>
+
+    <div class="flyers-strip-wrap">
+      <section class="flyers-strip" id="flyersStrip"></section>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -87,47 +325,91 @@
 
   <script>
     const FLYERS = [
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" },
-      { file: "flyer1.html", name: "Flyer 1" },
-      { file: "flyer2.html", name: "Flyer 2" }
+      {
+        file: "flyer1.html",
+        name: "Flyer 1",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Flyer 2",
+        desc: "Modelo alternativo con otra composición para probar variantes de estilo."
+      },
+      {
+        file: "flyer1.html",
+        name: "Flyer 1",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Flyer 2",
+        desc: "Modelo alternativo con otra composición para probar variantes de estilo."
+      },
+      {
+        file: "flyer1.html",
+        name: "Flyer 1",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Flyer 2",
+        desc: "Modelo alternativo con otra composición para probar variantes de estilo."
+      },
+      {
+        file: "flyer1.html",
+        name: "Flyer 1",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Flyer 2",
+        desc: "Modelo alternativo con otra composición para probar variantes de estilo."
+      },
+      {
+        file: "flyer1.html",
+        name: "Flyer 1",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Flyer 2",
+        desc: "Modelo alternativo con otra composición para probar variantes de estilo."
+      },
+      {
+        file: "flyer1.html",
+        name: "Flyer 1",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Flyer 2",
+        desc: "Modelo alternativo con otra composición para probar variantes de estilo."
+      }
     ];
 
     const strip = document.getElementById("flyersStrip");
 
-    strip.innerHTML = FLYERS.map(item => `
-      <div class="flyer-frame">
-        <iframe
-          src="${item.file}"
-          title="${item.name}"
-          loading="lazy"
-          scrolling="no"
-          tabindex="-1"
-          data-flyer
-        ></iframe>
-      </div>
+    strip.innerHTML = FLYERS.map((item, index) => `
+      <article class="flyer-card">
+        <div class="flyer-frame">
+          <iframe
+            src="${item.file}"
+            title="${item.name}"
+            loading="lazy"
+            scrolling="no"
+            tabindex="-1"
+            data-flyer
+          ></iframe>
+        </div>
+
+        <div class="flyer-info">
+          <h3 class="flyer-name">${item.name}</h3>
+          <p class="flyer-desc">${item.desc}</p>
+          <a class="flyer-action" href="${item.file}?modelo=${index + 1}">
+            Usar este flyer
+          </a>
+        </div>
+      </article>
     `).join("");
 
     function isolatePreviewCard(iframe) {
@@ -139,54 +421,54 @@
         if (!previewCard) return;
 
         const style = doc.createElement('style');
-       style.textContent = `
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    height: auto !important;
-  }
+        style.textContent = `
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            overflow: hidden !important;
+            width: 100% !important;
+            height: auto !important;
+          }
 
-  body > * {
-    display: none !important;
-  }
+          body > * {
+            display: none !important;
+          }
 
-  .card.preview-card {
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
+          .card.preview-card {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
 
-  .card.preview-card .preview-header {
-    display: none !important;
-  }
+          .card.preview-card .preview-header {
+            display: none !important;
+          }
 
-  .card.preview-card .preview-stage-wrap,
-  .card.preview-card .preview-stage {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    background: transparent !important;
-  }
+          .card.preview-card .preview-stage-wrap,
+          .card.preview-card .preview-stage {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            background: transparent !important;
+          }
 
-  .card.preview-card canvas,
-  .card.preview-card #flyerCanvas {
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    margin: 0 !important;
-  }
-`;
+          .card.preview-card canvas,
+          .card.preview-card #flyerCanvas {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+          }
+        `;
+
         doc.head.appendChild(style);
-
         doc.body.innerHTML = '';
         doc.body.appendChild(previewCard);
       } catch (err) {
