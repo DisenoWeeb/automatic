@@ -26,10 +26,10 @@
       width: 100%;
       aspect-ratio: 9 / 16;
       overflow: hidden;
-      border-radius: 24px;
-      background: transparent;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      position: relative;
     }
 
     .flyer-frame iframe {
@@ -39,7 +39,7 @@
       display: block;
       pointer-events: none;
       transform-origin: top left;
-      transform: scale(0.255);
+      transform: scale(0.24);
     }
 
     @media (max-width: 1100px) {
@@ -48,7 +48,7 @@
       }
 
       .flyer-frame iframe {
-        transform: scale(0.245);
+        transform: scale(0.235);
       }
     }
 
@@ -65,29 +65,19 @@
         overflow-x: auto;
         overflow-y: hidden;
         padding-right: 10px;
-        scroll-snap-type: x proximity;
         -webkit-overflow-scrolling: touch;
-      }
-
-      .flyers-strip::-webkit-scrollbar {
-        height: 8px;
-      }
-
-      .flyers-strip::-webkit-scrollbar-thumb {
-        background: rgba(84, 63, 140, 0.28);
-        border-radius: 999px;
+        scroll-snap-type: x proximity;
       }
 
       .flyer-frame {
         flex: 0 0 78vw;
-        max-width: 340px;
         min-width: 260px;
-        border-radius: 20px;
+        max-width: 340px;
         scroll-snap-align: start;
       }
 
       .flyer-frame iframe {
-        transform: scale(0.215);
+        transform: scale(0.21);
       }
     }
   </style>
@@ -126,27 +116,101 @@
 
   <script>
     const FLYERS = [
-      { file: "flyer1.html?preview=1", name: "Flyer 1" },
-      { file: "flyer2.html?preview=1", name: "Flyer 2" },
-      { file: "flyer3.html?preview=1", name: "Flyer 3" },
-      { file: "flyer4.html?preview=1", name: "Flyer 4" },
-      { file: "flyer5.html?preview=1", name: "Flyer 5" },
-      { file: "flyer6.html?preview=1", name: "Flyer 6" }
+      { file: "flyer1.html", name: "Flyer 1" },
+      { file: "flyer2.html", name: "Flyer 2" },
+      { file: "flyer3.html", name: "Flyer 3" },
+      { file: "flyer4.html", name: "Flyer 4" },
+      { file: "flyer5.html", name: "Flyer 5" },
+      { file: "flyer6.html", name: "Flyer 6" }
     ];
 
     const strip = document.getElementById("flyersStrip");
 
     strip.innerHTML = FLYERS.map(item => `
-      <div class="flyer-frame" aria-label="${item.name}">
+      <div class="flyer-frame">
         <iframe
           src="${item.file}"
           title="${item.name}"
           loading="lazy"
           scrolling="no"
-          tabindex="-1">
-        </iframe>
+          tabindex="-1"
+          data-flyer
+        ></iframe>
       </div>
     `).join("");
+
+    function isolatePreviewCard(iframe) {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (!doc) return;
+
+        const previewCard = doc.querySelector('.card.preview-card');
+        if (!previewCard) return;
+
+        const style = doc.createElement('style');
+        style.textContent = `
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            overflow: hidden !important;
+            width: 1080px !important;
+            height: 1350px !important;
+            min-width: 1080px !important;
+            min-height: 1350px !important;
+          }
+
+          body > * {
+            display: none !important;
+          }
+
+          .card.preview-card {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 1080px !important;
+            max-width: 1080px !important;
+            min-width: 1080px !important;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+
+          .card.preview-card .preview-header {
+            display: none !important;
+          }
+
+          .card.preview-card .preview-stage-wrap,
+          .card.preview-card .preview-stage {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 1080px !important;
+            max-width: 1080px !important;
+            min-width: 1080px !important;
+            background: transparent !important;
+          }
+
+          .card.preview-card canvas,
+          .card.preview-card #flyerCanvas {
+            display: block !important;
+            width: 1080px !important;
+            height: 1350px !important;
+            margin: 0 !important;
+          }
+        `;
+        doc.head.appendChild(style);
+
+        doc.body.innerHTML = '';
+        doc.body.appendChild(previewCard);
+      } catch (err) {
+        console.warn('No se pudo aislar preview del iframe:', err);
+      }
+    }
+
+    document.querySelectorAll('iframe[data-flyer]').forEach(iframe => {
+      iframe.addEventListener('load', () => isolatePreviewCard(iframe));
+    });
   </script>
 </body>
 </html>
