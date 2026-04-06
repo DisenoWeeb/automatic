@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flyers IA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --pink: #C42685;
+      --violet: #362A6F;
+      --pink-soft: rgba(196, 38, 133, .14);
+      --violet-soft: rgba(54, 42, 111, .14);
+      --text: #2f245d;
+      --text-soft: #6c6493;
+      --glass: rgba(255,255,255,.72);
+      --glass-strong: rgba(255,255,255,.88);
+      --border: rgba(255,255,255,.38);
+      --border-soft: rgba(54, 42, 111, .10);
+      --shadow: 0 18px 44px rgba(54, 42, 111, .22);
+      --shadow-soft: 0 8px 20px rgba(54, 42, 111, .12);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --btn-h: 42px;
+      --btn-h-main: 46px;
+      --btn-font: 13px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f0edf8;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── FONDO ANIMADO ─────────────────────────────────── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-canvas::before {
+      content: "";
+      position: absolute;
+      width: 900px;
+      height: 900px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(196,38,133,.22) 0%, transparent 70%);
+      top: -300px;
+      right: -200px;
+      animation: driftA 18s ease-in-out infinite alternate;
+    }
+
+    .bg-canvas::after {
+      content: "";
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(54,42,111,.20) 0%, transparent 70%);
+      bottom: -200px;
+      left: -150px;
+      animation: driftB 22s ease-in-out infinite alternate;
+    }
+
+    .bg-orb {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(196,38,133,.10) 0%, transparent 70%);
+      top: 50%;
+      left: 40%;
+      transform: translate(-50%, -50%);
+      animation: driftC 26s ease-in-out infinite alternate;
+    }
+
+    @keyframes driftA {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-80px, 60px) scale(1.15); }
+    }
+    @keyframes driftB {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(60px, -80px) scale(1.2); }
+    }
+    @keyframes driftC {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to   { transform: translate(-40%, -60%) scale(1.3); }
+    }
+
+    /* ── LAYOUT GENERAL ───────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ───────────────────────────────────────── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 clamp(16px, 4vw, 48px);
+      height: 68px;
+      display: flex;
+      align-items: center;
+      background: rgba(240, 237, 248, .7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .header-inner {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(196,38,133,.35);
+      flex-shrink: 0;
+    }
+
+    .brand-logo svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.03em;
+      line-height: 1;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-soft);
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: linear-gradient(135deg, var(--pink-soft), var(--violet-soft));
+      border: 1px solid rgba(196,38,133,.18);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .header-badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .6; transform: scale(.85); }
+    }
+
+    /* ── HERO ─────────────────────────────────────────── */
+    .hero {
+      padding: clamp(40px, 7vw, 80px) clamp(16px, 4vw, 48px) clamp(28px, 4vw, 44px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 780px;
+      animation: fadeUp .7s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--pink);
+    }
+
+    .hero-eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 24px;
+      height: 2px;
+      background: var(--pink);
+      border-radius: 2px;
+    }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 5.5vw, 64px);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -.04em;
+      color: var(--text);
+    }
+
+    .hero-title .accent {
+      background: linear-gradient(120deg, var(--pink) 0%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(14px, 1.6vw, 16px);
+      line-height: 1.65;
+      color: var(--text-soft);
+      max-width: 540px;
+      font-weight: 400;
+    }
+
+    .hero-stats {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.03em;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--border-soft);
+      flex-shrink: 0;
+    }
+
+    /* ── SECCIÓN FLYERS ───────────────────────────────── */
+    .section-flyers {
+      padding: 0 0 60px;
+      animation: fadeUp .7s .15s ease both;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 clamp(16px, 4vw, 48px) 20px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(18px, 2.2vw, 24px);
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.03em;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .scroll-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      color: var(--text-soft);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      flex-shrink: 0;
+    }
+
+    .scroll-hint svg {
+      width: 14px;
+      height: 14px;
+      opacity: .7;
+      animation: swayX 2.2s ease-in-out infinite;
+    }
+
+    @keyframes swayX {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(5px); }
+    }
+
+    /* ── STRIP ────────────────────────────────────────── */
+    .flyers-strip {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding: 8px clamp(16px, 4vw, 48px) 20px;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(196, 38, 133, .22) transparent;
+    }
+
+    .flyers-strip::-webkit-scrollbar { height: 6px; }
+    .flyers-strip::-webkit-scrollbar-track { background: transparent; }
+    .flyers-strip::-webkit-scrollbar-thumb {
+      background: rgba(196,38,133,.22);
+      border-radius: 999px;
+    }
+
+    /* ── FLYER CARD ───────────────────────────────────── */
+    .flyer-card {
+      flex: 0 0 clamp(220px, 17vw, 260px);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border-radius: var(--radius-xl);
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      scroll-snap-align: start;
+      overflow: hidden;
+      transition: transform .28s cubic-bezier(.22,1,.36,1),
+                  box-shadow .28s ease;
+      animation: cardIn .5s ease both;
+    }
+
+    .flyer-card:nth-child(1) { animation-delay: .05s; }
+    .flyer-card:nth-child(2) { animation-delay: .10s; }
+    .flyer-card:nth-child(3) { animation-delay: .15s; }
+    .flyer-card:nth-child(4) { animation-delay: .20s; }
+    .flyer-card:nth-child(5) { animation-delay: .25s; }
+    .flyer-card:nth-child(6) { animation-delay: .30s; }
+    .flyer-card:nth-child(7) { animation-delay: .35s; }
+    .flyer-card:nth-child(8) { animation-delay: .40s; }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(18px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .flyer-card:hover {
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 28px 56px rgba(54,42,111,.24);
+    }
+
+    /* BADGE número */
+    .flyer-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      background: linear-gradient(160deg, var(--pink-soft), var(--violet-soft));
+    }
+
+    .flyer-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      pointer-events: none;
+      background: transparent;
+    }
+
+    .flyer-num {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .flyer-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .flyer-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+      line-height: 1.2;
+    }
+
+    .flyer-desc {
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text-soft);
+      font-weight: 400;
+      flex: 1;
+    }
+
+    .flyer-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .flyer-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: var(--btn-h-main);
+      padding: 0 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: var(--btn-font);
+      font-weight: 700;
+      letter-spacing: .01em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      box-shadow: 0 8px 20px rgba(196,38,133,.30);
+      transition: transform .18s ease, box-shadow .18s ease;
+      white-space: nowrap;
+    }
+
+    .flyer-action svg {
+      width: 13px;
+      height: 13px;
+      fill: rgba(255,255,255,.85);
+      flex-shrink: 0;
+    }
+
+    .flyer-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(196,38,133,.38);
+    }
+
+    .flyer-action:active {
+      transform: translateY(0);
+    }
+
+    .flyer-preview-btn {
+      width: var(--btn-h-main);
+      height: var(--btn-h-main);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--violet-soft);
+      border: 1px solid rgba(54,42,111,.14);
+      cursor: pointer;
+      transition: background .18s ease, transform .18s ease;
+      flex-shrink: 0;
+    }
+
+    .flyer-preview-btn svg {
+      width: 15px;
+      height: 15px;
+      fill: var(--violet);
+    }
+
+    .flyer-preview-btn:hover {
+      background: var(--pink-soft);
+      transform: scale(1.08);
+    }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    .site-footer {
+      margin-top: auto;
+      padding: 24px clamp(16px, 4vw, 48px);
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: rgba(240,237,248,.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .footer-brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+      opacity: .5;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+      opacity: .7;
+    }
+
+    /* ── DIVISOR DECORATIVO ───────────────────────────── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(196,38,133,.18), rgba(54,42,111,.18), transparent);
+      margin: 0 clamp(16px, 4vw, 48px);
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (min-width: 1280px) {
+      .flyer-card {
+        flex: 0 0 calc((100% - (18px * 5) - (clamp(16px,4vw,48px) * 2)) / 6);
+        min-width: 200px;
+        max-width: 250px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-stats { gap: 16px; }
+      .stat-num { font-size: 18px; }
+      .flyer-card {
+        flex: 0 0 80vw;
+        min-width: 250px;
+        max-width: 320px;
+      }
+      .header-badge span { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-canvas">
+    <div class="bg-orb"></div>
+  </div>
+
+  <div class="page">
+    <!-- HEADER -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 5h16v2H4V5zm0 4h10v2H4V9zm0 4h16v2H4v-2zm0 4h10v2H4v-2z"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">Flyers IA</div>
+            <div class="brand-tag">Studio</div>
+          </div>
+        </div>
+
+        <div class="header-badge">
+          <span class="dot"></span>
+          <span>Disponible ahora</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-eyebrow">Diseño inteligente</div>
+      <h1 class="hero-title">
+        Tus flyers,<br>
+        <span class="accent">a otro nivel.</span>
+      </h1>
+      <p class="hero-sub">
+        Elegí un modelo, personalizalo con tu información y descargalo listo para publicar. Rápido, prolijo y sin complicaciones.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num" id="statModelos">—</span>
+          <span class="stat-label">Modelos</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">Editable</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">∞</span>
+          <span class="stat-label">Posibilidades</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- FLYERS -->
+    <section class="section-flyers">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Elegí tu modelo</h2>
+          <p class="section-subtitle">Seleccioná un flyer para empezar a editarlo</p>
+        </div>
+        <div class="scroll-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          Deslizá para ver más
+        </div>
+      </div>
+
+      <div class="flyers-strip" id="flyersStrip"></div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="footer-brand">Flyers IA</div>
+      <div class="footer-copy">© 2025 · Todos los derechos reservados</div>
+    </footer>
+  </div>
+
+  <script>
+    const FLYERS = [
+      {
+        file: "flyer1.html",
+        name: "Modelo Clásico",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Modelo Dinámico",
+        desc: "Composición alternativa con otro ritmo visual para destacar tu propuesta."
+      },
+      {
+        file: "flyer1.html",
+        name: "Modelo Clásico",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Modelo Dinámico",
+        desc: "Composición alternativa con otro ritmo visual para destacar tu propuesta."
+      },
+      {
+        file: "flyer1.html",
+        name: "Modelo Clásico",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Modelo Dinámico",
+        desc: "Composición alternativa con otro ritmo visual para destacar tu propuesta."
+      },
+      {
+        file: "flyer1.html",
+        name: "Modelo Clásico",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Modelo Dinámico",
+        desc: "Composición alternativa con otro ritmo visual para destacar tu propuesta."
+      },
+      {
+        file: "flyer1.html",
+        name: "Modelo Clásico",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Modelo Dinámico",
+        desc: "Composición alternativa con otro ritmo visual para destacar tu propuesta."
+      },
+      {
+        file: "flyer1.html",
+        name: "Modelo Clásico",
+        desc: "Diseño limpio y moderno para promociones, avisos o campañas visuales."
+      },
+      {
+        file: "flyer2.html",
+        name: "Modelo Dinámico",
+        desc: "Composición alternativa con otro ritmo visual para destacar tu propuesta."
+      }
+    ];
+
+    // stat modelos
+    document.getElementById('statModelos').textContent = FLYERS.length;
+
+    const strip = document.getElementById("flyersStrip");
+
+    strip.innerHTML = FLYERS.map((item, i) => `
+      <article class="flyer-card">
+        <div class="flyer-frame">
+          <iframe
+            src="${item.file}"
+            title="${item.name}"
+            loading="lazy"
+            scrolling="no"
+            tabindex="-1"
+            data-flyer
+          ></iframe>
+          <div class="flyer-num">${String(i + 1).padStart(2, '0')}</div>
+        </div>
+        <div class="flyer-body">
+          <h3 class="flyer-name">${item.name}</h3>
+          <p class="flyer-desc">${item.desc}</p>
+          <div class="flyer-footer">
+            <a class="flyer-action" href="${item.file}?modelo=${i + 1}">
+              <svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+              Usar este flyer
+            </a>
+            <button class="flyer-preview-btn" title="Vista rápida" type="button" onclick="window.open('${item.file}', '_blank')">
+              <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            </button>
+          </div>
+        </div>
+      </article>
+    `).join("");
+
+    // isolate preview card inside iframes (same-origin)
+    function isolatePreviewCard(iframe) {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (!doc) return;
+        const previewCard = doc.querySelector('.card.preview-card');
+        if (!previewCard) return;
+        const style = doc.createElement('style');
+        style.textContent = `
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            overflow: hidden !important;
+            width: 100% !important;
+            height: auto !important;
+          }
+          body > * { display: none !important; }
+          .card.preview-card {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          .card.preview-card .preview-header { display: none !important; }
+          .card.preview-card .preview-stage-wrap,
+          .card.preview-card .preview-stage {
+            margin: 0 !important; padding: 0 !important;
+            width: 100% !important; background: transparent !important;
+          }
+          .card.preview-card canvas,
+          .card.preview-card #flyerCanvas {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+          }
+        `;
+        doc.head.appendChild(style);
+        doc.body.innerHTML = '';
+        doc.body.appendChild(previewCard);
+      } catch (err) {
+        console.warn('No se pudo aislar preview del iframe:', err);
+      }
+    }
+
+    document.querySelectorAll('iframe[data-flyer]').forEach(iframe => {
+      iframe.addEventListener('load', () => isolatePreviewCard(iframe));
+    });
+  </script>
+</body>
+</html>
