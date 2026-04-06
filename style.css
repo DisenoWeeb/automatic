@@ -656,3 +656,49 @@ body {
   display: none !important;
 }
 
+/* =========================
+   🎨 INDEX
+   ========================= */
+
+body.preview-mode * {
+  visibility: hidden !important;
+}
+
+body.preview-mode .card.preview-card,
+body.preview-mode .card.preview-card * {
+  visibility: visible !important;
+}
+
+body.preview-mode .card.preview-card {
+  position: absolute !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.preview-mode .preview-header {
+  display: none !important;
+}
+
+body.preview-mode .preview-stage-wrap,
+body.preview-mode .preview-stage {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  background: transparent !important;
+}
+
+body.preview-mode #flyerCanvas {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+}
