@@ -1,180 +1,158 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dra. Bruzera - Flyer 1</title>
+  <meta charset="UTF-8">
+  <title>Generador de Flyers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./styles.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+
+    body {
+      background: #020617;
+      color: #fff;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #0f172a, #020617);
+      border-radius: 18px;
+      padding: 18px;
+      cursor: pointer;
+      transition: 0.25s;
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .preview {
+      width: 100%;
+      height: 320px;
+      border-radius: 14px;
+      background: #111;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .desc {
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #9333ea;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="app-shell">
 
-      <section class="hero">
-        <div class="hero-top">
-          <div class="hero-copy">
-            <h1>Flyers Dra. Bruzera</h1>
-            <p>Editor visual en una sola pantalla · PNG vertical para Instagram · 1080 × 1350</p>
-          </div>
+<h1>Elegí un modelo</h1>
 
-          <div class="hero-chips">
-            <div class="chip">User ID: <span id="userIdBox">---</span></div>
-            <div class="chip">1 crédito por imagen</div>
-          </div>
-        </div>
-      </section>
+<div class="grid" id="grid"></div>
 
-      <section class="layout">
-        <div class="card preview-card">
-          <div class="preview-header">
-            <h2>Vista previa</h2>
+<script>
+  const FLYERS = [
+    {
+      id: 1,
+      name: "Flyer Clásico",
+      desc: "Imagen + texto + logo + IA",
+      file: "flyer1.html",
+      preview: "", // después le metemos imagen real
+      ia: true
+    },
+    {
+      id: 2,
+      name: "Flyer Moderno",
+      desc: "Diseño visual alternativo",
+      file: "flyer2.html",
+      preview: "",
+      ia: false
+    },
 
-           <div class="preview-actions-top">
-  <label for="mainImageGallery" class="quick-action">Elegir foto</label>
-  <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
-  <label for="logoImage" class="quick-action secondary">Subir logo</label>
-</div>
-          </div>
+    // 🔥 ESCALA ACA
+    {
+      id: 3,
+      name: "Promo Impacto",
+      desc: "Texto grande + CTA fuerte",
+      file: "flyer3.html",
+      preview: ""
+    },
+    {
+      id: 4,
+      name: "Minimal Clean",
+      desc: "Ultra simple, elegante",
+      file: "flyer4.html",
+      preview: ""
+    }
 
-          <div class="preview-stage-wrap">
-            <div class="preview-stage">
-              <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+    // 👉 seguís hasta 20 sin tocar HTML
+  ];
 
-              <div class="preview-overlay">
-                <div class="preview-hint">
-                  Tocá <strong>Subir foto</strong> para usar cámara o elegir imagen. Después podés acomodarla con zoom y arrastre.
-                </div>
+  const grid = document.getElementById("grid");
 
-                <div class="preview-floating-actions">
-                  <label for="mainImage" class="floating-btn">Cambiar foto</label>
-                  <label for="logoImage" class="floating-btn secondary">Cambiar logo</label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  FLYERS.forEach(f => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.onclick = () => goTo(f.file);
 
-        <div class="stack">
-          <div class="card form-card">
-            <div class="section-head">
-              <h2>Acciones</h2>
-              <p>Base limpia para esta plantilla.</p>
-            </div>
+    card.innerHTML = `
+      ${f.ia ? '<div class="badge">IA</div>' : ''}
 
-            <div class="stack">
-              <input type="file" id="mainImageGallery" accept="image/*" hidden>
-<input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
-<input type="file" id="logoImage" accept="image/*" hidden>
+      <div class="preview">
+        ${f.preview 
+          ? `<img src="${f.preview}">` 
+          : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">Preview</div>`
+        }
+      </div>
 
-              <div class="field u-hidden">
-                <label for="titulo">Título</label>
-                <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
-              </div>
+      <div class="title">${f.name}</div>
+      <div class="desc">${f.desc}</div>
+    `;
 
-              <div class="field u-hidden">
-                <label for="texto">Texto</label>
-                <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
-              </div>
+    grid.appendChild(card);
+  });
 
-              <details class="details-card">
-                <summary>Datos de contacto</summary>
+  function goTo(page) {
+    window.location.href = page;
+  }
+</script>
 
-                <div class="details-body">
-                  <div class="two">
-                    <div class="field">
-                      <label for="instagram">Instagram</label>
-                      <input type="text" id="instagram" value="@drabruzera">
-                    </div>
-
-                    <div class="field">
-                      <label for="whatsapp">WhatsApp</label>
-                      <input type="tel" id="whatsapp" value="343 5303848">
-                    </div>
-                  </div>
-
-                  <div class="two">
-                    <div class="field">
-                      <label for="web">Web</label>
-                      <input type="text" id="web" value="www.bruzera.turnox.pro">
-                    </div>
-
-                    <div class="field">
-                      <label for="ubicacion">Ubicación</label>
-                      <input type="text" id="ubicacion" value="José Venturino 1239">
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              <div class="actions">
-                <button class="btn btn-primary" id="btnGenerar" type="button">Aplicar IA</button>
-                <button class="btn btn-secondary" id="btnDescargar" type="button">Descargar</button>
-                <button class="btn btn-secondary" id="btnCompartir" type="button">Compartir</button>
-              </div>
-
-              <div class="mini-status">
-                <div class="mini-pill">Botones compactos y una sola pantalla</div>
-              </div>
-
-              <div class="loader hidden" id="loader">
-                <span id="loaderText">Generando flyer...</span>
-              </div>
-            </div>
-          </div>
-
-          <!--
-          Se deja comentado para no perder referencia.
-          Si querés recuperarlo después, solo descomentás.
-          Mantener oculto ayuda a limpiar la pantalla sin tocar la lógica base.
-          <div class="card form-card">
-            <div class="section-head">
-              <h2>Archivos cargados</h2>
-              <p>Vista rápida de imagen y logo.</p>
-            </div>
-
-            <div class="preview-thumbs">
-              <div class="thumb-box">
-                <span>Imagen principal</span>
-                <img id="previewMain" alt="Preview imagen principal" />
-              </div>
-
-              <div class="thumb-box">
-                <span>Logo</span>
-                <img id="previewLogo" alt="Preview logo" />
-              </div>
-            </div>
-
-            <div id="resultSection" class="resultSection">
-              <div class="mini-pill">El resultado se ve directamente arriba en el canvas</div>
-            </div>
-          </div>
-          -->
-
-          <!-- Elementos ocultos para no romper la lógica actual -->
-          <div class="u-hidden">
-            <img id="previewMain" alt="Preview imagen principal">
-            <img id="previewLogo" alt="Preview logo">
-            <div id="resultSection" class="resultSection"></div>
-          </div>
-
-          <div class="card history-card">
-            <h2>Historial local</h2>
-            <div id="historyList" class="history">
-              <div class="history-empty">Todavía no hay registros locales</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="footer-space"></div>
-    </div>
-  </div>
-
-  <script src="./app.js"></script>
 </body>
 </html>
