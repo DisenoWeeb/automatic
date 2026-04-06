@@ -110,13 +110,20 @@
         <article class="model-card" onclick="window.location.href='${item.file}'">
           <div class="model-preview-wrap">
             <div class="iframe-box">
-              <iframe
-  src="flyer1.html?preview=1"
-  loading="lazy"
-  scrolling="no"
-  tabindex="-1"
-  title="Flyer 1">
-</iframe>
+              <div style="width:100%; aspect-ratio:9/16; overflow:hidden; border-radius:20px; background:#000;">
+  <iframe 
+    src="flyer1.html"
+    style="
+      width:412px;
+      height:920px;
+      border:0;
+      transform:scale(0.42);
+      transform-origin:top left;
+      pointer-events:none;
+      display:block;
+    ">
+  </iframe>
+</div>
             </div>
             ${item.badge ? `<span class="model-badge">${item.badge}</span>` : ""}
           </div>
