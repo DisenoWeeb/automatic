@@ -659,6 +659,27 @@ body {
 /* =========================
    🎨 Preview de cards en INDEX
    ========================= */
+
+body.preview-mode .editor-panel,
+body.preview-mode .controls-panel,
+body.preview-mode .left-panel,
+body.preview-mode .form-panel {
+  display: none !important;
+}
+
+body.preview-mode .preview-panel,
+body.preview-mode .phone-stage,
+body.preview-mode .flyer-page,
+body.preview-mode .flyer-layout {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
 html.preview-mode,
 body.preview-mode {
   margin: 0 !important;
