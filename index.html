@@ -4,11 +4,93 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flyers IA</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .flyers-showcase {
+      width: min(1600px, calc(100% - 20px));
+      margin: 18px auto 28px;
+    }
+
+    .flyers-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .flyer-frame {
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      border-radius: 24px;
+      background: transparent;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .flyer-frame iframe {
+      width: 1080px;
+      height: 1350px;
+      border: 0;
+      display: block;
+      pointer-events: none;
+      transform-origin: top left;
+      transform: scale(0.255);
+    }
+
+    @media (max-width: 1100px) {
+      .flyers-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .flyer-frame iframe {
+        transform: scale(0.245);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .flyers-showcase {
+        width: 100%;
+        margin: 12px 0 20px;
+        padding-left: 10px;
+      }
+
+      .flyers-strip {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-right: 10px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .flyers-strip::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .flyers-strip::-webkit-scrollbar-thumb {
+        background: rgba(84, 63, 140, 0.28);
+        border-radius: 999px;
+      }
+
+      .flyer-frame {
+        flex: 0 0 78vw;
+        max-width: 340px;
+        min-width: 260px;
+        border-radius: 20px;
+        scroll-snap-align: start;
+      }
+
+      .flyer-frame iframe {
+        transform: scale(0.215);
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -31,18 +113,8 @@
     </div>
   </header>
 
-  <main class="home-wrap">
-    <section class="hero-box">
-      <div class="hero-texts">
-        <p class="hero-kicker">Plantillas listas</p>
-        <h1>Elegí un modelo</h1>
-        <p class="hero-desc">
-          Vista real de cada flyer dentro del card.
-        </p>
-      </div>
-    </section>
-
-    <section class="models-grid" id="modelsGrid"></section>
+  <main class="flyers-showcase">
+    <section class="flyers-strip" id="flyersStrip"></section>
   </main>
 
   <footer class="site-footer">
@@ -54,86 +126,27 @@
 
   <script>
     const FLYERS = [
-      {
-        id: 1,
-        name: "Flyer 1",
-        desc: "Clásico con IA",
-        file: "flyer1.html",
-        preview: "flyer1.html?preview=1",
-        badge: "IA"
-      },
-      {
-        id: 2,
-        name: "Flyer 2",
-        desc: "Alternativo visual",
-        file: "flyer2.html",
-        preview: "flyer2.html?preview=1",
-        badge: "IA"
-      },
-      {
-        id: 3,
-        name: "Flyer 3",
-        desc: "Promo fuerte",
-        file: "flyer3.html",
-        preview: "flyer3.html?preview=1",
-        badge: ""
-      },
-      {
-        id: 4,
-        name: "Flyer 4",
-        desc: "Minimal clean",
-        file: "flyer4.html",
-        preview: "flyer4.html?preview=1",
-        badge: ""
-      },
-      {
-        id: 5,
-        name: "Flyer 5",
-        desc: "Instagram feed",
-        file: "flyer5.html",
-        preview: "flyer5.html?preview=1",
-        badge: ""
-      },
-      {
-        id: 6,
-        name: "Flyer 6",
-        desc: "Vertical promo",
-        file: "flyer6.html",
-        preview: "flyer6.html?preview=1",
-        badge: ""
-      }
+      { file: "flyer1.html?preview=1", name: "Flyer 1" },
+      { file: "flyer2.html?preview=1", name: "Flyer 2" },
+      { file: "flyer3.html?preview=1", name: "Flyer 3" },
+      { file: "flyer4.html?preview=1", name: "Flyer 4" },
+      { file: "flyer5.html?preview=1", name: "Flyer 5" },
+      { file: "flyer6.html?preview=1", name: "Flyer 6" }
     ];
 
-    const grid = document.getElementById("modelsGrid");
+    const strip = document.getElementById("flyersStrip");
 
-    function renderModels() {
-      grid.innerHTML = FLYERS.map(item => `
-        <article class="model-card" onclick="window.location.href='${item.file}'">
-          <div class="model-preview-wrap">
-            <div class="iframe-box">
-              <div class="iframe-scale-wrap">
-                <iframe
-                  src="${item.preview}"
-                  title="${item.name}"
-                  loading="lazy"
-                  scrolling="no"
-                  tabindex="-1"
-                ></iframe>
-              </div>
-            </div>
-            ${item.badge ? `<span class="model-badge">${item.badge}</span>` : ""}
-          </div>
-
-          <div class="model-card-body">
-            <h2 class="model-title">${item.name}</h2>
-            <p class="model-desc">${item.desc}</p>
-            <div class="model-open">Usar modelo</div>
-          </div>
-        </article>
-      `).join("");
-    }
-
-    renderModels();
+    strip.innerHTML = FLYERS.map(item => `
+      <div class="flyer-frame" aria-label="${item.name}">
+        <iframe
+          src="${item.file}"
+          title="${item.name}"
+          loading="lazy"
+          scrolling="no"
+          tabindex="-1">
+        </iframe>
+      </div>
+    `).join("");
   </script>
 </body>
 </html>
