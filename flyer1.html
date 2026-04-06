@@ -147,5 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
+  <script>
+  if (new URLSearchParams(window.location.search).get('preview') === '1') {
+    document.body.classList.add('preview-mode');
+  }
+</script>
 </body>
 </html>
