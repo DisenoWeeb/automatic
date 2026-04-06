@@ -149,37 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
-   <script>
-    (function () {
-      const params = new URLSearchParams(window.location.search);
-      const isPreview = params.get('preview') === '1';
 
-      if (!isPreview) return;
-
-      document.documentElement.classList.add('preview-mode');
-      document.body.classList.add('preview-mode');
-
-      function fitPreview() {
-        const baseWidth = 412;   // ancho real de tu pantalla/mockup
-        const baseHeight =690;  // alto aprox visible de tu flyer completo
-
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-
-        const scaleX = vw / baseWidth;
-        const scaleY = vh / baseHeight;
-        const scale = Math.min(scaleX, scaleY);
-
-        const wrap = document.getElementById('previewScale');
-        wrap.style.width = baseWidth + 'px';
-        wrap.style.transform = 'scale(' + scale + ')';
-      }
-
-      window.addEventListener('load', fitPreview);
-      window.addEventListener('resize', fitPreview);
-      setTimeout(fitPreview, 60);
-      setTimeout(fitPreview, 180);
-    })();
-  </script>
 </body>
 </html>
