@@ -657,6 +657,45 @@ body {
 }
 
 /* =========================
+   🎨 Preview de cards en INDEX
+   ========================= */
+html.preview-mode,
+body.preview-mode {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+body.preview-mode {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.preview-scale {
+  transform-origin: top left;
+}
+
+body.preview-mode .site-header,
+body.preview-mode header,
+body.preview-mode footer,
+body.preview-mode .site-footer,
+body.preview-mode .topbar,
+body.preview-mode .menu-btn,
+body.preview-mode .hamburger,
+body.preview-mode .nav,
+body.preview-mode .sidebar,
+body.preview-mode .drawer,
+body.preview-mode .history-panel,
+body.preview-mode .modal,
+body.preview-mode .toast,
+body.preview-mode .loader-overlay {
+  display: none !important;
+}
+/* =========================
    🎨 INDEX
    ========================= */
 :root {
