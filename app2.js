@@ -661,25 +661,25 @@ drawBodyText(ctx, texto, photo, startY, panelY) {
   const c = this.getFlyerColors();
   if (!texto) return;
 
-  const boxX = photo.x;
-  const boxW = photo.w;
-  const maxWidth = boxW - 40;
-  const availableH = Math.max(0, panelY - startY - 24);
+  const textX = photo.x + 8;
+  const textY = startY - 4;
+  const maxWidth = photo.w - 20;
+  const availableH = Math.max(0, panelY - textY - 24);
   if (availableH < 30) return;
 
-  const lineHeight = 40;
+  const lineHeight = 42;
   const maxLines = Math.max(1, Math.floor(availableH / lineHeight));
 
   ctx.fillStyle = c.bodyText;
-  ctx.font = '500 32px Montserrat, Arial, sans-serif';
+  ctx.font = '500 34px Montserrat, Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
 
   const lines = this.wrapText(ctx, texto, maxWidth);
-  let y = startY - 8;
 
+  let y = textY;
   lines.slice(0, maxLines).forEach(line => {
-    ctx.fillText(line, boxX + 8, y);
+    ctx.fillText(line, textX, y);
     y += lineHeight;
   });
 },
@@ -706,36 +706,32 @@ drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
 drawLogo(ctx, img, width, panelY) {
   const c = this.getFlyerColors();
 
-  const maxW = 180;
-  const maxH = 180;
+  const maxW = 150;
+  const maxH = 150;
 
   const ratio = Math.min(maxW / img.width, maxH / img.height);
   const drawW = img.width * ratio;
   const drawH = img.height * ratio;
 
-  const circleSize = 180;
-  const circleX = width - 230;
-  const circleY = panelY - 70;
+  // arriba a la derecha, enfrentado al título
+  const x = width - drawW - 80;
+  const y = 52;
 
   ctx.save();
 
-  const circleGrad = ctx.createLinearGradient(circleX, circleY, circleX + circleSize, circleY + circleSize);
-  circleGrad.addColorStop(0, 'rgba(255,255,255,0.26)');
-  circleGrad.addColorStop(1, c.logoBg);
+  const pad = 18;
+  const boxW = drawW + pad * 2;
+  const boxH = drawH + pad * 2;
 
-  ctx.fillStyle = circleGrad;
-  ctx.beginPath();
-  ctx.arc(circleX + circleSize / 2, circleY + circleSize / 2, circleSize / 2, 0, Math.PI * 2);
+  const g = ctx.createLinearGradient(x, y, x + boxW, y + boxH);
+  g.addColorStop(0, 'rgba(255,255,255,0.30)');
+  g.addColorStop(1, c.logoBg);
+
+  ctx.fillStyle = g;
+  this.roundRect(ctx, x - pad, y - pad, boxW, boxH, 28);
   ctx.fill();
 
-  ctx.drawImage(
-    img,
-    circleX + (circleSize - drawW) / 2,
-    circleY + (circleSize - drawH) / 2,
-    drawW,
-    drawH
-  );
-
+  ctx.drawImage(img, x, y, drawW, drawH);
   ctx.restore();
 },
   wrapText(ctx, text, maxWidth) {
