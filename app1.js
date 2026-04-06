@@ -57,9 +57,9 @@ const App = {
 
   cacheElements() {
     this.elements = {
-  mainImageGalleryInput: document.getElementById('mainImageGallery'),
-  mainImageCameraInput: document.getElementById('mainImageCamera'),
-  logoImageInput: document.getElementById('logoImage'),
+      mainImageGalleryInput: document.getElementById('mainImageGallery'),
+      mainImageCameraInput: document.getElementById('mainImageCamera'),
+      logoImageInput: document.getElementById('logoImage'),
 
       titulo: document.getElementById('titulo'),
       texto: document.getElementById('texto'),
@@ -116,108 +116,109 @@ const App = {
     this.ctx = canvas.getContext('2d');
   },
 
- bindEvents() {
-  const e = this.elements;
+  bindEvents() {
+    const e = this.elements;
 
-  const handleMainImageChange = async (ev) => {
-    const file = ev.target.files && ev.target.files[0];
-    if (!file) return;
-
-    try {
-      const dataUrl = await this.fileToDataURL(file);
-      this.state.mainImageData = dataUrl;
-      if (e.previewMain) e.previewMain.src = dataUrl;
-
-      const img = await this.loadImage(dataUrl);
-      this.state.editor.img = img;
-      this.resetImageTransform();
-      this.renderPreview();
-
-      ev.target.value = '';
-    } catch (err) {
-      console.error(err);
-      this.showError('No se pudo leer la imagen principal');
-    }
-  };
-
-  if (e.mainImageGalleryInput) {
-    e.mainImageGalleryInput.addEventListener('change', handleMainImageChange);
-  }
-
-  if (e.mainImageCameraInput) {
-    e.mainImageCameraInput.addEventListener('change', handleMainImageChange);
-  }
-
-  if (e.logoImageInput) {
-    e.logoImageInput.addEventListener('change', async (ev) => {
+    const handleMainImageChange = async (ev) => {
       const file = ev.target.files && ev.target.files[0];
       if (!file) return;
 
       try {
         const dataUrl = await this.fileToDataURL(file);
-        this.state.logoImageData = dataUrl;
-        if (e.previewLogo) e.previewLogo.src = dataUrl;
+        this.state.mainImageData = dataUrl;
+        if (e.previewMain) e.previewMain.src = dataUrl;
 
         const img = await this.loadImage(dataUrl);
-        this.state.editor.logoImg = img;
+        this.state.editor.img = img;
+        this.resetImageTransform();
         this.renderPreview();
 
         ev.target.value = '';
       } catch (err) {
         console.error(err);
-        this.showError('No se pudo leer el logo');
+        this.showError('No se pudo leer la imagen principal');
       }
-    });
-  }
-
-  ['input', 'change'].forEach(evt => {
-    ['titulo', 'texto', 'instagram', 'web', 'whatsapp', 'ubicacion'].forEach(key => {
-      const el = e[key];
-      if (el) el.addEventListener(evt, () => this.renderPreview());
-    });
-  });
-
-  if (e.btnGenerar) {
-    e.btnGenerar.addEventListener('click', () => this.generarFlyer());
-  }
-
-  if (e.btnDescargar) {
-    e.btnDescargar.addEventListener('click', () => this.descargarImagen());
-  }
-
-  if (e.btnCompartir) {
-    e.btnCompartir.addEventListener('click', () => this.compartirImagen());
-  }
-},
- dataURLtoExactFile(dataUrl, filename) {
-  const arr = dataUrl.split(',');
-  const mimeMatch = arr[0].match(/:(.*?);/);
-  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-
-  return Promise.resolve(new File([u8arr], filename, { type: mime }));
-},
-
-bindCanvasInteractions() {
-  if (!this.canvas) return;
-
-  const getPoint = (clientX, clientY) => {
-    const rect = this.canvas.getBoundingClientRect();
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
     };
-  };
 
-  const startDrag = (x, y) => {
+    if (e.mainImageGalleryInput) {
+      e.mainImageGalleryInput.addEventListener('change', handleMainImageChange);
+    }
+
+    if (e.mainImageCameraInput) {
+      e.mainImageCameraInput.addEventListener('change', handleMainImageChange);
+    }
+
+    if (e.logoImageInput) {
+      e.logoImageInput.addEventListener('change', async (ev) => {
+        const file = ev.target.files && ev.target.files[0];
+        if (!file) return;
+
+        try {
+          const dataUrl = await this.fileToDataURL(file);
+          this.state.logoImageData = dataUrl;
+          if (e.previewLogo) e.previewLogo.src = dataUrl;
+
+          const img = await this.loadImage(dataUrl);
+          this.state.editor.logoImg = img;
+          this.renderPreview();
+
+          ev.target.value = '';
+        } catch (err) {
+          console.error(err);
+          this.showError('No se pudo leer el logo');
+        }
+      });
+    }
+
+    ['input', 'change'].forEach(evt => {
+      ['titulo', 'texto', 'instagram', 'web', 'whatsapp', 'ubicacion'].forEach(key => {
+        const el = e[key];
+        if (el) el.addEventListener(evt, () => this.renderPreview());
+      });
+    });
+
+    if (e.btnGenerar) {
+      e.btnGenerar.addEventListener('click', () => this.generarFlyer());
+    }
+
+    if (e.btnDescargar) {
+      e.btnDescargar.addEventListener('click', () => this.descargarImagen());
+    }
+
+    if (e.btnCompartir) {
+      e.btnCompartir.addEventListener('click', () => this.compartirImagen());
+    }
+  },
+
+  dataURLtoExactFile(dataUrl, filename) {
+    const arr = dataUrl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return Promise.resolve(new File([u8arr], filename, { type: mime }));
+  },
+
+  bindCanvasInteractions() {
+    if (!this.canvas) return;
+
+    const getPoint = (clientX, clientY) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    };
+
+    const startDrag = (x, y) => {
       this.state.editor.dragging = true;
       this.state.editor.lastX = x;
       this.state.editor.lastY = y;
@@ -228,11 +229,11 @@ bindCanvasInteractions() {
       if (!this.state.editor.dragging || !this.layout?.photo) return;
 
       const dx = x - this.state.editor.lastX;
-const dy = y - this.state.editor.lastY;
-const dragFactor = 0.72;
+      const dy = y - this.state.editor.lastY;
+      const dragFactor = 0.72;
 
-this.state.editor.offsetX += dx * dragFactor;
-this.state.editor.offsetY += dy * dragFactor;
+      this.state.editor.offsetX += dx * dragFactor;
+      this.state.editor.offsetY += dy * dragFactor;
 
       this.state.editor.lastX = x;
       this.state.editor.lastY = y;
@@ -293,8 +294,8 @@ this.state.editor.offsetY += dy * dragFactor;
         if (!this.state.editor.pinchStartDistance) return;
 
         const ratio = dist / this.state.editor.pinchStartDistance;
-       const rawNextScale = this.state.editor.pinchStartScale * ratio;
-const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.scale) * 0.22;
+        const rawNextScale = this.state.editor.pinchStartScale * ratio;
+        const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.scale) * 0.22;
 
         const midClientX = (ev.touches[0].clientX + ev.touches[1].clientX) / 2;
         const midClientY = (ev.touches[0].clientY + ev.touches[1].clientY) / 2;
@@ -381,22 +382,17 @@ const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.sc
     const ratio = img ? (img.width / img.height) : 1;
 
     const x = 60;
-    const y = 180;
+    const y = 200;
     const w = width - 120;
 
     let h = w / ratio;
-    h = Math.max(470, Math.min(h, 810));
+    h = Math.max(470, Math.min(h, 790));
 
-    const bodyStartY = y + h + 30;
-    const panelH = 250;
-    const panelY = Math.max(height - panelH, bodyStartY + 90);
+    const bodyStartY = y + h + 28;
+    const panelH = 260;
+    const panelY = Math.max(height - panelH, bodyStartY + 80);
 
-    return {
-      x, y, w, h,
-      bodyStartY,
-      panelY,
-      panelH
-    };
+    return { x, y, w, h, bodyStartY, panelY, panelH };
   },
 
   zoomAtPoint(factor, px, py) {
@@ -436,34 +432,57 @@ const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.sc
     ed.offsetX = Math.min(maxX, Math.max(minX, ed.offsetX));
     ed.offsetY = Math.min(maxY, Math.max(minY, ed.offsetY));
   },
-getFlyerColors() {
-  const s = getComputedStyle(document.documentElement);
 
-  return {
-    bg1: s.getPropertyValue('--flyer-bg-1').trim(),
-    bg2: s.getPropertyValue('--flyer-bg-2').trim(),
-    bg3: s.getPropertyValue('--flyer-bg-3').trim(),
-    bg4: s.getPropertyValue('--flyer-bg-4').trim(),
+  /* ─────────────────────────────────────────────
+     COLORES — mismos nombres, nueva paleta
+  ───────────────────────────────────────────── */
+  getFlyerColors() {
+    return {
+      // Fondo
+      bg1: '#f7f4fd',
+      bg2: '#ede8f8',
+      bg3: '#e4ddf4',
+      bg4: '#d8d0ee',
 
-    title: s.getPropertyValue('--flyer-title').trim(),
+      // Franja superior
+      top1: '#C42685',
+      top2: '#8e2799',
+      top3: '#362A6F',
 
-    panel1: s.getPropertyValue('--flyer-panel-1').trim(),
-    panel2: s.getPropertyValue('--flyer-panel-2').trim(),
+      // Marco foto
+      frame: 'rgba(196, 38, 133, 0.55)',
+      frameSoft: 'rgba(255, 255, 255, 0.35)',
 
-    bodyText: s.getPropertyValue('--flyer-body-text').trim(),
-    contactText: s.getPropertyValue('--flyer-contact-text').trim(),
+      // Título
+      title: '#ffffff',
 
-    frame: s.getPropertyValue('--flyer-frame').trim(),
-    frameSoft: s.getPropertyValue('--flyer-frame-soft').trim(),
+      // Panel inferior
+      panel1: '#362A6F',
+      panel2: '#1e1845',
+      panelGlow: 'rgba(196, 38, 133, 0.18)',
 
-    placeholder: s.getPropertyValue('--flyer-placeholder').trim(),
-    logoBg: s.getPropertyValue('--flyer-logo-bg').trim(),
+      // Textos
+      bodyText: '#2f245d',
+      contactText: 'rgba(255,255,255,0.92)',
+      contactLabel: 'rgba(196,38,133,0.85)',
 
-    top1: s.getPropertyValue('--flyer-top-1').trim(),
-    top2: s.getPropertyValue('--flyer-top-2').trim(),
-    top3: s.getPropertyValue('--flyer-top-3').trim()
-  };
-},
+      // Placeholder
+      placeholderFill: 'rgba(196, 38, 133, 0.06)',
+      placeholderText: 'rgba(54, 42, 111, 0.35)',
+
+      // Logo bg
+      logoBg: 'rgba(255,255,255,0.14)',
+
+      // Decoraciones fondo
+      bubble: 'rgba(196, 38, 133, 0.055)',
+      line1: 'rgba(54, 42, 111, 0.04)',
+      line2: 'rgba(196, 38, 133, 0.03)'
+    };
+  },
+
+  /* ─────────────────────────────────────────────
+     RENDER PRINCIPAL — sin cambios
+  ───────────────────────────────────────────── */
   renderPreview() {
     if (!this.ctx || !this.canvas) return;
 
@@ -480,15 +499,7 @@ getFlyerColors() {
     const img = this.state.editor.img;
     const photo = img
       ? this.getPhotoLayout(img)
-      : {
-          x: 60,
-          y: 180,
-          w: width - 120,
-          h: 700,
-          bodyStartY: 910,
-          panelY: 1100,
-          panelH: 250
-        };
+      : { x: 60, y: 200, w: width - 120, h: 700, bodyStartY: 920, panelY: 1090, panelH: 260 };
 
     this.layout = { photo };
 
@@ -506,7 +517,6 @@ getFlyerColors() {
     }
 
     this.drawContactData(ctx, {
-       
       instagram: data.instagram,
       web: data.web,
       whatsapp: data.whatsapp,
@@ -522,230 +532,412 @@ getFlyerColors() {
     this.state.generatedImage = this.canvas.toDataURL('image/png', 1);
   },
 
-drawBackground(ctx, width, height) {
-  const c = this.getFlyerColors();
+  /* ─────────────────────────────────────────────
+     FONDO — limpio, gradiente suave + noise sutil
+  ───────────────────────────────────────────── */
+  drawBackground(ctx, width, height) {
+    const c = this.getFlyerColors();
 
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, c.bg1);
-  gradient.addColorStop(0.35, c.bg2);
-  gradient.addColorStop(0.72, c.bg3);
-  gradient.addColorStop(1, c.bg4);
+    // Gradiente base diagonal suave
+    const gradient = ctx.createLinearGradient(0, 0, width * 0.6, height);
+    gradient.addColorStop(0, c.bg1);
+    gradient.addColorStop(0.4, c.bg2);
+    gradient.addColorStop(0.75, c.bg3);
+    gradient.addColorStop(1, c.bg4);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
 
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
+    // Orbe decorativo superior derecho
+    const orb1 = ctx.createRadialGradient(width * 0.88, height * 0.08, 0, width * 0.88, height * 0.08, 420);
+    orb1.addColorStop(0, 'rgba(196,38,133,0.11)');
+    orb1.addColorStop(1, 'transparent');
+    ctx.fillStyle = orb1;
+    ctx.fillRect(0, 0, width, height);
 
-  for (let i = 0; i < 18; i++) {
-    const x = (width / 18) * i;
+    // Orbe decorativo inferior izquierdo
+    const orb2 = ctx.createRadialGradient(width * 0.12, height * 0.92, 0, width * 0.12, height * 0.92, 380);
+    orb2.addColorStop(0, 'rgba(54,42,111,0.13)');
+    orb2.addColorStop(1, 'transparent');
+    ctx.fillStyle = orb2;
+    ctx.fillRect(0, 0, width, height);
+
+    // Líneas horizontales ultra sutiles (textura)
+    for (let i = 0; i < 22; i++) {
+      const y = 160 + i * 52;
+      ctx.fillStyle = i % 2 === 0 ? c.line1 : c.line2;
+      ctx.fillRect(0, y, width, 3);
+    }
+  },
+
+  /* ─────────────────────────────────────────────
+     FRANJA SUPERIOR — más elegante, doble capa
+  ───────────────────────────────────────────── */
+  drawTopDecoration(ctx, width) {
+    const c = this.getFlyerColors();
+
+    // Capa principal — curva suave
+    ctx.save();
+    const g = ctx.createLinearGradient(0, 0, width, 0);
+    g.addColorStop(0, c.top1);
+    g.addColorStop(0.48, c.top2);
+    g.addColorStop(1, c.top3);
+    ctx.fillStyle = g;
+
     ctx.beginPath();
-    ctx.arc(x, 120 + (i % 2) * 30, 90, 0, Math.PI * 2);
-    ctx.fillStyle = c.bubble;
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.lineTo(width, 100);
+    ctx.bezierCurveTo(width * 0.75, 148, width * 0.5, 68, width * 0.25, 128);
+    ctx.bezierCurveTo(width * 0.1, 160, 0, 118, 0, 128);
+    ctx.closePath();
     ctx.fill();
-  }
 
-  for (let i = 0; i < 14; i++) {
-    const y = 200 + i * 70;
-    ctx.fillStyle = i % 2 === 0 ? c.line1 : c.line2;
-    ctx.fillRect(0, y, width, 8);
-  }
-},
+    // Capa shimmer — brillo suave encima
+    const shimmer = ctx.createLinearGradient(0, 0, 0, 130);
+    shimmer.addColorStop(0, 'rgba(255,255,255,0.14)');
+    shimmer.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shimmer;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.lineTo(width, 100);
+    ctx.bezierCurveTo(width * 0.75, 148, width * 0.5, 68, width * 0.25, 128);
+    ctx.bezierCurveTo(width * 0.1, 160, 0, 118, 0, 128);
+    ctx.closePath();
+    ctx.fill();
 
-drawTopDecoration(ctx, width, height) {
-  const c = this.getFlyerColors();
+    ctx.restore();
+  },
 
-  ctx.save();
+  /* ─────────────────────────────────────────────
+     PLACEHOLDER FOTO
+  ───────────────────────────────────────────── */
+  drawPhotoPlaceholder(ctx, photo) {
+    const c = this.getFlyerColors();
 
-  const g = ctx.createLinearGradient(0, 0, width, 0);
-  g.addColorStop(0, c.top1);
-  g.addColorStop(0.5, c.top2);
-  g.addColorStop(1, c.top3);
+    // Fondo placeholder con gradiente suave
+    ctx.save();
+    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 32);
+    ctx.clip();
 
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(width, 0);
-  ctx.lineTo(width, 78);
-  ctx.bezierCurveTo(width * 0.72, 114, width * 0.28, 38, 0, 110);
-  ctx.closePath();
-  ctx.fill();
+    const pg = ctx.createLinearGradient(photo.x, photo.y, photo.x + photo.w, photo.y + photo.h);
+    pg.addColorStop(0, 'rgba(196,38,133,0.07)');
+    pg.addColorStop(1, 'rgba(54,42,111,0.10)');
+    ctx.fillStyle = pg;
+    ctx.fillRect(photo.x, photo.y, photo.w, photo.h);
+    ctx.restore();
 
-  ctx.restore();
-},
+    // Borde con gradiente
+    const borderG = ctx.createLinearGradient(photo.x, photo.y, photo.x + photo.w, photo.y + photo.h);
+    borderG.addColorStop(0, 'rgba(196,38,133,0.5)');
+    borderG.addColorStop(1, 'rgba(54,42,111,0.4)');
+    ctx.strokeStyle = borderG;
+    ctx.lineWidth = 3;
+    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 32);
+    ctx.stroke();
 
-drawPhotoPlaceholder(ctx, photo) {
-  const c = this.getFlyerColors();
+    // Ícono cámara (círculo + línea)
+    const cx = photo.x + photo.w / 2;
+    const cy = photo.y + photo.h / 2 - 30;
+    ctx.strokeStyle = 'rgba(196,38,133,0.35)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 58, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+    ctx.stroke();
 
-  ctx.save();
-  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-  ctx.clip();
+    // Texto
+    ctx.fillStyle = c.placeholderText;
+    ctx.font = '600 30px Montserrat, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Subí tu foto y acomodala', cx, cy + 110);
+    ctx.font = '500 26px Montserrat, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(54,42,111,0.22)';
+    ctx.fillText('zoom · arrastre · doble tap para centrar', cx, cy + 154);
+  },
 
-  ctx.fillStyle = c.placeholderFill;
-  ctx.fillRect(photo.x, photo.y, photo.w, photo.h);
+  /* ─────────────────────────────────────────────
+     IMAGEN PRINCIPAL
+  ───────────────────────────────────────────── */
+  drawMainImage(ctx, img, photo) {
+    const c = this.getFlyerColors();
+    const ed = this.state.editor;
 
-  ctx.restore();
+    this.clampImagePosition();
 
-  ctx.strokeStyle = c.frame;
-  ctx.lineWidth = 4;
-  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-  ctx.stroke();
+    // Sombra suave detrás del frame
+    ctx.save();
+    ctx.shadowColor = 'rgba(54,42,111,0.28)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 12;
+    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 32);
+    ctx.fillStyle = 'rgba(0,0,0,0.001)'; // trick para que la sombra se dibuje
+    ctx.fill();
+    ctx.restore();
 
-  ctx.fillStyle = c.placeholderText;
-  ctx.font = '600 34px Montserrat, Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Subí una imagen y acomodala con zoom + arrastre', photo.x + photo.w / 2, photo.y + photo.h / 2);
-},
+    // Imagen clipeada
+    ctx.save();
+    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 32);
+    ctx.clip();
+    ctx.drawImage(img, ed.offsetX, ed.offsetY, img.width * ed.scale, img.height * ed.scale);
 
-drawMainImage(ctx, img, photo) {
-  const c = this.getFlyerColors();
-  const ed = this.state.editor;
+    // Vignette sobre la imagen
+    const vig = ctx.createRadialGradient(
+      photo.x + photo.w / 2, photo.y + photo.h / 2, photo.w * 0.25,
+      photo.x + photo.w / 2, photo.y + photo.h / 2, photo.w * 0.72
+    );
+    vig.addColorStop(0, 'transparent');
+    vig.addColorStop(1, 'rgba(30,20,60,0.22)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(photo.x, photo.y, photo.w, photo.h);
+    ctx.restore();
 
-  this.clampImagePosition();
+    // Marco exterior
+    const borderG = ctx.createLinearGradient(photo.x, photo.y, photo.x + photo.w, photo.y + photo.h);
+    borderG.addColorStop(0, c.frame);
+    borderG.addColorStop(1, 'rgba(54,42,111,0.45)');
+    ctx.strokeStyle = borderG;
+    ctx.lineWidth = 4;
+    this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 32);
+    ctx.stroke();
 
-  ctx.save();
-  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-  ctx.clip();
-  ctx.drawImage(img, ed.offsetX, ed.offsetY, img.width * ed.scale, img.height * ed.scale);
-  ctx.restore();
+    // Reflejo interno sutil
+    ctx.strokeStyle = c.frameSoft;
+    ctx.lineWidth = 2;
+    this.roundRect(ctx, photo.x + 12, photo.y + 12, photo.w - 24, photo.h - 24, 22);
+    ctx.stroke();
+  },
 
-  ctx.strokeStyle = c.frame;
-  ctx.lineWidth = 4;
-  this.roundRect(ctx, photo.x, photo.y, photo.w, photo.h, 36);
-  ctx.stroke();
+  /* ─────────────────────────────────────────────
+     TÍTULO — sobre la franja superior
+  ───────────────────────────────────────────── */
+  drawTitle(ctx, titulo, width) {
+    const maxWidth = width - 180;
+    const lines = (() => {
+      ctx.font = '800 56px Montserrat, Arial, sans-serif';
+      return this.wrapText(ctx, (titulo || 'Flyer').toUpperCase(), maxWidth);
+    })();
 
-  ctx.strokeStyle = c.frameSoft;
-  ctx.lineWidth = 2;
-  this.roundRect(ctx, photo.x + 14, photo.y + 14, photo.w - 28, photo.h - 28, 26);
-  ctx.stroke();
-},
+    const totalH = lines.slice(0, 2).length * 64;
+    let y = (132 - totalH) / 2 + 4;
 
-drawTitle(ctx, titulo, width) {
-  const c = this.getFlyerColors();
-  const maxWidth = width - 160;
+    lines.slice(0, 2).forEach(line => {
+      // Sombra del texto
+      ctx.save();
+      ctx.shadowColor = 'rgba(30,20,60,0.35)';
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 56px Montserrat, Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(line, width / 2, y);
+      ctx.restore();
+      y += 64;
+    });
+  },
 
-  ctx.fillStyle = c.title;
-  ctx.font = '800 58px Montserrat, Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
+  /* ─────────────────────────────────────────────
+     PANEL INFERIOR — más refinado
+  ───────────────────────────────────────────── */
+  drawBottomPanel(ctx, width, height, y, panelH) {
+    const c = this.getFlyerColors();
 
-  const lines = this.wrapText(ctx, (titulo || 'Flyer').toUpperCase(), maxWidth);
-  let y = 64;
+    // Sombra superior del panel
+    const shadowG = ctx.createLinearGradient(0, y - 60, 0, y + 20);
+    shadowG.addColorStop(0, 'transparent');
+    shadowG.addColorStop(1, 'rgba(30,20,60,0.18)');
+    ctx.fillStyle = shadowG;
+    ctx.fillRect(0, y - 60, width, 80);
 
-  lines.slice(0, 2).forEach(line => {
-    ctx.fillText(line, width / 2, y);
-    y += 66;
-  });
-},
+    // Panel principal con forma orgánica
+    const panelG = ctx.createLinearGradient(0, y, 0, height);
+    panelG.addColorStop(0, c.panel1);
+    panelG.addColorStop(1, c.panel2);
+    ctx.fillStyle = panelG;
 
-drawBottomPanel(ctx, width, height, y, panelH) {
-  const c = this.getFlyerColors();
+    ctx.beginPath();
+    ctx.moveTo(0, y + 50);
+    ctx.bezierCurveTo(width * 0.15, y - 18, width * 0.35, y + 70, width * 0.52, y + 22);
+    ctx.bezierCurveTo(width * 0.68, y - 20, width * 0.85, y + 52, width, y + 14);
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
+    ctx.closePath();
+    ctx.fill();
 
-  const g = ctx.createLinearGradient(0, y, width, height);
-  g.addColorStop(0, c.panel1);
-  g.addColorStop(1, c.panel2);
+    // Shimmer en el borde superior del panel
+    const shim = ctx.createLinearGradient(0, y, 0, y + 8);
+    shim.addColorStop(0, 'rgba(196,38,133,0.55)');
+    shim.addColorStop(1, 'rgba(196,38,133,0)');
+    ctx.fillStyle = shim;
+    ctx.beginPath();
+    ctx.moveTo(0, y + 50);
+    ctx.bezierCurveTo(width * 0.15, y - 18, width * 0.35, y + 70, width * 0.52, y + 22);
+    ctx.bezierCurveTo(width * 0.68, y - 20, width * 0.85, y + 52, width, y + 14);
+    ctx.lineTo(width, y + 22);
+    ctx.bezierCurveTo(width * 0.85, y + 22, width * 0.68, y - 12, width * 0.52, y + 30);
+    ctx.bezierCurveTo(width * 0.35, y + 78, width * 0.15, y - 10, 0, y + 58);
+    ctx.closePath();
+    ctx.fill();
 
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.moveTo(0, y + 42);
-  ctx.bezierCurveTo(width * 0.18, y - 20, width * 0.38, y + 82, width * 0.55, y + 18);
-  ctx.bezierCurveTo(width * 0.72, y - 28, width * 0.88, y + 46, width, y + 8);
-  ctx.lineTo(width, height);
-  ctx.lineTo(0, height);
-  ctx.closePath();
-  ctx.fill();
+    // Orbes decorativos
+    const orb1 = ctx.createRadialGradient(80, y + 140, 0, 80, y + 140, 110);
+    orb1.addColorStop(0, 'rgba(196,38,133,0.20)');
+    orb1.addColorStop(1, 'transparent');
+    ctx.fillStyle = orb1;
+    ctx.beginPath();
+    ctx.arc(80, y + 140, 110, 0, Math.PI * 2);
+    ctx.fill();
 
-  ctx.fillStyle = c.panelGlow;
-  ctx.beginPath();
-  ctx.arc(92, y + 118, 72, 0, Math.PI * 2);
-  ctx.fill();
+    const orb2 = ctx.createRadialGradient(width - 90, y + 70, 0, width - 90, y + 70, 80);
+    orb2.addColorStop(0, 'rgba(196,38,133,0.15)');
+    orb2.addColorStop(1, 'transparent');
+    ctx.fillStyle = orb2;
+    ctx.beginPath();
+    ctx.arc(width - 90, y + 70, 80, 0, Math.PI * 2);
+    ctx.fill();
+  },
 
-  ctx.beginPath();
-  ctx.arc(width - 120, y + 54, 60, 0, Math.PI * 2);
-  ctx.fill();
-},
+  /* ─────────────────────────────────────────────
+     TEXTO CUERPO
+  ───────────────────────────────────────────── */
+  drawBodyText(ctx, texto, photo, startY, panelY) {
+    const c = this.getFlyerColors();
+    if (!texto) return;
 
-drawBodyText(ctx, texto, photo, startY, panelY) {
-  const c = this.getFlyerColors();
-  if (!texto) return;
+    const maxWidth = photo.w - 40;
+    const availableH = Math.max(0, panelY - startY - 20);
+    if (availableH < 30) return;
 
-  // ancho útil alineado con la foto
-  const maxWidth = photo.w - 30;
+    const lineHeight = 48;
+    const maxLines = Math.max(1, Math.floor(availableH / lineHeight));
+    const lines = this.wrapText(ctx, texto, maxWidth);
+    const totalLines = Math.min(lines.length, maxLines);
+    const totalH = totalLines * lineHeight;
 
-  // altura disponible hasta antes del panel
-  const availableH = Math.max(0, panelY - startY - 18);
-  if (availableH < 30) return;
+    // Centrado vertical en el espacio disponible
+    const centerX = photo.x + photo.w / 2;
+    let y = startY + (availableH - totalH) / 2;
 
-  const lineHeight = 46; // más grande y con más aire
-  const maxLines = Math.max(1, Math.floor(availableH / lineHeight));
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
 
-  ctx.fillStyle = c.bodyText;
-  ctx.font = '500 38px Montserrat, Arial, sans-serif'; // más grande
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
+    lines.slice(0, maxLines).forEach((line, i) => {
+      // Opacidad decreciente en últimas líneas si hay muchas
+      const opacity = totalLines > 3 && i === totalLines - 1 ? 0.5 : 1;
+      ctx.globalAlpha = opacity;
+      ctx.fillStyle = c.bodyText;
+      ctx.font = '500 36px Montserrat, Arial, sans-serif';
+      ctx.fillText(line, centerX, y);
+      ctx.globalAlpha = 1;
+      y += lineHeight;
+    });
+  },
 
-  const lines = this.wrapText(ctx, texto, maxWidth);
+  /* ─────────────────────────────────────────────
+     DATOS DE CONTACTO — con píldoras y separadores
+  ───────────────────────────────────────────── */
+  drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
+    const c = this.getFlyerColors();
 
-  // centro exacto de la imagen
-  const centerX = photo.x + (photo.w / 2);
+    // Datos con íconos Unicode simples
+    const items = [
+      { icon: '◎', label: instagram },
+      { icon: '◈', label: web },
+      { icon: '◉', label: whatsapp },
+      { icon: '◍', label: ubicacion }
+    ];
 
-  // un poco más arriba
-  let y = startY - 12;
+    const colW = (width - 100) / 2;
+    const startX = 52;
+    const baseY = panelY + 52;
+    const rowH = 66;
 
-  lines.slice(0, maxLines).forEach(line => {
-    ctx.fillText(line, centerX, y);
-    y += lineHeight;
-  });
-},
-   
-drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
-   const c = this.getFlyerColors();
-  const startX = 110;              // 👉 más a la derecha
-  const baseY = panelY + 60;       // 👉 más arriba
+    items.forEach((item, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = startX + col * (colW + 4);
+      const y = baseY + row * rowH;
 
-  ctx.fillStyle = c.contactText;
-  ctx.font = '600 34px Montserrat, Arial, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
+      // Píldora de fondo
+      const pillW = colW - 8;
+      const pillH = 52;
+      ctx.save();
+      this.roundRect(ctx, x, y, pillW, pillH, 14);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
 
-  const lines = [
-    `Instagram: ${instagram}`,
-    `Web: ${web}`,
-    `WhatsApp: ${whatsapp}`,
-    `Ubicación: ${ubicacion}`
-  ];
+      // Ícono
+      ctx.fillStyle = c.contactLabel;
+      ctx.font = '700 24px Montserrat, Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.icon, x + 14, y + pillH / 2);
 
-  let y = baseY;
+      // Texto
+      ctx.fillStyle = c.contactText;
+      ctx.font = '600 26px Montserrat, Arial, sans-serif';
+      // Truncar si es muy largo
+      let label = item.label;
+      const maxLabelW = pillW - 56;
+      while (ctx.measureText(label).width > maxLabelW && label.length > 4) {
+        label = label.slice(0, -1);
+      }
+      if (label !== item.label) label += '…';
+      ctx.fillText(label, x + 44, y + pillH / 2);
+    });
+  },
 
-  lines.forEach(line => {
-    ctx.fillText(line, startX, y);
-    y += 34; // 👉 spacing cómodo
-  });
-},
+  /* ─────────────────────────────────────────────
+     LOGO — flotando con brillo
+  ───────────────────────────────────────────── */
+  drawLogo(ctx, img, width, panelY) {
+    const maxW = 220;
+    const maxH = 220;
 
-drawLogo(ctx, img, width, panelY) {
-  const maxW = 240;   // 👉 más grande
-  const maxH = 240;
+    const ratio = Math.min(maxW / img.width, maxH / img.height);
+    const drawW = img.width * ratio;
+    const drawH = img.height * ratio;
 
-  const ratio = Math.min(maxW / img.width, maxH / img.height);
-  const drawW = img.width * ratio;
-  const drawH = img.height * ratio;
+    const x = width - drawW - 44;
+    const y = panelY - drawH * 0.55;
 
-  // 👉 más a la derecha (menos margen)
-  const x = width - drawW - 40;
+    ctx.save();
 
-  // 👉 MUCHO más arriba (flotando)
-  const y = panelY - 40;
+    // Sombra del logo
+    ctx.shadowColor = 'rgba(30,20,60,0.40)';
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetY = 8;
 
-  ctx.save();
+    // Fondo glass del logo
+    this.roundRect(ctx, x - 16, y - 16, drawW + 32, drawH + 32, 24);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fill();
 
-  // fondo suave
-  ctx.fillStyle = 'rgba(255,255,255,0.16)';
-  this.roundRect(ctx, x - 14, y - 14, drawW + 28, drawH + 28, 26);
-  ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
 
-  ctx.drawImage(img, x, y, drawW, drawH);
-  ctx.restore();
-},
+    // Borde sutil
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx.lineWidth = 1.5;
+    this.roundRect(ctx, x - 16, y - 16, drawW + 32, drawH + 32, 24);
+    ctx.stroke();
 
+    ctx.drawImage(img, x, y, drawW, drawH);
+    ctx.restore();
+  },
+
+  /* ─────────────────────────────────────────────
+     UTILIDADES — sin cambios
+  ───────────────────────────────────────────── */
   wrapText(ctx, text, maxWidth) {
     if (!text) return [];
     const words = String(text).split(/\s+/);
@@ -778,82 +970,86 @@ drawLogo(ctx, img, width, panelY) {
     ctx.closePath();
   },
 
- async generarFlyer() {
-  if (!this.state.editor.img || !this.state.mainImageData) {
-    this.showError('Primero subí una imagen');
-    return;
-  }
-
-  try {
-    this.setLoading(true, 'Preparando imagen...');
-
-    console.log('mainImageData existe:', !!this.state.mainImageData);
-    console.log('mainImageData tipo:', typeof this.state.mainImageData);
-    console.log('mainImageData inicio:', String(this.state.mainImageData).slice(0, 80));
-
-    const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
-
-    console.log('mainFile:', mainFile);
-    console.log('mainFile.size:', mainFile.size);
-    console.log('mainFile.type:', mainFile.type);
-
-    this.setLoading(true, 'Subiendo imagen...');
-
-    const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
-
-    console.log('uploadRes:', uploadRes);
-    console.log('public_id real:', uploadRes.public_id);
-    console.log('secure_url real:', uploadRes.secure_url);
-
-    const originalUrl = uploadRes.secure_url;
-    let aiUrl = originalUrl;
-
-    if (CONFIG.USE_CLOUDINARY_AI) {
-      this.setLoading(true, 'Aplicando optimización Cloudinary...');
-      aiUrl = CloudinaryAI.buildOriginalOptimizedUrl(originalUrl);
-      console.log('aiUrl:', aiUrl);
-
-      try {
-        await this.loadImage(aiUrl);
-      } catch (err) {
-        console.warn('Optimización Cloudinary falló, uso imagen original:', err);
-        aiUrl = originalUrl;
-      }
+  /* ─────────────────────────────────────────────
+     GENERAR / DESCARGAR / COMPARTIR — sin cambios
+  ───────────────────────────────────────────── */
+  async generarFlyer() {
+    if (!this.state.editor.img || !this.state.mainImageData) {
+      this.showError('Primero subí una imagen');
+      return;
     }
 
-    this.setLoading(true, 'Cargando imagen final...');
+    try {
+      this.setLoading(true, 'Preparando imagen...');
 
-    const aiImg = await this.loadImage(aiUrl);
-    this.state.editor.img = aiImg;
-    this.resetImageTransform();
-    this.renderPreview();
+      console.log('mainImageData existe:', !!this.state.mainImageData);
+      console.log('mainImageData tipo:', typeof this.state.mainImageData);
+      console.log('mainImageData inicio:', String(this.state.mainImageData).slice(0, 80));
 
-    await Backend.registrar({
-      userId: this.state.userId,
-      tipo: 'imagen',
-      titulo: this.getFormData().titulo,
-      creditos: CONFIG.CREDITOS_IMAGEN
-    });
+      const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
 
-    this.saveLocalHistory({
-      titulo: this.getFormData().titulo,
-      tipo: 'imagen',
-      creditos: CONFIG.CREDITOS_IMAGEN,
-      fecha: new Date().toISOString(),
-      originalUrl,
-      aiUrl
-    });
+      console.log('mainFile:', mainFile);
+      console.log('mainFile.size:', mainFile.size);
+      console.log('mainFile.type:', mainFile.type);
 
-    this.renderLocalHistory();
-    alert('Flyer listo para descargar');
-  } catch (err) {
-    console.error('❌ generarFlyer error:', err);
-    this.showError(err.message || 'Error generando flyer');
-  } finally {
-    this.setLoading(false);
-  }
-},
-   async descargarImagen() {
+      this.setLoading(true, 'Subiendo imagen...');
+
+      const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
+
+      console.log('uploadRes:', uploadRes);
+      console.log('public_id real:', uploadRes.public_id);
+      console.log('secure_url real:', uploadRes.secure_url);
+
+      const originalUrl = uploadRes.secure_url;
+      let aiUrl = originalUrl;
+
+      if (CONFIG.USE_CLOUDINARY_AI) {
+        this.setLoading(true, 'Aplicando optimización Cloudinary...');
+        aiUrl = CloudinaryAI.buildOriginalOptimizedUrl(originalUrl);
+        console.log('aiUrl:', aiUrl);
+
+        try {
+          await this.loadImage(aiUrl);
+        } catch (err) {
+          console.warn('Optimización Cloudinary falló, uso imagen original:', err);
+          aiUrl = originalUrl;
+        }
+      }
+
+      this.setLoading(true, 'Cargando imagen final...');
+
+      const aiImg = await this.loadImage(aiUrl);
+      this.state.editor.img = aiImg;
+      this.resetImageTransform();
+      this.renderPreview();
+
+      await Backend.registrar({
+        userId: this.state.userId,
+        tipo: 'imagen',
+        titulo: this.getFormData().titulo,
+        creditos: CONFIG.CREDITOS_IMAGEN
+      });
+
+      this.saveLocalHistory({
+        titulo: this.getFormData().titulo,
+        tipo: 'imagen',
+        creditos: CONFIG.CREDITOS_IMAGEN,
+        fecha: new Date().toISOString(),
+        originalUrl,
+        aiUrl
+      });
+
+      this.renderLocalHistory();
+      alert('Flyer listo para descargar');
+    } catch (err) {
+      console.error('❌ generarFlyer error:', err);
+      this.showError(err.message || 'Error generando flyer');
+    } finally {
+      this.setLoading(false);
+    }
+  },
+
+  async descargarImagen() {
     if (!this.state.generatedImage) {
       this.renderPreview();
     }
@@ -866,27 +1062,27 @@ drawLogo(ctx, img, width, panelY) {
     a.remove();
   },
 
- async compartirImagen() {
-  if (!this.state.generatedImage) {
-    this.renderPreview();
-  }
-
-  try {
-    const file = await this.dataURLtoExactFile(this.state.generatedImage, 'flyer-dra-bruzera.png');
-
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: 'Flyer Dra. Bruzera',
-        files: [file]
-      });
-    } else {
-      this.showError('Tu dispositivo no permite compartir archivos desde el navegador');
+  async compartirImagen() {
+    if (!this.state.generatedImage) {
+      this.renderPreview();
     }
-  } catch (err) {
-    console.error(err);
-    this.showError('No se pudo compartir la imagen');
-  }
-},
+
+    try {
+      const file = await this.dataURLtoExactFile(this.state.generatedImage, 'flyer-dra-bruzera.png');
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Flyer Dra. Bruzera',
+          files: [file]
+        });
+      } else {
+        this.showError('Tu dispositivo no permite compartir archivos desde el navegador');
+      }
+    } catch (err) {
+      console.error(err);
+      this.showError('No se pudo compartir la imagen');
+    }
+  },
 
   saveLocalHistory(item) {
     const raw = localStorage.getItem(CONFIG.STORAGE_HISTORY);
@@ -930,30 +1126,30 @@ drawLogo(ctx, img, width, panelY) {
   },
 
   dataURLtoFile(dataUrl, filename = 'main.jpg') {
-  return new Promise((resolve, reject) => {
-    try {
-      const arr = dataUrl.split(',');
-      if (arr.length < 2) {
-        reject(new Error('DataURL inválido'));
-        return;
+    return new Promise((resolve, reject) => {
+      try {
+        const arr = dataUrl.split(',');
+        if (arr.length < 2) {
+          reject(new Error('DataURL inválido'));
+          return;
+        }
+
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        resolve(new File([u8arr], filename, { type: mime }));
+      } catch (err) {
+        reject(new Error('No se pudo convertir la imagen a archivo'));
       }
-
-      const mimeMatch = arr[0].match(/:(.*?);/);
-      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-
-      resolve(new File([u8arr], filename, { type: mime }));
-    } catch (err) {
-      reject(new Error('No se pudo convertir la imagen a archivo'));
-    }
-  });
-},
+    });
+  },
 
   loadImage(src) {
     return new Promise((resolve, reject) => {
@@ -997,7 +1193,7 @@ drawLogo(ctx, img, width, panelY) {
 
 
 /* =========================
-   JSONP
+   JSONP — sin cambios
    ========================= */
 
 function jsonpRequest(url) {
@@ -1041,7 +1237,7 @@ function jsonpRequest(url) {
 }
 
 /* =========================
-   Cloudinary
+   Cloudinary — sin cambios
    ========================= */
 
 const CloudinaryUpload = {
@@ -1060,10 +1256,7 @@ const CloudinaryUpload = {
 
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: 'POST',
-        body: formData
-      }
+      { method: 'POST', body: formData }
     );
 
     const data = await res.json();
@@ -1078,12 +1271,10 @@ const CloudinaryUpload = {
     return data;
   }
 };
+
 const CloudinaryAI = {
   buildOriginalOptimizedUrl(secureUrl) {
-    return secureUrl.replace(
-      '/upload/',
-      '/upload/e_improve/f_auto,q_auto/'
-    );
+    return secureUrl.replace('/upload/', '/upload/e_improve/f_auto,q_auto/');
   },
 
   buildBgRemovalUrl(secureUrl) {
@@ -1097,8 +1288,9 @@ const CloudinaryAI = {
     );
   }
 };
+
 /* =========================
-   Backend
+   Backend — sin cambios
    ========================= */
 
 const Backend = {
@@ -1107,7 +1299,6 @@ const Backend = {
       CONFIG.API_URL +
       '?action=init' +
       '&userId=' + encodeURIComponent(userId);
-
     return jsonpRequest(url);
   },
 
@@ -1119,13 +1310,12 @@ const Backend = {
       '&tipo=' + encodeURIComponent(tipo) +
       '&titulo=' + encodeURIComponent(titulo) +
       '&creditos=' + encodeURIComponent(creditos);
-
     return jsonpRequest(url);
   }
 };
 
 /* =========================
-   Init
+   Init — sin cambios
    ========================= */
 
 document.addEventListener('DOMContentLoaded', () => {
