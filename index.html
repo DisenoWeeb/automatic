@@ -1,158 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Generador de Flyers</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-
-    body {
-      background: #020617;
-      color: #fff;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-weight: 800;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: linear-gradient(145deg, #0f172a, #020617);
-      border-radius: 18px;
-      padding: 18px;
-      cursor: pointer;
-      transition: 0.25s;
-      border: 1px solid rgba(255,255,255,0.06);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-    }
-
-    .preview {
-      width: 100%;
-      height: 320px;
-      border-radius: 14px;
-      background: #111;
-      margin-bottom: 15px;
-      overflow: hidden;
-    }
-
-    .preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .desc {
-      font-size: 13px;
-      color: #aaa;
-    }
-
-    .badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: #9333ea;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 8px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modelos de Flyers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
+<body class="app-body home-body">
 
-<body>
+  <div class="page-shell">
+    <header class="topbar topbar-home">
+      <div class="brand-block">
+        <div class="brand-kicker">Generador automático</div>
+        <h1 class="page-title">Elegí un modelo</h1>
+        <p class="page-subtitle">
+          Plantillas listas para usar. Después podés llegar a 20 o más sin tocar la estructura visual.
+        </p>
+      </div>
+    </header>
 
-<h1>Elegí un modelo</h1>
+    <main class="home-main">
+      <section class="models-grid" id="modelsGrid"></section>
+    </main>
+  </div>
 
-<div class="grid" id="grid"></div>
+  <script>
+    const FLYERS = [
+      {
+        id: 1,
+        name: "Flyer 1",
+        desc: "Clásico con foto, logo, texto y botón Aplicar IA.",
+        file: "flyer1.html",
+        preview: "img/previews/flyer1-preview.png",
+        badge: "IA"
+      },
+      {
+        id: 2,
+        name: "Flyer 2",
+        desc: "Modelo alternativo, más visual y pensado para redes.",
+        file: "flyer2.html",
+        preview: "img/previews/flyer2-preview.png",
+        badge: "IA"
+      }
+      // después seguís:
+      // { id: 3, name: "Flyer 3", desc: "...", file: "flyer3.html", preview: "img/previews/flyer3-preview.png", badge: "Nuevo" }
+    ];
 
-<script>
-  const FLYERS = [
-    {
-      id: 1,
-      name: "Flyer Clásico",
-      desc: "Imagen + texto + logo + IA",
-      file: "flyer1.html",
-      preview: "", // después le metemos imagen real
-      ia: true
-    },
-    {
-      id: 2,
-      name: "Flyer Moderno",
-      desc: "Diseño visual alternativo",
-      file: "flyer2.html",
-      preview: "",
-      ia: false
-    },
+    const grid = document.getElementById("modelsGrid");
 
-    // 🔥 ESCALA ACA
-    {
-      id: 3,
-      name: "Promo Impacto",
-      desc: "Texto grande + CTA fuerte",
-      file: "flyer3.html",
-      preview: ""
-    },
-    {
-      id: 4,
-      name: "Minimal Clean",
-      desc: "Ultra simple, elegante",
-      file: "flyer4.html",
-      preview: ""
+    function renderModels() {
+      grid.innerHTML = FLYERS.map(item => `
+        <article class="model-card" onclick="window.location.href='${item.file}'">
+          <div class="model-preview-wrap">
+            <img class="model-preview" src="${item.preview}" alt="${item.name}">
+            ${item.badge ? `<span class="model-badge">${item.badge}</span>` : ""}
+          </div>
+
+          <div class="model-card-body">
+            <h2 class="model-title">${item.name}</h2>
+            <p class="model-desc">${item.desc}</p>
+
+            <div class="model-card-footer">
+              <span class="model-open">Abrir modelo</span>
+            </div>
+          </div>
+        </article>
+      `).join("");
     }
 
-    // 👉 seguís hasta 20 sin tocar HTML
-  ];
-
-  const grid = document.getElementById("grid");
-
-  FLYERS.forEach(f => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.onclick = () => goTo(f.file);
-
-    card.innerHTML = `
-      ${f.ia ? '<div class="badge">IA</div>' : ''}
-
-      <div class="preview">
-        ${f.preview 
-          ? `<img src="${f.preview}">` 
-          : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">Preview</div>`
-        }
-      </div>
-
-      <div class="title">${f.name}</div>
-      <div class="desc">${f.desc}</div>
-    `;
-
-    grid.appendChild(card);
-  });
-
-  function goTo(page) {
-    window.location.href = page;
-  }
-</script>
-
+    renderModels();
+  </script>
 </body>
 </html>
