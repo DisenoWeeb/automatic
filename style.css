@@ -657,7 +657,7 @@ body {
 }
 
 /* =========================
-   🎨 Preview de cards en INDEX
+   🎨 Preview modo iframe
    ========================= */
 
 body.preview-mode .editor-panel,
@@ -684,7 +684,6 @@ body.preview-mode .flyer-layout {
 /* =========================
    🎨 INDEX
    ========================= */
-
 
 .site-header {
   position: sticky;
@@ -767,6 +766,7 @@ body.preview-mode .flyer-layout {
   box-shadow: 0 10px 24px rgba(54, 42, 111, .18);
 }
 
+
 /* MAIN */
 
 .home-wrap {
@@ -808,6 +808,7 @@ body.preview-mode .flyer-layout {
   line-height: 1.5;
 }
 
+
 /* GRID */
 
 .models-grid {
@@ -847,13 +848,27 @@ body.preview-mode .flyer-layout {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
 }
 
-.iframe-box iframe {
+/* 👉 FIX REAL PREVIEW */
+
+.iframe-scale-wrap {
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.iframe-scale-wrap iframe {
+  width: 412px;
+  height: 920px;
   border: 0;
   display: block;
   pointer-events: none;
+  transform-origin: top left;
+  transform: scale(0.42);
 }
+
+
+/* BADGE */
 
 .model-badge {
   position: absolute;
@@ -872,6 +887,9 @@ body.preview-mode .flyer-layout {
   font-weight: 800;
   box-shadow: 0 8px 18px rgba(54, 42, 111, .24);
 }
+
+
+/* BODY CARD */
 
 .model-card-body {
   padding: 12px 12px 14px;
@@ -911,6 +929,7 @@ body.preview-mode .flyer-layout {
   font-weight: 800;
 }
 
+
 /* FOOTER */
 
 .site-footer {
@@ -944,34 +963,36 @@ body.preview-mode .flyer-layout {
   font-weight: 600;
 }
 
-/* TABLET */
 
+/* =========================
+   📱 RESPONSIVE
+   ========================= */
+
+/* TABLET */
 @media (min-width: 768px) {
   .models-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
   }
 
-  .model-title {
-    font-size: 17px;
-  }
-
-  .model-desc {
-    font-size: 12px;
+  .iframe-scale-wrap iframe {
+    transform: scale(0.44);
   }
 }
 
 /* PC */
-
 @media (min-width: 1200px) {
   .models-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 16px;
   }
+
+  .iframe-scale-wrap iframe {
+    transform: scale(0.43);
+  }
 }
 
 /* MOBILE */
-
 @media (max-width: 640px) {
   .site-header {
     padding: 10px 10px 0;
@@ -1024,6 +1045,10 @@ body.preview-mode .flyer-layout {
 
   .iframe-box {
     border-radius: 16px;
+  }
+
+  .iframe-scale-wrap iframe {
+    transform: scale(0.40);
   }
 
   .model-badge {
