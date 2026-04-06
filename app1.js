@@ -389,8 +389,8 @@ const App = {
     h = Math.max(470, Math.min(h, 790));
 
     const bodyStartY = y + h + 28;
-    const panelH = 260;
-    const panelY = Math.max(height - panelH, bodyStartY + 80);
+    const panelH = 300;
+    const panelY = Math.max(height - panelH, bodyStartY + 90);
 
     return { x, y, w, h, bodyStartY, panelY, panelH };
   },
@@ -499,7 +499,7 @@ const App = {
     const img = this.state.editor.img;
     const photo = img
       ? this.getPhotoLayout(img)
-      : { x: 60, y: 200, w: width - 120, h: 700, bodyStartY: 920, panelY: 1090, panelH: 260 };
+      : { x: 60, y: 200, w: width - 120, h: 700, bodyStartY: 920, panelY: 1050, panelH: 300 };
 
     this.layout = { photo };
 
@@ -746,12 +746,14 @@ const App = {
   drawBottomPanel(ctx, width, height, y, panelH) {
     const c = this.getFlyerColors();
 
-    // Sombra superior del panel
-    const shadowG = ctx.createLinearGradient(0, y - 60, 0, y + 20);
-    shadowG.addColorStop(0, 'transparent');
-    shadowG.addColorStop(1, 'rgba(30,20,60,0.18)');
-    ctx.fillStyle = shadowG;
-    ctx.fillRect(0, y - 60, width, 80);
+    // Zona de fusión amplia (120px) — elimina el corte abrupto
+    const fuseH = 120;
+    const fuseG = ctx.createLinearGradient(0, y - fuseH, 0, y + 40);
+    fuseG.addColorStop(0, 'transparent');
+    fuseG.addColorStop(0.6, 'rgba(54,42,111,0.08)');
+    fuseG.addColorStop(1, 'rgba(54,42,111,0.28)');
+    ctx.fillStyle = fuseG;
+    ctx.fillRect(0, y - fuseH, width, fuseH + 50);
 
     // Panel principal con forma orgánica
     const panelG = ctx.createLinearGradient(0, y, 0, height);
@@ -768,36 +770,30 @@ const App = {
     ctx.closePath();
     ctx.fill();
 
-    // Shimmer en el borde superior del panel
-    const shim = ctx.createLinearGradient(0, y, 0, y + 8);
-    shim.addColorStop(0, 'rgba(196,38,133,0.55)');
-    shim.addColorStop(1, 'rgba(196,38,133,0)');
-    ctx.fillStyle = shim;
+    // Línea de acento rosa en el borde superior de la curva
+    ctx.strokeStyle = 'rgba(196,38,133,0.6)';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, y + 50);
     ctx.bezierCurveTo(width * 0.15, y - 18, width * 0.35, y + 70, width * 0.52, y + 22);
     ctx.bezierCurveTo(width * 0.68, y - 20, width * 0.85, y + 52, width, y + 14);
-    ctx.lineTo(width, y + 22);
-    ctx.bezierCurveTo(width * 0.85, y + 22, width * 0.68, y - 12, width * 0.52, y + 30);
-    ctx.bezierCurveTo(width * 0.35, y + 78, width * 0.15, y - 10, 0, y + 58);
-    ctx.closePath();
-    ctx.fill();
+    ctx.stroke();
 
     // Orbes decorativos
-    const orb1 = ctx.createRadialGradient(80, y + 140, 0, 80, y + 140, 110);
-    orb1.addColorStop(0, 'rgba(196,38,133,0.20)');
+    const orb1 = ctx.createRadialGradient(80, y + 160, 0, 80, y + 160, 120);
+    orb1.addColorStop(0, 'rgba(196,38,133,0.18)');
     orb1.addColorStop(1, 'transparent');
     ctx.fillStyle = orb1;
     ctx.beginPath();
-    ctx.arc(80, y + 140, 110, 0, Math.PI * 2);
+    ctx.arc(80, y + 160, 120, 0, Math.PI * 2);
     ctx.fill();
 
-    const orb2 = ctx.createRadialGradient(width - 90, y + 70, 0, width - 90, y + 70, 80);
-    orb2.addColorStop(0, 'rgba(196,38,133,0.15)');
+    const orb2 = ctx.createRadialGradient(width - 100, y + 80, 0, width - 100, y + 80, 90);
+    orb2.addColorStop(0, 'rgba(196,38,133,0.13)');
     orb2.addColorStop(1, 'transparent');
     ctx.fillStyle = orb2;
     ctx.beginPath();
-    ctx.arc(width - 90, y + 70, 80, 0, Math.PI * 2);
+    ctx.arc(width - 100, y + 80, 90, 0, Math.PI * 2);
     ctx.fill();
   },
 
@@ -838,97 +834,106 @@ const App = {
   },
 
   /* ─────────────────────────────────────────────
-     DATOS DE CONTACTO — con píldoras y separadores
+     DATOS DE CONTACTO — fila compacta con separadores
   ───────────────────────────────────────────── */
   drawContactData(ctx, { instagram, web, whatsapp, ubicacion, width, panelY }) {
     const c = this.getFlyerColors();
 
-    // Datos con íconos Unicode simples
     const items = [
-      { icon: '◎', label: instagram },
+      { icon: '⊙', label: instagram },
       { icon: '◈', label: web },
       { icon: '◉', label: whatsapp },
       { icon: '◍', label: ubicacion }
     ];
 
-    const colW = (width - 100) / 2;
-    const startX = 52;
-    const baseY = panelY + 52;
-    const rowH = 66;
+    // Fila 1: instagram + web  |  Fila 2: whatsapp + ubicacion
+    // Cada fila ocupa todo el ancho con dos columnas iguales
+    const pad = 48;
+    const colW = (width - pad * 2 - 16) / 2;
+    const pillH = 58;
+    const rowGap = 14;
+    const baseY = panelY + 44;
 
-    items.forEach((item, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = startX + col * (colW + 4);
-      const y = baseY + row * rowH;
+    [[0, 1], [2, 3]].forEach(([a, b], rowIdx) => {
+      [a, b].forEach((i, colIdx) => {
+        const item = items[i];
+        const x = pad + colIdx * (colW + 16);
+        const y = baseY + rowIdx * (pillH + rowGap);
 
-      // Píldora de fondo
-      const pillW = colW - 8;
-      const pillH = 52;
-      ctx.save();
-      this.roundRect(ctx, x, y, pillW, pillH, 14);
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.restore();
+        // Píldora fondo
+        ctx.save();
+        this.roundRect(ctx, x, y, colW, pillH, 16);
+        ctx.fillStyle = 'rgba(255,255,255,0.09)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
 
-      // Ícono
-      ctx.fillStyle = c.contactLabel;
-      ctx.font = '700 24px Montserrat, Arial, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(item.icon, x + 14, y + pillH / 2);
+        // Punto de color de acento
+        ctx.beginPath();
+        ctx.arc(x + 22, y + pillH / 2, 5, 0, Math.PI * 2);
+        ctx.fillStyle = c.contactLabel;
+        ctx.fill();
 
-      // Texto
-      ctx.fillStyle = c.contactText;
-      ctx.font = '600 26px Montserrat, Arial, sans-serif';
-      // Truncar si es muy largo
-      let label = item.label;
-      const maxLabelW = pillW - 56;
-      while (ctx.measureText(label).width > maxLabelW && label.length > 4) {
-        label = label.slice(0, -1);
-      }
-      if (label !== item.label) label += '…';
-      ctx.fillText(label, x + 44, y + pillH / 2);
+        // Texto truncado
+        ctx.fillStyle = c.contactText;
+        ctx.font = '600 24px Montserrat, Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        const maxLabelW = colW - 50;
+        let label = item.label;
+        while (ctx.measureText(label).width > maxLabelW && label.length > 4) {
+          label = label.slice(0, -1);
+        }
+        if (label !== item.label) label += '…';
+        ctx.fillText(label, x + 36, y + pillH / 2);
+      });
     });
   },
 
   /* ─────────────────────────────────────────────
-     LOGO — flotando con brillo
+     LOGO — esquina superior derecha del panel, sin pisar contacto
   ───────────────────────────────────────────── */
   drawLogo(ctx, img, width, panelY) {
-    const maxW = 220;
-    const maxH = 220;
+    // Tamaño fijo pequeño para que no invada el área de contacto
+    const maxW = 150;
+    const maxH = 150;
 
     const ratio = Math.min(maxW / img.width, maxH / img.height);
     const drawW = img.width * ratio;
     const drawH = img.height * ratio;
 
-    const x = width - drawW - 44;
-    const y = panelY - drawH * 0.55;
+    // Posición: arriba a la derecha, flotando sobre el borde del panel
+    const x = width - drawW - 36;
+    const y = panelY - drawH - 18;
 
     ctx.save();
 
-    // Sombra del logo
-    ctx.shadowColor = 'rgba(30,20,60,0.40)';
-    ctx.shadowBlur = 28;
-    ctx.shadowOffsetY = 8;
+    // Sombra
+    ctx.shadowColor = 'rgba(30,20,60,0.45)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 6;
 
-    // Fondo glass del logo
-    this.roundRect(ctx, x - 16, y - 16, drawW + 32, drawH + 32, 24);
-    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    // Fondo circular glass
+    const cx = x + drawW / 2;
+    const cy = y + drawH / 2;
+    const r = Math.max(drawW, drawH) / 2 + 14;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(54,42,111,0.75)';
     ctx.fill();
 
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
-    // Borde sutil
-    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
-    ctx.lineWidth = 1.5;
-    this.roundRect(ctx, x - 16, y - 16, drawW + 32, drawH + 32, 24);
+    // Borde
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(196,38,133,0.55)';
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     ctx.drawImage(img, x, y, drawW, drawH);
