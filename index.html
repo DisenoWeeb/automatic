@@ -3,50 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modelos de Flyers</title>
+  <title>Flyers IA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="app-body home-body">
+<body>
 
-  <div class="page-shell">
-    <header class="topbar topbar-home">
-      <div class="brand-block">
-        <div class="brand-kicker">Generador automático</div>
-        <h1 class="page-title">Elegí un modelo</h1>
-        <p class="page-subtitle">
-          Plantillas listas para usar. Después podés llegar a 20 o más sin tocar la estructura visual.
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="menu-btn" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="brand">
+        <div class="brand-title">Flyers IA</div>
+        <div class="brand-subtitle">1 crédito por imagen · 4 créditos por video</div>
+      </div>
+
+      <div class="header-right">
+        <a href="#" class="top-chip">Historial</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="home-wrap">
+    <section class="hero-box">
+      <div class="hero-texts">
+        <p class="hero-kicker">Plantillas listas</p>
+        <h1>Elegí un modelo</h1>
+        <p class="hero-desc">
+          Vista real de cada flyer dentro del card.
         </p>
       </div>
-    </header>
+    </section>
 
-    <main class="home-main">
-      <section class="models-grid" id="modelsGrid"></section>
-    </main>
-  </div>
+    <section class="models-grid" id="modelsGrid"></section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">Flyers IA</div>
+      <div class="footer-copy">1 crédito por imagen · 4 créditos por video</div>
+    </div>
+  </footer>
 
   <script>
     const FLYERS = [
       {
         id: 1,
         name: "Flyer 1",
-        desc: "Clásico con foto, logo, texto y botón Aplicar IA.",
+        desc: "Clásico con IA",
         file: "flyer1.html",
-        preview: "img/previews/flyer1-preview.png",
+        preview: "flyer1.html?preview=1",
         badge: "IA"
       },
       {
         id: 2,
         name: "Flyer 2",
-        desc: "Modelo alternativo, más visual y pensado para redes.",
+        desc: "Alternativo visual",
         file: "flyer2.html",
-        preview: "img/previews/flyer2-preview.png",
+        preview: "flyer2.html?preview=1",
         badge: "IA"
+      },
+      {
+        id: 3,
+        name: "Flyer 3",
+        desc: "Promo fuerte",
+        file: "flyer3.html",
+        preview: "flyer3.html?preview=1",
+        badge: ""
+      },
+      {
+        id: 4,
+        name: "Flyer 4",
+        desc: "Minimal clean",
+        file: "flyer4.html",
+        preview: "flyer4.html?preview=1",
+        badge: ""
+      },
+      {
+        id: 5,
+        name: "Flyer 5",
+        desc: "Instagram feed",
+        file: "flyer5.html",
+        preview: "flyer5.html?preview=1",
+        badge: ""
+      },
+      {
+        id: 6,
+        name: "Flyer 6",
+        desc: "Vertical promo",
+        file: "flyer6.html",
+        preview: "flyer6.html?preview=1",
+        badge: ""
       }
-      // después seguís:
-      // { id: 3, name: "Flyer 3", desc: "...", file: "flyer3.html", preview: "img/previews/flyer3-preview.png", badge: "Nuevo" }
     ];
 
     const grid = document.getElementById("modelsGrid");
@@ -55,17 +109,22 @@
       grid.innerHTML = FLYERS.map(item => `
         <article class="model-card" onclick="window.location.href='${item.file}'">
           <div class="model-preview-wrap">
-            <img class="model-preview" src="${item.preview}" alt="${item.name}">
+            <div class="iframe-box">
+              <iframe
+                src="${item.preview}"
+                loading="lazy"
+                scrolling="no"
+                tabindex="-1"
+                title="${item.name}">
+              </iframe>
+            </div>
             ${item.badge ? `<span class="model-badge">${item.badge}</span>` : ""}
           </div>
 
           <div class="model-card-body">
             <h2 class="model-title">${item.name}</h2>
             <p class="model-desc">${item.desc}</p>
-
-            <div class="model-card-footer">
-              <span class="model-open">Abrir modelo</span>
-            </div>
+            <div class="model-open">Usar modelo</div>
           </div>
         </article>
       `).join("");
