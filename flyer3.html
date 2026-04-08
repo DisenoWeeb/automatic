@@ -806,7 +806,30 @@
   </div>
 
   <script src="./app1.js?v=merge1"></script>
+<script>
+  (function () {
+    const btnGenerar = document.getElementById('btnGenerar');
+    const actionsMain = document.getElementById('actionsMain');
+    const resultActions = document.getElementById('resultActions');
+    const btnNuevo = document.getElementById('btnNuevo');
 
+    if (!btnGenerar || !actionsMain || !resultActions) return;
+
+    btnGenerar.addEventListener('click', () => {
+      setTimeout(() => {
+        actionsMain.classList.add('u-hidden');
+        resultActions.classList.remove('u-hidden');
+      }, 2500);
+    });
+
+    if (btnNuevo) {
+      btnNuevo.addEventListener('click', () => {
+        actionsMain.classList.remove('u-hidden');
+        resultActions.classList.add('u-hidden');
+      });
+    }
+  })();
+</script>
   <script>
     let selectedType = 'reel';
     let selectedTone = 'cercano';
