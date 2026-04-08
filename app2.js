@@ -14,7 +14,9 @@ const CONFIG = {
   OUTPUT_WIDTH: 1080,
   OUTPUT_HEIGHT: 1350,
   CREDITOS_IMAGEN: 1,
-  CREDITOS_VIDEO: 4
+  CREDITOS_VIDEO: 4,
+   DEFAULT_MAIN_IMAGE: 'https://res.cloudinary.com/dwgwbdtud/image/upload/v1775422555/dra_bruzera/uwnto8lhkn6gwlz8krry.jpg',
+  DEFAULT_LOGO_IMAGE: 'https://res.cloudinary.com/dwgwbdtud/image/upload/v1775681766/offb0lgokdl0pfunyx1m.png'
 };
 
 const App = {
