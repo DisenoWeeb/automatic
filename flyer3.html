@@ -1,129 +1,1016 @@
-<!-- PEGALO COMPLETO REEMPLAZANDO TU HTML -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dra Bruzera - Editor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dra. Bruzera - Editor IA</title>
 
-<link rel="stylesheet" href="./style.css">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="./style.css">
+
+  <style>
+    :root {
+      --pink: #C42685;
+      --violet: #362A6F;
+      --pink-soft: rgba(196, 38, 133, .13);
+      --violet-soft: rgba(54, 42, 111, .13);
+      --text: #2f245d;
+      --text-soft: #6c6493;
+      --glass: rgba(255,255,255,.72);
+      --glass-strong: rgba(255,255,255,.88);
+      --border: rgba(255,255,255,.38);
+      --border-soft: rgba(54, 42, 111, .10);
+      --shadow-soft: 0 8px 20px rgba(54, 42, 111, .12);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --btn-h: 42px;
+      --btn-h-main: 48px;
+      --btn-font: 13px;
+
+      --flyer-bg-1: #f9dbe8;
+      --flyer-bg-2: #f2cae0;
+      --flyer-bg-3: #e4c8ea;
+      --flyer-bg-4: #d6c6f2;
+      --flyer-title: #ffffff;
+      --flyer-panel-1: #c42685;
+      --flyer-panel-2: #362a6f;
+      --flyer-body-text: #4d3469;
+      --flyer-contact-text: #ffffff;
+      --flyer-frame: rgba(255,255,255,.92);
+      --flyer-frame-soft: rgba(255,255,255,.38);
+      --flyer-placeholder-fill: rgba(255,255,255,.40);
+      --flyer-placeholder-text: rgba(47,36,93,.72);
+      --flyer-panel-glow: rgba(255,255,255,.12);
+      --flyer-bubble: rgba(255,255,255,.10);
+      --flyer-line-1: rgba(255,255,255,.08);
+      --flyer-line-2: rgba(255,255,255,.04);
+      --flyer-top-1: #c42685;
+      --flyer-top-2: #8c3d9f;
+      --flyer-top-3: #362a6f;
+
+      --piper-cream: #F5F0E8;
+      --piper-cream-dark: #EDE7D9;
+      --piper-ink: #1A1612;
+      --piper-ink-soft: #4A4540;
+      --piper-ink-muted: #8A847E;
+      --piper-teal: #1D6B5A;
+      --piper-teal-mid: #2D9B7E;
+      --piper-amber: #C8721A;
+      --piper-red: #B83232;
+      --piper-red-light: #FDEAEA;
+      --piper-border: rgba(26,22,18,0.12);
+      --piper-border-strong: rgba(26,22,18,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      font-family: 'DM Sans', 'Montserrat', sans-serif;
+      background: #f0edf8;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 700px 600px at 90% -10%, rgba(196,38,133,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at -5% 90%, rgba(54,42,111,.17) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 400px at 50% 50%, rgba(196,38,133,.07) 0%, transparent 70%);
+      animation: bgShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgShift {
+      from { opacity: 1; }
+      to { opacity: .75; }
+    }
+
+    .wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+    .app-shell { display: flex; flex-direction: column; flex: 1; }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(14px, 3vw, 32px);
+      background: rgba(240,237,248,.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .app-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .brand-text { display: flex; flex-direction: column; gap: 1px; }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.03em;
+      line-height: 1;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-soft);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .user-badge {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .user-badge span { font-weight: 800; color: var(--text); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 20px;
+      padding: clamp(16px, 2.5vw, 28px) clamp(14px, 3vw, 32px);
+      flex: 1;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .preview-card {
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 80px;
+      animation: fadeUp .55s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .preview-stage-wrap { padding: 16px; }
+    .preview-stage {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: linear-gradient(160deg, var(--pink-soft), var(--violet-soft));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.3);
+    }
+
+    .preview-stage canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .right-col { display: flex; flex-direction: column; gap: 14px; }
+    .stack { display: flex; flex-direction: column; gap: 14px; }
+
+    .preview-actions-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--btn-h);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      text-align: center;
+      padding: 0 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .01em;
+    }
+
+    .quick-action:not(.secondary) {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(196,38,133,.28);
+    }
+
+    .quick-action.secondary {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .actions-main { display: flex; }
+    .btn-ia {
+      width: 100%;
+      height: var(--btn-h-main);
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--violet) 100%);
+      box-shadow: 0 10px 28px rgba(196,38,133,.34);
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-ia:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(196,38,133,.40);
+    }
+
+    .btn-ia:disabled { opacity: .7; cursor: wait; }
+
+    .loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      background: var(--glass);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+
+    .loader::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(196,38,133,.22);
+      border-top-color: var(--pink);
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader.hidden { display: none; }
+
+    .form-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .section-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+
+    .section-head p {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+    }
+
+    .details-card {
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.55);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .details-card summary {
+      padding: 13px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      transition: background .18s;
+    }
+
+    .details-card summary::after {
+      content: "›";
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-soft);
+      transition: transform .22s ease;
+    }
+
+    .details-card[open] summary::after { transform: rotate(90deg); }
+    .details-body {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.7);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+      resize: none;
+    }
+
+    .field textarea { min-height: 90px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .actions-result {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn {
+      height: var(--btn-h);
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: var(--btn-font);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      letter-spacing: .01em;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn.hidden, .hidden { display: none !important; }
+
+    /* Piper integrado */
+    .piper-card {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .piper-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(26,22,18,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #faf7f2;
+    }
+
+    .piper-title-wrap { display: flex; flex-direction: column; gap: 2px; }
+    .piper-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--piper-ink);
+      letter-spacing: -0.02em;
+    }
+
+    .piper-sub {
+      font-size: 11px;
+      color: var(--piper-ink-muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .openai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #10a37f22;
+      border: 1px solid #10a37f55;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: #10a37f;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .piper-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fff;
+    }
+
+    .piper-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--piper-ink-muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .piper-api-input,
+    .piper-input,
+    .piper-textarea {
+      width: 100%;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 14px;
+      background: white;
+      border: 1px solid var(--piper-border-strong);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      color: var(--piper-ink);
+      outline: none;
+    }
+
+    .piper-textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 100px;
+      border: 1px solid var(--piper-border-strong);
+      background: white;
+      color: var(--piper-ink-soft);
+      cursor: pointer;
+      transition: all .15s;
+      font-family: 'Instrument Sans', sans-serif;
+      user-select: none;
+    }
+
+    .chip.active {
+      background: var(--piper-ink);
+      color: var(--piper-cream);
+      border-color: var(--piper-ink);
+    }
+
+    .tone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .tone-btn {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--piper-border-strong);
+      background: white;
+      font-size: 12px;
+      color: var(--piper-ink-soft);
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      font-family: 'Instrument Sans', sans-serif;
+    }
+
+    .tone-btn.active {
+      background: var(--piper-teal);
+      color: white;
+      border-color: var(--piper-teal);
+    }
+
+    .tone-emoji { display: block; font-size: 18px; margin-bottom: 2px; }
+
+    .piper-result {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .result-card {
+      background: white;
+      border: 1px solid var(--piper-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--piper-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--piper-cream-dark);
+    }
+
+    .card-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--piper-ink-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-green { background: var(--piper-teal-mid); }
+    .dot-amber { background: var(--piper-amber); }
+
+    .btn-copy {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      background: none;
+      border: 1px solid var(--piper-border-strong);
+      border-radius: 5px;
+      padding: 3px 8px;
+      color: var(--piper-ink-muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .card-body {
+      padding: 1rem;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--piper-ink-soft);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card-body.hashtags {
+      color: var(--piper-teal);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .card-body.horario {
+      color: var(--piper-amber);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+    }
+
+    .error-box {
+      background: var(--piper-red-light);
+      border: 1px solid rgba(184,50,50,0.2);
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 13px;
+      color: var(--piper-red);
+      line-height: 1.6;
+    }
+
+    .u-hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      .preview-actions-top { grid-template-columns: 1fr 1fr; }
+      .preview-actions-top .quick-action:last-child { grid-column: 1 / -1; }
+      .two { grid-template-columns: 1fr; }
+      .tone-grid { grid-template-columns: repeat(2, 1fr); }
+      .actions-result { grid-template-columns: 1fr 1fr; }
+      .actions-result .btn:first-child { grid-column: 1 / -1; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="app-shell">
 
-<div class="wrap">
-<div class="app-shell">
+      <header class="app-header">
+        <div class="app-header-left">
+          <div class="brand-text">
+            <div class="brand-name">By Weeb</div>
+            <div class="brand-tag">Editor + Piper IA</div>
+          </div>
+          <div class="user-badge">Usuario: <span id="userIdBox">---</span></div>
+        </div>
+      </header>
 
-<header class="app-header">
-  <div class="app-header-left">
-    <div class="brand-text">
-      <div class="brand-name">Dra Bruzera</div>
-      <div class="brand-tag">Editor IA</div>
-    </div>
+      <section class="layout">
+        <div class="card preview-card">
+          <div class="preview-stage-wrap">
+            <div class="preview-stage">
+              <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+            </div>
+          </div>
+        </div>
 
-    <div class="user-badge">
-      Usuario: <span id="userIdBox">---</span>
+        <div class="stack right-col">
+          <div class="preview-actions-top">
+            <label for="mainImageGallery" class="quick-action">Elegir foto</label>
+            <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
+            <label for="logoImage" class="quick-action secondary">Subir logo</label>
+          </div>
+
+          <div class="actions-main" id="actionsMain">
+            <button class="btn-ia" id="btnGenerar" type="button">✦ Generar flyer + contenido IA</button>
+          </div>
+
+          <div class="actions-result u-hidden" id="resultActions">
+            <button class="btn" id="btnNuevo" type="button">Nuevo</button>
+            <button class="btn" id="btnDescargar" type="button">Descargar</button>
+            <button class="btn" id="btnCompartir" type="button">Compartir</button>
+          </div>
+
+          <div class="loader hidden" id="loader">
+            <span id="loaderText">Procesando...</span>
+          </div>
+
+          <div class="card form-card">
+            <div class="section-head">
+              <h2>Datos del flyer</h2>
+              <p>Imagen, logo, título y contacto</p>
+            </div>
+
+            <input type="file" id="mainImageGallery" accept="image/*" hidden>
+            <input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
+            <input type="file" id="logoImage" accept="image/*" hidden>
+
+            <details class="details-card" open>
+              <summary>Título · Descripción · Contacto</summary>
+              <div class="details-body">
+                <div class="field">
+                  <label for="titulo">Título</label>
+                  <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
+                </div>
+
+                <div class="field">
+                  <label for="texto">Texto flyer</label>
+                  <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+                </div>
+
+                <div class="two">
+                  <div class="field">
+                    <label for="instagram">Instagram</label>
+                    <input type="text" id="instagram" value="@drabruzera">
+                  </div>
+                  <div class="field">
+                    <label for="whatsapp">WhatsApp</label>
+                    <input type="tel" id="whatsapp" value="3435303848">
+                  </div>
+                </div>
+
+                <div class="two">
+                  <div class="field">
+                    <label for="web">Web</label>
+                    <input type="text" id="web" value="www.bruzera.turnox.pro">
+                  </div>
+                  <div class="field">
+                    <label for="ubicacion">Ubicación</label>
+                    <input type="text" id="ubicacion" value="José Venturino 1239">
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="piper-card">
+            <div class="piper-header">
+              <div class="piper-title-wrap">
+                <div class="piper-title">Piper</div>
+                <div class="piper-sub">agente · veterinaria demo</div>
+              </div>
+              <span class="openai-badge">⬡ OpenAI</span>
+            </div>
+
+            <div class="piper-body">
+              <div class="field">
+                <label class="piper-label" for="apiKey">API key de OpenAI</label>
+                <input class="piper-api-input" type="password" id="apiKey" placeholder="sk-...">
+              </div>
+
+              <div class="field">
+                <label class="piper-label" for="videoDesc">Descripción del video</label>
+                <textarea class="piper-textarea" id="videoDesc" placeholder="Ej: Filmé a Toto, un golden retriever de 3 años, mientras le aplicamos su vacuna antirrábica anual. Está tranquilo, moviendo la cola. Al final le doy una golosina y sale caminando contento con su dueña."></textarea>
+              </div>
+
+              <div class="field">
+                <div class="piper-label">Tipo de contenido</div>
+                <div class="chips-row">
+                  <div class="chip active" data-type="reel">Reel / TikTok</div>
+                  <div class="chip" data-type="carrusel">Carrusel</div>
+                  <div class="chip" data-type="historia">Historia</div>
+                  <div class="chip" data-type="post">Post estático</div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="piper-label">Tono de la clínica</div>
+                <div class="tone-grid">
+                  <button class="tone-btn active" type="button" data-tone="cercano"><span class="tone-emoji">🤝</span>Cercano</button>
+                  <button class="tone-btn" type="button" data-tone="educativo"><span class="tone-emoji">🎓</span>Educativo</button>
+                  <button class="tone-btn" type="button" data-tone="divertido"><span class="tone-emoji">😄</span>Divertido</button>
+                  <button class="tone-btn" type="button" data-tone="profesional"><span class="tone-emoji">🏥</span>Profesional</button>
+                  <button class="tone-btn" type="button" data-tone="emotivo"><span class="tone-emoji">❤️</span>Emotivo</button>
+                  <button class="tone-btn" type="button" data-tone="urgente"><span class="tone-emoji">⚡</span>Urgente</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="piper-label" for="ciudad">Ciudad / zona</label>
+                <input class="piper-input" type="text" id="ciudad" value="Paraná">
+              </div>
+
+              <div class="piper-result" id="output">
+                <div class="card-body" style="text-align:center; opacity:.65;">El contenido IA aparecerá acá.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="u-hidden">
+            <img id="previewMain" alt="Preview imagen principal">
+            <img id="previewLogo" alt="Preview logo">
+            <div id="resultSection"></div>
+            <img id="resultImage" alt="Resultado">
+            <div id="historyList"></div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
-</header>
 
-<section class="layout">
+  <script src="./app1.js?v=merge1"></script>
 
-<!-- PREVIEW -->
-<div class="card preview-card">
-  <div class="preview-stage-wrap">
-    <div class="preview-stage">
-      <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
-    </div>
-  </div>
-</div>
+  <script>
+    let selectedType = 'reel';
+    let selectedTone = 'cercano';
+    let piperUltimoResultado = null;
 
-<!-- RIGHT -->
-<div class="stack right-col">
+    document.querySelectorAll('.chip[data-type]').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.chip[data-type]').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        selectedType = el.dataset.type;
+      });
+    });
 
-<!-- subir -->
-<div class="preview-actions-top">
-  <label for="mainImageGallery" class="quick-action">Elegir foto</label>
-  <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
-  <label for="logoImage" class="quick-action secondary">Subir logo</label>
-</div>
+    document.querySelectorAll('.tone-btn[data-tone]').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.tone-btn[data-tone]').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        selectedTone = el.dataset.tone;
+      });
+    });
 
-<!-- IA -->
-<div class="actions-main" id="actionsMain">
-  <button id="btnGenerar" class="btn-ia">✦ Aplicar IA</button>
-</div>
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        if (!btn) return;
+        const original = btn.textContent;
+        btn.textContent = '✓ copiado';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1800);
+      }).catch(() => {
+        alert('No se pudo copiar');
+      });
+    }
 
-<!-- RESULT -->
-<div class="actions-result hidden" id="resultActions">
-  <button id="btnNuevo" class="btn">Nuevo</button>
-  <button id="btnDescargar" class="btn">Descargar</button>
-  <button id="btnCompartir" class="btn">Compartir</button>
-</div>
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
-<div id="loader" class="loader hidden">Procesando...</div>
+    async function generarContenidoPiper() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const desc = document.getElementById('videoDesc').value.trim();
+      const ciudad = document.getElementById('ciudad').value.trim() || 'Argentina';
+      const output = document.getElementById('output');
 
-<!-- FORM -->
-<div class="card form-card">
+      if (!apiKey) {
+        output.innerHTML = `
+          <div class="error-box">
+            Falta la API Key de OpenAI.
+          </div>
+        `;
+        return null;
+      }
 
-<h2>Datos del flyer</h2>
+      if (!desc) {
+        output.innerHTML = `
+          <div class="error-box">
+            Falta la descripción del video.
+          </div>
+        `;
+        return null;
+      }
 
-<input type="file" id="mainImageGallery" hidden accept="image/*">
-<input type="file" id="mainImageCamera" hidden accept="image/*" capture="environment">
-<input type="file" id="logoImage" hidden accept="image/*">
+      output.innerHTML = `
+        <div class="card-body" style="text-align:center;">Piper está generando caption, hashtags y horario...</div>
+      `;
 
-<input id="titulo" placeholder="Título">
-<textarea id="texto" placeholder="Texto flyer"></textarea>
+      const prompt = `Sos Piper, el agente de contenido de una veterinaria en ${ciudad}, Argentina.
 
-<input id="instagram" value="@drabruzera">
-<input id="whatsapp" value="3435303848">
-<input id="web" value="www.bruzera.turnox.pro">
-<input id="ubicacion" value="Paraná">
+El veterinario filmó este video y te manda la descripción:
+"${desc}"
 
-</div>
+Tipo de contenido: ${selectedType}
+Tono de la clínica: ${selectedTone}
 
-<!-- 🔥 PIPER -->
-<div class="card form-card">
+Generá el siguiente contenido en JSON con exactamente estas claves:
+{
+  "caption": "El texto completo del post para Instagram. Máximo 300 caracteres. Incluí un call-to-action al final. Usá el tono indicado. En español rioplatense.",
+  "hashtags": "Entre 15 y 20 hashtags relevantes separados por espacios. Mezclar: temáticos de animales, locales de ${ciudad}, de veterinaria, de la mascota específica del video.",
+  "horario": "El mejor día y hora para publicar este tipo de contenido, con una explicación breve de por qué.",
+  "tip_extra": "Un tip corto (1 oración) que el veterinario podría agregar en el video como texto superpuesto o en la primera pantalla del reel para generar más engagement."
+}
 
-<h2>Piper IA</h2>
+Respondé SOLO con el JSON válido, sin texto extra, sin markdown, sin backticks.`;
 
-<textarea id="videoDesc" placeholder="Descripción del video"></textarea>
+      try {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            max_tokens: 1000,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: 'Debes responder únicamente con JSON válido.' },
+              { role: 'user', content: prompt }
+            ]
+          })
+        });
 
-<select id="tipo">
-  <option value="reel">Reel</option>
-  <option value="carrusel">Carrusel</option>
-  <option value="historia">Historia</option>
-  <option value="post">Post</option>
-</select>
+        const data = await res.json();
 
-<select id="tono">
-  <option value="cercano">Cercano</option>
-  <option value="educativo">Educativo</option>
-  <option value="divertido">Divertido</option>
-  <option value="profesional">Profesional</option>
-  <option value="emotivo">Emotivo</option>
-  <option value="urgente">Urgente</option>
-</select>
+        if (!res.ok) {
+          throw new Error(data?.error?.message || `Error ${res.status}`);
+        }
 
-<input id="ciudad" value="Paraná">
+        const raw = data?.choices?.[0]?.message?.content || '';
+        let result;
 
-<input id="apiKey" placeholder="sk-..." />
+        try {
+          result = JSON.parse(raw);
+        } catch (_) {
+          const clean = raw.replace(/```json|```/g, '').trim();
+          result = JSON.parse(clean);
+        }
 
-<button id="btnPiper">Generar texto con IA</button>
+        piperUltimoResultado = result;
 
-<div id="piperResult"></div>
+        output.innerHTML = `
+          <div class="result-card">
+            <div class="card-header">
+              <div class="card-tag"><span class="card-dot dot-green"></span>caption · ${selectedType}</div>
+              <button class="btn-copy" id="copyCaptionBtn">copiar</button>
+            </div>
+            <div class="card-body">${escapeHtml(result.caption || '')}</div>
+          </div>
 
-</div>
+          <div class="result-card">
+            <div class="card-header">
+              <div class="card-tag"><span class="card-dot dot-green"></span>hashtags</div>
+              <button class="btn-copy" id="copyHashtagsBtn">copiar</button>
+            </div>
+            <div class="card-body hashtags">${escapeHtml(result.hashtags || '')}</div>
+          </div>
 
-</div>
-</section>
+          <div class="result-card">
+            <div class="card-header">
+              <div class="card-tag"><span class="card-dot dot-amber"></span>horario óptimo</div>
+            </div>
+            <div class="card-body horario">${escapeHtml(result.horario || '')}</div>
+          </div>
 
-</div>
-</div>
+          <div class="result-card">
+            <div class="card-header">
+              <div class="card-tag"><span class="card-dot dot-green"></span>tip para el video</div>
+              <button class="btn-copy" id="copyTipBtn">copiar</button>
+            </div>
+            <div class="card-body">${escapeHtml(result.tip_extra || '')}</div>
+          </div>
+        `;
 
-<script src="./app1.js"></script>
-  <script src="./appia3.js"></script>
+        document.getElementById('copyCaptionBtn')?.addEventListener('click', function () {
+          copyText((result.caption || '') + '\n\n' + (result.hashtags || ''), this);
+        });
+
+        document.getElementById('copyHashtagsBtn')?.addEventListener('click', function () {
+          copyText(result.hashtags || '', this);
+        });
+
+        document.getElementById('copyTipBtn')?.addEventListener('click', function () {
+          copyText(result.tip_extra || '', this);
+        });
+
+        return result;
+      } catch (err) {
+        output.innerHTML = `
+          <div class="error-box">
+            <strong>Error:</strong> ${escapeHtml(err.message)}<br><br>
+            Verificá la API Key y que tenga créditos disponibles.
+          </div>
+        `;
+        return null;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnGenerar = document.getElementById('btnGenerar');
+
+      if (btnGenerar) {
+        btnGenerar.addEventListener('click', () => {
+          generarContenidoPiper();
+        });
+      }
+
+      const btnNuevo = document.getElementById('btnNuevo');
+      if (btnNuevo) {
+        btnNuevo.addEventListener('click', () => {
+          const output = document.getElementById('output');
+          piperUltimoResultado = null;
+          if (output) {
+            output.innerHTML = `<div class="card-body" style="text-align:center; opacity:.65;">El contenido IA aparecerá acá.</div>`;
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
