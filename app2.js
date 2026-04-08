@@ -54,7 +54,7 @@ init() {
   this.ensureUserId();
   this.initUserOnBackend();
   this.renderLocalHistory();
-  this.renderPreview();
+  this.loadDefaultAssets();
 },
 
   cacheElements() {
