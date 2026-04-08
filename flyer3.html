@@ -157,6 +157,7 @@
 
     .user-badge span { font-weight: 800; color: var(--text); }
 
+    /* LAYOUT PRINCIPAL */
     .layout {
       display: grid;
       grid-template-columns: 1fr 420px;
@@ -210,9 +211,218 @@
       cursor: grab;
     }
 
+    /* COLUMNA DERECHA */
     .right-col { display: flex; flex-direction: column; gap: 14px; }
     .stack { display: flex; flex-direction: column; gap: 14px; }
 
+    /* PANEL DE EDICIÓN (se oculta tras generar) */
+    #editPanel { display: flex; flex-direction: column; gap: 14px; }
+    #editPanel.u-hidden { display: none !important; }
+
+    /* PANEL DE RESULTADOS (oculto hasta generar) */
+    #resultPanel { display: flex; flex-direction: column; gap: 14px; }
+    #resultPanel.u-hidden { display: none !important; }
+
+    /* BOTONES RESULTADO TOP */
+    .result-actions-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-result {
+      height: var(--btn-h);
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: var(--btn-font);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      letter-spacing: .01em;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .btn-result:hover { transform: translateY(-1px); box-shadow: var(--shadow-soft); }
+
+    .btn-result.primary {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(196,38,133,.28);
+      border: none;
+    }
+
+    /* TARJETA CONTENIDO IA */
+    .ia-content-card {
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .ia-content-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ia-content-header h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+
+    .ia-content-header .badge-ia {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--pink);
+      background: var(--pink-soft);
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    /* BLOQUE CAPTION + HASHTAGS (para copiar juntos) */
+    .ia-copy-block {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .ia-copy-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .ia-copy-text {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 10px;
+    }
+
+    .ia-hashtags-text {
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--piper-teal);
+      font-family: 'DM Mono', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 12px;
+    }
+
+    .ia-tip-text {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-soft);
+      font-style: italic;
+      padding: 8px 12px;
+      background: var(--pink-soft);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--pink);
+      margin-bottom: 10px;
+    }
+
+    .btn-copy-all {
+      width: 100%;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: var(--glass);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: background .18s, transform .18s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      letter-spacing: .01em;
+    }
+
+    .btn-copy-all:hover { background: rgba(255,255,255,.92); transform: translateY(-1px); }
+    .btn-copy-all.copied { color: var(--piper-teal); }
+
+    /* BLOQUE HORARIO */
+    .ia-schedule-block {
+      padding: 14px 20px 16px;
+    }
+
+    .ia-schedule-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ia-schedule-label::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--piper-amber);
+      flex-shrink: 0;
+    }
+
+    .ia-schedule-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--piper-amber);
+      font-family: 'DM Mono', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ESTADO LOADING DEL PANEL */
+    .ia-loading {
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ia-loading-spinner {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(196,38,133,.2);
+      border-top-color: var(--pink);
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ia-loading p {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-soft);
+    }
+
+    /* FORMULARIO (panel edición) */
     .preview-actions-top {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -252,7 +462,6 @@
       -webkit-backdrop-filter: blur(12px);
     }
 
-    .actions-main { display: flex; }
     .btn-ia {
       width: 100%;
       height: var(--btn-h-main);
@@ -271,42 +480,8 @@
       overflow: hidden;
     }
 
-    .btn-ia:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 36px rgba(196,38,133,.40);
-    }
-
+    .btn-ia:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(196,38,133,.40); }
     .btn-ia:disabled { opacity: .7; cursor: wait; }
-
-    .loader {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 14px 18px;
-      border-radius: var(--radius-md);
-      background: var(--glass);
-      border: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-soft);
-    }
-
-    .loader::before {
-      content: "";
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 2px solid rgba(196,38,133,.22);
-      border-top-color: var(--pink);
-      animation: spin .7s linear infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loader.hidden { display: none; }
 
     .form-card {
       padding: 20px;
@@ -315,12 +490,7 @@
       gap: 16px;
     }
 
-    .section-head {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
+    .section-head { display: flex; flex-direction: column; gap: 3px; }
     .section-head h2 {
       font-family: 'Syne', sans-serif;
       font-size: 16px;
@@ -328,12 +498,7 @@
       color: var(--text);
       letter-spacing: -.02em;
     }
-
-    .section-head p {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-soft);
-    }
+    .section-head p { font-size: 12px; font-weight: 500; color: var(--text-soft); }
 
     .details-card {
       border-radius: var(--radius-md);
@@ -365,6 +530,7 @@
     }
 
     .details-card[open] summary::after { transform: rotate(90deg); }
+
     .details-body {
       padding: 14px 16px 16px;
       display: flex;
@@ -401,31 +567,7 @@
     .field textarea { min-height: 90px; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    .actions-result {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      width: 100%;
-    }
-
-    .btn {
-      height: var(--btn-h);
-      border-radius: var(--radius-md);
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: var(--btn-font);
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease;
-      letter-spacing: .01em;
-      background: var(--glass);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .btn.hidden, .hidden { display: none !important; }
-
-    /* Piper integrado */
+    /* PIPER PANEL (panel edición) */
     .piper-card {
       border-radius: var(--radius-xl);
       overflow: hidden;
@@ -506,11 +648,7 @@
       outline: none;
     }
 
-    .piper-textarea {
-      min-height: 110px;
-      resize: vertical;
-      line-height: 1.6;
-    }
+    .piper-textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
 
     .chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip {
@@ -526,11 +664,7 @@
       user-select: none;
     }
 
-    .chip.active {
-      background: var(--piper-ink);
-      color: var(--piper-cream);
-      border-color: var(--piper-ink);
-    }
+    .chip.active { background: var(--piper-ink); color: var(--piper-cream); border-color: var(--piper-ink); }
 
     .tone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .tone-btn {
@@ -546,85 +680,8 @@
       font-family: 'Instrument Sans', sans-serif;
     }
 
-    .tone-btn.active {
-      background: var(--piper-teal);
-      color: white;
-      border-color: var(--piper-teal);
-    }
-
+    .tone-btn.active { background: var(--piper-teal); color: white; border-color: var(--piper-teal); }
     .tone-emoji { display: block; font-size: 18px; margin-bottom: 2px; }
-
-    .piper-result {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .result-card {
-      background: white;
-      border: 1px solid var(--piper-border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .card-header {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--piper-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: var(--piper-cream-dark);
-    }
-
-    .card-tag {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--piper-ink-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .card-dot { width: 6px; height: 6px; border-radius: 50%; }
-    .dot-green { background: var(--piper-teal-mid); }
-    .dot-amber { background: var(--piper-amber); }
-
-    .btn-copy {
-      font-size: 11px;
-      font-family: 'DM Mono', monospace;
-      background: none;
-      border: 1px solid var(--piper-border-strong);
-      border-radius: 5px;
-      padding: 3px 8px;
-      color: var(--piper-ink-muted);
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .card-body {
-      padding: 1rem;
-      font-size: 14px;
-      line-height: 1.7;
-      color: var(--piper-ink-soft);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .card-body.hashtags {
-      color: var(--piper-teal);
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      line-height: 1.8;
-    }
-
-    .card-body.horario {
-      color: var(--piper-amber);
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-    }
 
     .error-box {
       background: var(--piper-red-light);
@@ -643,8 +700,7 @@
       .preview-actions-top .quick-action:last-child { grid-column: 1 / -1; }
       .two { grid-template-columns: 1fr; }
       .tone-grid { grid-template-columns: repeat(2, 1fr); }
-      .actions-result { grid-template-columns: 1fr 1fr; }
-      .actions-result .btn:first-child { grid-column: 1 / -1; }
+      .result-actions-top .btn-result:last-child { grid-column: 1 / -1; }
     }
   </style>
 </head>
@@ -663,6 +719,8 @@
       </header>
 
       <section class="layout">
+
+        <!-- COLUMNA IZQUIERDA: flyer canvas siempre visible -->
         <div class="card preview-card">
           <div class="preview-stage-wrap">
             <div class="preview-stage">
@@ -671,166 +729,185 @@
           </div>
         </div>
 
-        <div class="stack right-col">
-          <div class="preview-actions-top">
-            <label for="mainImageGallery" class="quick-action">Elegir foto</label>
-            <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
-            <label for="logoImage" class="quick-action secondary">Subir logo</label>
-          </div>
+        <!-- COLUMNA DERECHA -->
+        <div class="right-col">
 
-          <div class="actions-main" id="actionsMain">
+          <!-- ═══ PANEL EDICIÓN ═══ -->
+          <div id="editPanel">
+            <div class="preview-actions-top">
+              <label for="mainImageGallery" class="quick-action">Elegir foto</label>
+              <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
+              <label for="logoImage" class="quick-action secondary">Subir logo</label>
+            </div>
+
             <button class="btn-ia" id="btnGenerar" type="button">✦ Generar flyer + contenido IA</button>
-          </div>
 
-          <div class="actions-result u-hidden" id="resultActions">
-            <button class="btn" id="btnNuevo" type="button">Nuevo</button>
-            <button class="btn" id="btnDescargar" type="button">Descargar</button>
-            <button class="btn" id="btnCompartir" type="button">Compartir</button>
-          </div>
+            <div class="card form-card">
+              <div class="section-head">
+                <h2>Datos del flyer</h2>
+                <p>Imagen, logo, título y contacto</p>
+              </div>
 
-          <div class="loader hidden" id="loader">
-            <span id="loaderText">Procesando...</span>
-          </div>
+              <input type="file" id="mainImageGallery" accept="image/*" hidden>
+              <input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
+              <input type="file" id="logoImage" accept="image/*" hidden>
 
-          <div class="card form-card">
-            <div class="section-head">
-              <h2>Datos del flyer</h2>
-              <p>Imagen, logo, título y contacto</p>
+              <details class="details-card" open>
+                <summary>Título · Descripción · Contacto</summary>
+                <div class="details-body">
+                  <div class="field">
+                    <label for="titulo">Título</label>
+                    <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
+                  </div>
+                  <div class="field">
+                    <label for="texto">Texto flyer</label>
+                    <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+                  </div>
+                  <div class="two">
+                    <div class="field">
+                      <label for="instagram">Instagram</label>
+                      <input type="text" id="instagram" value="@drabruzera">
+                    </div>
+                    <div class="field">
+                      <label for="whatsapp">WhatsApp</label>
+                      <input type="tel" id="whatsapp" value="3435303848">
+                    </div>
+                  </div>
+                  <div class="two">
+                    <div class="field">
+                      <label for="web">Web</label>
+                      <input type="text" id="web" value="www.bruzera.turnox.pro">
+                    </div>
+                    <div class="field">
+                      <label for="ubicacion">Ubicación</label>
+                      <input type="text" id="ubicacion" value="José Venturino 1239">
+                    </div>
+                  </div>
+                </div>
+              </details>
             </div>
 
-            <input type="file" id="mainImageGallery" accept="image/*" hidden>
-            <input type="file" id="mainImageCamera" accept="image/*" capture="environment" hidden>
-            <input type="file" id="logoImage" accept="image/*" hidden>
+            <!-- PIPER (configuración) -->
+            <div class="piper-card">
+              <div class="piper-header">
+                <div class="piper-title-wrap">
+                  <div class="piper-title">Piper</div>
+                  <div class="piper-sub">agente · veterinaria demo</div>
+                </div>
+                <span class="openai-badge">⬡ OpenAI</span>
+              </div>
 
-            <details class="details-card" open>
-              <summary>Título · Descripción · Contacto</summary>
-              <div class="details-body">
+              <div class="piper-body">
                 <div class="field">
-                  <label for="titulo">Título</label>
-                  <input type="text" id="titulo" placeholder="Ej: Atención veterinaria con amor">
+                  <label class="piper-label" for="apiKey">API key de OpenAI</label>
+                  <input class="piper-api-input" type="password" id="apiKey" placeholder="sk-...">
                 </div>
 
                 <div class="field">
-                  <label for="texto">Texto flyer</label>
-                  <textarea id="texto" placeholder="Escribí un mensaje corto para el flyer..."></textarea>
+                  <label class="piper-label" for="videoDesc">Descripción del contenido</label>
+                  <textarea class="piper-textarea" id="videoDesc" placeholder="Ej: Foto de Toto, un golden retriever de 3 años, después de su vacuna antirrábica. Está tranquilo y contento con su dueña."></textarea>
                 </div>
 
-                <div class="two">
-                  <div class="field">
-                    <label for="instagram">Instagram</label>
-                    <input type="text" id="instagram" value="@drabruzera">
-                  </div>
-                  <div class="field">
-                    <label for="whatsapp">WhatsApp</label>
-                    <input type="tel" id="whatsapp" value="3435303848">
-                  </div>
-                </div>
-
-                <div class="two">
-                  <div class="field">
-                    <label for="web">Web</label>
-                    <input type="text" id="web" value="www.bruzera.turnox.pro">
-                  </div>
-                  <div class="field">
-                    <label for="ubicacion">Ubicación</label>
-                    <input type="text" id="ubicacion" value="José Venturino 1239">
+                <div class="field">
+                  <div class="piper-label">Tipo de contenido</div>
+                  <div class="chips-row">
+                    <div class="chip active" data-type="reel">Reel / TikTok</div>
+                    <div class="chip" data-type="carrusel">Carrusel</div>
+                    <div class="chip" data-type="historia">Historia</div>
+                    <div class="chip" data-type="post">Post estático</div>
                   </div>
                 </div>
-              </div>
-            </details>
-          </div>
 
-          <div class="piper-card">
-            <div class="piper-header">
-              <div class="piper-title-wrap">
-                <div class="piper-title">Piper</div>
-                <div class="piper-sub">agente · veterinaria demo</div>
-              </div>
-              <span class="openai-badge">⬡ OpenAI</span>
-            </div>
-
-            <div class="piper-body">
-              <div class="field">
-                <label class="piper-label" for="apiKey">API key de OpenAI</label>
-                <input class="piper-api-input" type="password" id="apiKey" placeholder="sk-...">
-              </div>
-
-              <div class="field">
-                <label class="piper-label" for="videoDesc">Descripción del video</label>
-                <textarea class="piper-textarea" id="videoDesc" placeholder="Ej: Filmé a Toto, un golden retriever de 3 años, mientras le aplicamos su vacuna antirrábica anual. Está tranquilo, moviendo la cola. Al final le doy una golosina y sale caminando contento con su dueña."></textarea>
-              </div>
-
-              <div class="field">
-                <div class="piper-label">Tipo de contenido</div>
-                <div class="chips-row">
-                  <div class="chip active" data-type="reel">Reel / TikTok</div>
-                  <div class="chip" data-type="carrusel">Carrusel</div>
-                  <div class="chip" data-type="historia">Historia</div>
-                  <div class="chip" data-type="post">Post estático</div>
+                <div class="field">
+                  <div class="piper-label">Tono de la clínica</div>
+                  <div class="tone-grid">
+                    <button class="tone-btn active" type="button" data-tone="cercano"><span class="tone-emoji">🤝</span>Cercano</button>
+                    <button class="tone-btn" type="button" data-tone="educativo"><span class="tone-emoji">🎓</span>Educativo</button>
+                    <button class="tone-btn" type="button" data-tone="divertido"><span class="tone-emoji">😄</span>Divertido</button>
+                    <button class="tone-btn" type="button" data-tone="profesional"><span class="tone-emoji">🏥</span>Profesional</button>
+                    <button class="tone-btn" type="button" data-tone="emotivo"><span class="tone-emoji">❤️</span>Emotivo</button>
+                    <button class="tone-btn" type="button" data-tone="urgente"><span class="tone-emoji">⚡</span>Urgente</button>
+                  </div>
                 </div>
-              </div>
 
-              <div class="field">
-                <div class="piper-label">Tono de la clínica</div>
-                <div class="tone-grid">
-                  <button class="tone-btn active" type="button" data-tone="cercano"><span class="tone-emoji">🤝</span>Cercano</button>
-                  <button class="tone-btn" type="button" data-tone="educativo"><span class="tone-emoji">🎓</span>Educativo</button>
-                  <button class="tone-btn" type="button" data-tone="divertido"><span class="tone-emoji">😄</span>Divertido</button>
-                  <button class="tone-btn" type="button" data-tone="profesional"><span class="tone-emoji">🏥</span>Profesional</button>
-                  <button class="tone-btn" type="button" data-tone="emotivo"><span class="tone-emoji">❤️</span>Emotivo</button>
-                  <button class="tone-btn" type="button" data-tone="urgente"><span class="tone-emoji">⚡</span>Urgente</button>
+                <div class="field">
+                  <label class="piper-label" for="ciudad">Ciudad / zona</label>
+                  <input class="piper-input" type="text" id="ciudad" value="Paraná">
                 </div>
-              </div>
-
-              <div class="field">
-                <label class="piper-label" for="ciudad">Ciudad / zona</label>
-                <input class="piper-input" type="text" id="ciudad" value="Paraná">
-              </div>
-
-              <div class="piper-result" id="output">
-                <div class="card-body" style="text-align:center; opacity:.65;">El contenido IA aparecerá acá.</div>
               </div>
             </div>
           </div>
+          <!-- fin editPanel -->
 
+          <!-- ═══ PANEL RESULTADOS (oculto hasta generar) ═══ -->
+          <div id="resultPanel" class="u-hidden">
+
+            <!-- 3 botones acción -->
+            <div class="result-actions-top">
+              <button class="btn-result" id="btnNuevo" type="button">← Nuevo</button>
+              <button class="btn-result primary" id="btnDescargar" type="button">Descargar</button>
+              <button class="btn-result" id="btnCompartir" type="button">Compartir</button>
+            </div>
+
+            <!-- Tarjeta contenido IA -->
+            <div class="ia-content-card" id="iaContentCard">
+              <!-- Estado: cargando -->
+              <div id="iaLoading" class="ia-loading">
+                <div class="ia-loading-spinner"></div>
+                <p>Piper está generando el contenido...</p>
+              </div>
+
+              <!-- Estado: contenido listo (oculto hasta que llega la respuesta) -->
+              <div id="iaReady" class="u-hidden">
+                <div class="ia-content-header">
+                  <h3>Contenido generado por IA</h3>
+                  <span class="badge-ia">Piper</span>
+                </div>
+
+                <!-- Bloque caption + hashtags + tip (todo junto para copiar) -->
+                <div class="ia-copy-block">
+                  <div class="ia-copy-label">Caption + hashtags + tip</div>
+                  <div class="ia-copy-text" id="outCaption"></div>
+                  <div class="ia-hashtags-text" id="outHashtags"></div>
+                  <div class="ia-tip-text" id="outTip"></div>
+                  <button class="btn-copy-all" id="btnCopyAll" type="button">Copiar todo</button>
+                </div>
+
+                <!-- Bloque horario -->
+                <div class="ia-schedule-block">
+                  <div class="ia-schedule-label">Horario sugerido</div>
+                  <div class="ia-schedule-text" id="outHorario"></div>
+                </div>
+              </div>
+
+              <!-- Estado: error -->
+              <div id="iaError" class="u-hidden" style="padding: 16px;">
+                <div class="error-box" id="iaErrorMsg"></div>
+              </div>
+            </div>
+
+          </div>
+          <!-- fin resultPanel -->
+
+          <!-- Campos ocultos requeridos por app1.js -->
           <div class="u-hidden">
-            <img id="previewMain" alt="Preview imagen principal">
-            <img id="previewLogo" alt="Preview logo">
+            <img id="previewMain" alt="">
+            <img id="previewLogo" alt="">
             <div id="resultSection"></div>
-            <img id="resultImage" alt="Resultado">
+            <img id="resultImage" alt="">
             <div id="historyList"></div>
           </div>
+
         </div>
+        <!-- fin right-col -->
       </section>
     </div>
   </div>
 
   <script src="./app1.js?v=merge1"></script>
-<script>
-  (function () {
-    const btnGenerar = document.getElementById('btnGenerar');
-    const actionsMain = document.getElementById('actionsMain');
-    const resultActions = document.getElementById('resultActions');
-    const btnNuevo = document.getElementById('btnNuevo');
 
-    if (!btnGenerar || !actionsMain || !resultActions) return;
-
-    btnGenerar.addEventListener('click', () => {
-      setTimeout(() => {
-        actionsMain.classList.add('u-hidden');
-        resultActions.classList.remove('u-hidden');
-      }, 2500);
-    });
-
-    if (btnNuevo) {
-      btnNuevo.addEventListener('click', () => {
-        actionsMain.classList.remove('u-hidden');
-        resultActions.classList.add('u-hidden');
-      });
-    }
-  })();
-</script>
   <script>
+    // ── Selección de chips y tonos ──────────────────────────────
     let selectedType = 'reel';
     let selectedTone = 'cercano';
     let piperUltimoResultado = null;
@@ -851,23 +928,9 @@
       });
     });
 
-    function copyText(text, btn) {
-      navigator.clipboard.writeText(text).then(() => {
-        if (!btn) return;
-        const original = btn.textContent;
-        btn.textContent = '✓ copiado';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = original;
-          btn.classList.remove('copied');
-        }, 1800);
-      }).catch(() => {
-        alert('No se pudo copiar');
-      });
-    }
-
+    // ── Helpers ─────────────────────────────────────────────────
     function escapeHtml(str) {
-      return String(str)
+      return String(str || '')
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
@@ -875,37 +938,38 @@
         .replaceAll("'", '&#039;');
     }
 
+    function mostrarResultPanel() {
+      document.getElementById('editPanel').classList.add('u-hidden');
+      document.getElementById('resultPanel').classList.remove('u-hidden');
+      document.getElementById('iaLoading').style.display = 'flex';
+      document.getElementById('iaReady').classList.add('u-hidden');
+      document.getElementById('iaError').classList.add('u-hidden');
+    }
+
+    function volverAEditar() {
+      document.getElementById('editPanel').classList.remove('u-hidden');
+      document.getElementById('resultPanel').classList.add('u-hidden');
+      piperUltimoResultado = null;
+    }
+
+    // ── Llamada a OpenAI ─────────────────────────────────────────
     async function generarContenidoPiper() {
       const apiKey = document.getElementById('apiKey').value.trim();
       const desc = document.getElementById('videoDesc').value.trim();
       const ciudad = document.getElementById('ciudad').value.trim() || 'Argentina';
-      const output = document.getElementById('output');
 
       if (!apiKey) {
-        output.innerHTML = `
-          <div class="error-box">
-            Falta la API Key de OpenAI.
-          </div>
-        `;
-        return null;
+        mostrarError('Falta la API Key de OpenAI.');
+        return;
       }
-
       if (!desc) {
-        output.innerHTML = `
-          <div class="error-box">
-            Falta la descripción del video.
-          </div>
-        `;
-        return null;
+        mostrarError('Falta la descripción del contenido.');
+        return;
       }
-
-      output.innerHTML = `
-        <div class="card-body" style="text-align:center;">Piper está generando caption, hashtags y horario...</div>
-      `;
 
       const prompt = `Sos Piper, el agente de contenido de una veterinaria en ${ciudad}, Argentina.
 
-El veterinario filmó este video y te manda la descripción:
+El veterinario compartió este contenido y te manda la descripción:
 "${desc}"
 
 Tipo de contenido: ${selectedType}
@@ -914,9 +978,9 @@ Tono de la clínica: ${selectedTone}
 Generá el siguiente contenido en JSON con exactamente estas claves:
 {
   "caption": "El texto completo del post para Instagram. Máximo 300 caracteres. Incluí un call-to-action al final. Usá el tono indicado. En español rioplatense.",
-  "hashtags": "Entre 15 y 20 hashtags relevantes separados por espacios. Mezclar: temáticos de animales, locales de ${ciudad}, de veterinaria, de la mascota específica del video.",
+  "hashtags": "Entre 15 y 20 hashtags relevantes separados por espacios. Mezclar: temáticos de animales, locales de ${ciudad}, de veterinaria, de la mascota específica del contenido.",
   "horario": "El mejor día y hora para publicar este tipo de contenido, con una explicación breve de por qué.",
-  "tip_extra": "Un tip corto (1 oración) que el veterinario podría agregar en el video como texto superpuesto o en la primera pantalla del reel para generar más engagement."
+  "tip_extra": "Un tip corto (1 oración) que podría agregar como texto superpuesto o en la primera pantalla para generar más engagement."
 }
 
 Respondé SOLO con el JSON válido, sin texto extra, sin markdown, sin backticks.`;
@@ -941,98 +1005,78 @@ Respondé SOLO con el JSON válido, sin texto extra, sin markdown, sin backticks
 
         const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data?.error?.message || `Error ${res.status}`);
-        }
+        if (!res.ok) throw new Error(data?.error?.message || `Error ${res.status}`);
 
         const raw = data?.choices?.[0]?.message?.content || '';
         let result;
-
-        try {
-          result = JSON.parse(raw);
-        } catch (_) {
-          const clean = raw.replace(/```json|```/g, '').trim();
-          result = JSON.parse(clean);
-        }
+        try { result = JSON.parse(raw); }
+        catch (_) { result = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
 
         piperUltimoResultado = result;
+        mostrarResultados(result);
 
-        output.innerHTML = `
-          <div class="result-card">
-            <div class="card-header">
-              <div class="card-tag"><span class="card-dot dot-green"></span>caption · ${selectedType}</div>
-              <button class="btn-copy" id="copyCaptionBtn">copiar</button>
-            </div>
-            <div class="card-body">${escapeHtml(result.caption || '')}</div>
-          </div>
-
-          <div class="result-card">
-            <div class="card-header">
-              <div class="card-tag"><span class="card-dot dot-green"></span>hashtags</div>
-              <button class="btn-copy" id="copyHashtagsBtn">copiar</button>
-            </div>
-            <div class="card-body hashtags">${escapeHtml(result.hashtags || '')}</div>
-          </div>
-
-          <div class="result-card">
-            <div class="card-header">
-              <div class="card-tag"><span class="card-dot dot-amber"></span>horario óptimo</div>
-            </div>
-            <div class="card-body horario">${escapeHtml(result.horario || '')}</div>
-          </div>
-
-          <div class="result-card">
-            <div class="card-header">
-              <div class="card-tag"><span class="card-dot dot-green"></span>tip para el video</div>
-              <button class="btn-copy" id="copyTipBtn">copiar</button>
-            </div>
-            <div class="card-body">${escapeHtml(result.tip_extra || '')}</div>
-          </div>
-        `;
-
-        document.getElementById('copyCaptionBtn')?.addEventListener('click', function () {
-          copyText((result.caption || '') + '\n\n' + (result.hashtags || ''), this);
-        });
-
-        document.getElementById('copyHashtagsBtn')?.addEventListener('click', function () {
-          copyText(result.hashtags || '', this);
-        });
-
-        document.getElementById('copyTipBtn')?.addEventListener('click', function () {
-          copyText(result.tip_extra || '', this);
-        });
-
-        return result;
       } catch (err) {
-        output.innerHTML = `
-          <div class="error-box">
-            <strong>Error:</strong> ${escapeHtml(err.message)}<br><br>
-            Verificá la API Key y que tenga créditos disponibles.
-          </div>
-        `;
-        return null;
+        mostrarError(err.message);
       }
     }
 
+    function mostrarResultados(r) {
+      document.getElementById('iaLoading').style.display = 'none';
+      document.getElementById('iaReady').classList.remove('u-hidden');
+
+      document.getElementById('outCaption').textContent = r.caption || '';
+      document.getElementById('outHashtags').textContent = r.hashtags || '';
+      document.getElementById('outTip').textContent = r.tip_extra ? '💡 ' + r.tip_extra : '';
+      document.getElementById('outHorario').textContent = r.horario || '';
+    }
+
+    function mostrarError(msg) {
+      document.getElementById('iaLoading').style.display = 'none';
+      document.getElementById('iaError').classList.remove('u-hidden');
+      document.getElementById('iaErrorMsg').innerHTML =
+        '<strong>Error:</strong> ' + escapeHtml(msg) + '<br><br>Verificá la API Key y que tenga créditos disponibles.';
+    }
+
+    // ── Copiar todo ──────────────────────────────────────────────
+    function copiarTodo() {
+      if (!piperUltimoResultado) return;
+      const r = piperUltimoResultado;
+      const texto = [r.caption, '', r.hashtags, '', '💡 ' + r.tip_extra].filter(Boolean).join('\n');
+      navigator.clipboard.writeText(texto).then(() => {
+        const btn = document.getElementById('btnCopyAll');
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copiar todo';
+          btn.classList.remove('copied');
+        }, 1800);
+      }).catch(() => alert('No se pudo copiar'));
+    }
+
+    // ── Init ─────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
       const btnGenerar = document.getElementById('btnGenerar');
-
-      if (btnGenerar) {
-        btnGenerar.addEventListener('click', () => {
-          generarContenidoPiper();
-        });
-      }
-
       const btnNuevo = document.getElementById('btnNuevo');
-      if (btnNuevo) {
-        btnNuevo.addEventListener('click', () => {
-          const output = document.getElementById('output');
-          piperUltimoResultado = null;
-          if (output) {
-            output.innerHTML = `<div class="card-body" style="text-align:center; opacity:.65;">El contenido IA aparecerá acá.</div>`;
-          }
-        });
-      }
+      const btnCopyAll = document.getElementById('btnCopyAll');
+      const btnDescargar = document.getElementById('btnDescargar');
+      const btnCompartir = document.getElementById('btnCompartir');
+
+      btnGenerar?.addEventListener('click', () => {
+        mostrarResultPanel();
+        generarContenidoPiper();
+      });
+
+      btnNuevo?.addEventListener('click', volverAEditar);
+
+      btnCopyAll?.addEventListener('click', copiarTodo);
+
+      // Descargar y Compartir: delegado a app1.js vía eventos personalizados
+      btnDescargar?.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('piper:descargar'));
+      });
+      btnCompartir?.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('piper:compartir'));
+      });
     });
   </script>
 </body>
