@@ -808,20 +808,12 @@ drawLogo(ctx, img, width, panelY) {
 
     const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
 
-    console.log('mainFile:', mainFile);
-    console.log('mainFile.size:', mainFile.size);
-    console.log('mainFile.type:', mainFile.type);
+     this.setLoading(true, 'Subiendo imagen...');
 
-    this.setLoading(true, 'Subiendo imagen...');
+     const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
 
-    const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
-
-    console.log('uploadRes:', uploadRes);
-    console.log('public_id real:', uploadRes.public_id);
-    console.log('secure_url real:', uploadRes.secure_url);
-
-    const originalUrl = uploadRes.secure_url;
-    let aiUrl = originalUrl;
+     const originalUrl = uploadRes.secure_url;
+     let aiUrl = originalUrl;
 
     if (CONFIG.USE_CLOUDINARY_AI) {
       this.setLoading(true, 'Aplicando optimización Cloudinary...');
