@@ -46,16 +46,16 @@ const App = {
   ctx: null,
   layout: null,
 
-  init() {
-    this.cacheElements();
-    this.ensureCanvas();
-    this.bindEvents();
-    this.bindCanvasInteractions();
-    this.ensureUserId();
-    this.initUserOnBackend();
-    this.renderLocalHistory();
-    this.renderPreview();
-  },
+init() {
+  this.cacheElements();
+  this.ensureCanvas();
+  this.bindEvents();
+  this.bindCanvasInteractions();
+  this.ensureUserId();
+  this.initUserOnBackend();
+  this.renderLocalHistory();
+  this.renderPreview();
+},
 
   cacheElements() {
     this.elements = {
@@ -117,7 +117,32 @@ const App = {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
   },
+async loadDefaultAssets() {
+  const e = this.elements;
 
+  try {
+    if (CONFIG.DEFAULT_MAIN_IMAGE) {
+      this.state.mainImageData = CONFIG.DEFAULT_MAIN_IMAGE;
+      if (e.previewMain) e.previewMain.src = CONFIG.DEFAULT_MAIN_IMAGE;
+
+      const mainImg = await this.loadImage(CONFIG.DEFAULT_MAIN_IMAGE);
+      this.state.editor.img = mainImg;
+      this.resetImageTransform();
+    }
+
+    if (CONFIG.DEFAULT_LOGO_IMAGE) {
+      this.state.logoImageData = CONFIG.DEFAULT_LOGO_IMAGE;
+      if (e.previewLogo) e.previewLogo.src = CONFIG.DEFAULT_LOGO_IMAGE;
+
+      const logoImg = await this.loadImage(CONFIG.DEFAULT_LOGO_IMAGE);
+      this.state.editor.logoImg = logoImg;
+    }
+
+    this.renderPreview();
+  } catch (err) {
+    console.error('Error cargando imagen/logo por defecto:', err);
+  }
+},
  bindEvents() {
   const e = this.elements;
 
