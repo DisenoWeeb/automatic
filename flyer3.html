@@ -1,0 +1,129 @@
+<!-- PEGALO COMPLETO REEMPLAZANDO TU HTML -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dra Bruzera - Editor</title>
+
+<link rel="stylesheet" href="./style.css">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="wrap">
+<div class="app-shell">
+
+<header class="app-header">
+  <div class="app-header-left">
+    <div class="brand-text">
+      <div class="brand-name">Dra Bruzera</div>
+      <div class="brand-tag">Editor IA</div>
+    </div>
+
+    <div class="user-badge">
+      Usuario: <span id="userIdBox">---</span>
+    </div>
+  </div>
+</header>
+
+<section class="layout">
+
+<!-- PREVIEW -->
+<div class="card preview-card">
+  <div class="preview-stage-wrap">
+    <div class="preview-stage">
+      <canvas id="flyerCanvas" width="1080" height="1350"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="stack right-col">
+
+<!-- subir -->
+<div class="preview-actions-top">
+  <label for="mainImageGallery" class="quick-action">Elegir foto</label>
+  <label for="mainImageCamera" class="quick-action secondary">Sacar foto</label>
+  <label for="logoImage" class="quick-action secondary">Subir logo</label>
+</div>
+
+<!-- IA -->
+<div class="actions-main" id="actionsMain">
+  <button id="btnGenerar" class="btn-ia">✦ Aplicar IA</button>
+</div>
+
+<!-- RESULT -->
+<div class="actions-result hidden" id="resultActions">
+  <button id="btnNuevo" class="btn">Nuevo</button>
+  <button id="btnDescargar" class="btn">Descargar</button>
+  <button id="btnCompartir" class="btn">Compartir</button>
+</div>
+
+<div id="loader" class="loader hidden">Procesando...</div>
+
+<!-- FORM -->
+<div class="card form-card">
+
+<h2>Datos del flyer</h2>
+
+<input type="file" id="mainImageGallery" hidden accept="image/*">
+<input type="file" id="mainImageCamera" hidden accept="image/*" capture="environment">
+<input type="file" id="logoImage" hidden accept="image/*">
+
+<input id="titulo" placeholder="Título">
+<textarea id="texto" placeholder="Texto flyer"></textarea>
+
+<input id="instagram" value="@drabruzera">
+<input id="whatsapp" value="3435303848">
+<input id="web" value="www.bruzera.turnox.pro">
+<input id="ubicacion" value="Paraná">
+
+</div>
+
+<!-- 🔥 PIPER -->
+<div class="card form-card">
+
+<h2>Piper IA</h2>
+
+<textarea id="videoDesc" placeholder="Descripción del video"></textarea>
+
+<select id="tipo">
+  <option value="reel">Reel</option>
+  <option value="carrusel">Carrusel</option>
+  <option value="historia">Historia</option>
+  <option value="post">Post</option>
+</select>
+
+<select id="tono">
+  <option value="cercano">Cercano</option>
+  <option value="educativo">Educativo</option>
+  <option value="divertido">Divertido</option>
+  <option value="profesional">Profesional</option>
+  <option value="emotivo">Emotivo</option>
+  <option value="urgente">Urgente</option>
+</select>
+
+<input id="ciudad" value="Paraná">
+
+<input id="apiKey" placeholder="sk-..." />
+
+<button id="btnPiper">Generar texto con IA</button>
+
+<div id="piperResult"></div>
+
+</div>
+
+</div>
+</section>
+
+</div>
+</div>
+
+<script src="./app1.js"></script>
+  <script src="./appia3.js"></script>
+</body>
+</html>
