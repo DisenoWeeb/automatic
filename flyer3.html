@@ -3,70 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dra. Bruzera - Editor IA</title>
+  <title>Dra. Bruzera - Editor</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./style.css">
 
   <style>
-    :root {
-      --pink: #C42685;
-      --violet: #362A6F;
-      --pink-soft: rgba(196, 38, 133, .13);
-      --violet-soft: rgba(54, 42, 111, .13);
-      --text: #2f245d;
-      --text-soft: #6c6493;
-      --glass: rgba(255,255,255,.72);
-      --glass-strong: rgba(255,255,255,.88);
-      --border: rgba(255,255,255,.38);
-      --border-soft: rgba(54, 42, 111, .10);
-      --shadow-soft: 0 8px 20px rgba(54, 42, 111, .12);
-      --radius-xl: 28px;
-      --radius-lg: 22px;
-      --radius-md: 18px;
-      --btn-h: 42px;
-      --btn-h-main: 48px;
-      --btn-font: 13px;
-
-      --flyer-bg-1: #f9dbe8;
-      --flyer-bg-2: #f2cae0;
-      --flyer-bg-3: #e4c8ea;
-      --flyer-bg-4: #d6c6f2;
-      --flyer-title: #ffffff;
-      --flyer-panel-1: #c42685;
-      --flyer-panel-2: #362a6f;
-      --flyer-body-text: #4d3469;
-      --flyer-contact-text: #ffffff;
-      --flyer-frame: rgba(255,255,255,.92);
-      --flyer-frame-soft: rgba(255,255,255,.38);
-      --flyer-placeholder-fill: rgba(255,255,255,.40);
-      --flyer-placeholder-text: rgba(47,36,93,.72);
-      --flyer-panel-glow: rgba(255,255,255,.12);
-      --flyer-bubble: rgba(255,255,255,.10);
-      --flyer-line-1: rgba(255,255,255,.08);
-      --flyer-line-2: rgba(255,255,255,.04);
-      --flyer-top-1: #c42685;
-      --flyer-top-2: #8c3d9f;
-      --flyer-top-3: #362a6f;
-
-      --piper-cream: #F5F0E8;
-      --piper-cream-dark: #EDE7D9;
-      --piper-ink: #1A1612;
-      --piper-ink-soft: #4A4540;
-      --piper-ink-muted: #8A847E;
-      --piper-teal: #1D6B5A;
-      --piper-teal-mid: #2D9B7E;
-      --piper-amber: #C8721A;
-      --piper-red: #B83232;
-      --piper-red-light: #FDEAEA;
-      --piper-border: rgba(26,22,18,0.12);
-      --piper-border-strong: rgba(26,22,18,0.25);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       font-family: 'DM Sans', 'Montserrat', sans-serif;
@@ -131,7 +77,7 @@
 
     .brand-tag {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-soft);
       letter-spacing: .06em;
       text-transform: uppercase;
@@ -157,7 +103,6 @@
 
     .user-badge span { font-weight: 800; color: var(--text); }
 
-    /* LAYOUT PRINCIPAL */
     .layout {
       display: grid;
       grid-template-columns: 1fr 420px;
@@ -195,6 +140,7 @@
     }
 
     .preview-stage-wrap { padding: 16px; }
+
     .preview-stage {
       width: 100%;
       border-radius: var(--radius-lg);
@@ -211,19 +157,15 @@
       cursor: grab;
     }
 
-    /* COLUMNA DERECHA */
     .right-col { display: flex; flex-direction: column; gap: 14px; }
     .stack { display: flex; flex-direction: column; gap: 14px; }
 
-    /* PANEL DE EDICIÓN (se oculta tras generar) */
     #editPanel { display: flex; flex-direction: column; gap: 14px; }
     #editPanel.u-hidden { display: none !important; }
 
-    /* PANEL DE RESULTADOS (oculto hasta generar) */
     #resultPanel { display: flex; flex-direction: column; gap: 14px; }
     #resultPanel.u-hidden { display: none !important; }
 
-    /* BOTONES RESULTADO TOP */
     .result-actions-top {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -256,7 +198,6 @@
       border: none;
     }
 
-    /* TARJETA CONTENIDO IA */
     .ia-content-card {
       background: var(--glass-strong);
       border: 1px solid var(--border);
@@ -288,13 +229,12 @@
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
-      color: var(--pink);
-      background: var(--pink-soft);
+      color: var(--violet);
+      background: var(--violet-soft);
       padding: 3px 9px;
       border-radius: 999px;
     }
 
-    /* BLOQUE CAPTION + HASHTAGS (para copiar juntos) */
     .ia-copy-block {
       padding: 16px 20px;
       border-bottom: 1px solid var(--border-soft);
@@ -321,8 +261,9 @@
     .ia-hashtags-text {
       font-size: 12px;
       line-height: 1.8;
-      color: var(--piper-teal);
-      font-family: 'DM Mono', monospace;
+      color: var(--violet);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
       white-space: pre-wrap;
       word-break: break-word;
       margin-bottom: 12px;
@@ -332,7 +273,6 @@
       font-size: 12px;
       line-height: 1.6;
       color: var(--text-soft);
-      font-style: italic;
       padding: 8px 12px;
       background: var(--pink-soft);
       border-radius: var(--radius-md);
@@ -358,9 +298,8 @@
     }
 
     .btn-copy-all:hover { background: rgba(255,255,255,.92); transform: translateY(-1px); }
-    .btn-copy-all.copied { color: var(--piper-teal); }
+    .btn-copy-all.copied { color: #257a63; }
 
-    /* BLOQUE HORARIO */
     .ia-schedule-block {
       padding: 14px 20px 16px;
     }
@@ -383,20 +322,18 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--piper-amber);
+      background: var(--pink);
       flex-shrink: 0;
     }
 
     .ia-schedule-text {
       font-size: 13px;
       line-height: 1.6;
-      color: var(--piper-amber);
-      font-family: 'DM Mono', monospace;
+      color: var(--text);
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    /* ESTADO LOADING DEL PANEL */
     .ia-loading {
       padding: 28px 20px;
       display: flex;
@@ -422,7 +359,6 @@
       color: var(--text-soft);
     }
 
-    /* FORMULARIO (panel edición) */
     .preview-actions-top {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -445,6 +381,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       letter-spacing: .01em;
+      font-family: 'DM Sans', sans-serif;
     }
 
     .quick-action:not(.secondary) {
@@ -491,6 +428,7 @@
     }
 
     .section-head { display: flex; flex-direction: column; gap: 3px; }
+
     .section-head h2 {
       font-family: 'Syne', sans-serif;
       font-size: 16px;
@@ -498,6 +436,7 @@
       color: var(--text);
       letter-spacing: -.02em;
     }
+
     .section-head p { font-size: 12px; font-weight: 500; color: var(--text-soft); }
 
     .details-card {
@@ -540,6 +479,7 @@
     }
 
     .field { display: flex; flex-direction: column; gap: 5px; }
+
     .field label {
       font-size: 11px;
       font-weight: 700;
@@ -564,132 +504,174 @@
       resize: none;
     }
 
+    .field input:focus,
+    .field textarea:focus,
+    .piper-api-input:focus,
+    .piper-input:focus,
+    .piper-textarea:focus {
+      border-color: rgba(196,38,133,.35);
+      box-shadow: 0 0 0 3px rgba(196,38,133,.10);
+    }
+
     .field textarea { min-height: 90px; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* PIPER PANEL (panel edición) */
+    /* PANEL EDITOR */
     .piper-card {
       border-radius: var(--radius-xl);
       overflow: hidden;
-      background: rgba(255,255,255,.92);
+      background: var(--glass-strong);
       border: 1px solid var(--border);
       box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
     .piper-header {
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(26,22,18,0.08);
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border-soft);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: #faf7f2;
+      background: transparent;
     }
 
-    .piper-title-wrap { display: flex; flex-direction: column; gap: 2px; }
+    .piper-title-wrap { display: flex; flex-direction: column; gap: 3px; }
+
     .piper-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.2rem;
-      color: var(--piper-ink);
-      letter-spacing: -0.02em;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+      line-height: 1.1;
     }
 
     .piper-sub {
       font-size: 11px;
-      color: var(--piper-ink-muted);
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--text-soft);
+      letter-spacing: .06em;
       text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
     }
 
     .openai-badge {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      background: #10a37f22;
-      border: 1px solid #10a37f55;
-      border-radius: 6px;
-      padding: 3px 8px;
-      font-family: 'DM Mono', monospace;
+      justify-content: center;
+      background: var(--violet-soft);
+      border: 1px solid rgba(54,42,111,.12);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-family: 'DM Sans', sans-serif;
       font-size: 10px;
-      color: #10a37f;
-      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--violet);
+      letter-spacing: .08em;
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
     .piper-body {
-      padding: 18px;
+      padding: 18px 20px 20px;
       display: flex;
       flex-direction: column;
       gap: 14px;
-      background: #fff;
+      background: transparent;
     }
 
     .piper-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      color: var(--piper-ink-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      color: var(--text-soft);
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .piper-api-input,
     .piper-input,
     .piper-textarea {
       width: 100%;
-      font-family: 'Instrument Sans', sans-serif;
-      font-size: 14px;
-      background: white;
-      border: 1px solid var(--piper-border-strong);
-      border-radius: 10px;
-      padding: 0.9rem 1rem;
-      color: var(--piper-ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255,255,255,.7);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 10px 13px;
+      color: var(--text);
       outline: none;
     }
 
-    .piper-textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+    .piper-textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.6;
+    }
 
-    .chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
     .chip {
       font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 100px;
-      border: 1px solid var(--piper-border-strong);
-      background: white;
-      color: var(--piper-ink-soft);
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.72);
+      color: var(--text);
       cursor: pointer;
       transition: all .15s;
-      font-family: 'Instrument Sans', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       user-select: none;
     }
 
-    .chip.active { background: var(--piper-ink); color: var(--piper-cream); border-color: var(--piper-ink); }
+    .chip.active {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 20px rgba(196,38,133,.20);
+    }
 
-    .tone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .tone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
     .tone-btn {
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid var(--piper-border-strong);
-      background: white;
+      padding: 10px 8px;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.72);
       font-size: 12px;
-      color: var(--piper-ink-soft);
+      font-weight: 700;
+      color: var(--text);
       cursor: pointer;
       text-align: center;
       transition: all .15s;
-      font-family: 'Instrument Sans', sans-serif;
+      font-family: 'DM Sans', sans-serif;
     }
 
-    .tone-btn.active { background: var(--piper-teal); color: white; border-color: var(--piper-teal); }
-    .tone-emoji { display: block; font-size: 18px; margin-bottom: 2px; }
+    .tone-btn.active {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 20px rgba(196,38,133,.20);
+    }
+
+    .tone-emoji {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
 
     .error-box {
-      background: var(--piper-red-light);
-      border: 1px solid rgba(184,50,50,0.2);
-      border-radius: 10px;
+      background: rgba(255, 238, 241, .95);
+      border: 1px solid rgba(184,50,50,0.18);
+      border-radius: 14px;
       padding: 1rem;
       font-size: 13px;
-      color: var(--piper-red);
+      color: #b83232;
       line-height: 1.6;
     }
 
@@ -712,7 +694,7 @@
         <div class="app-header-left">
           <div class="brand-text">
             <div class="brand-name">By Weeb</div>
-            <div class="brand-tag">Editor + Piper IA</div>
+            <div class="brand-tag">Editor</div>
           </div>
           <div class="user-badge">Usuario: <span id="userIdBox">---</span></div>
         </div>
@@ -720,7 +702,6 @@
 
       <section class="layout">
 
-        <!-- COLUMNA IZQUIERDA: flyer canvas siempre visible -->
         <div class="card preview-card">
           <div class="preview-stage-wrap">
             <div class="preview-stage">
@@ -729,10 +710,8 @@
           </div>
         </div>
 
-        <!-- COLUMNA DERECHA -->
         <div class="right-col">
 
-          <!-- ═══ PANEL EDICIÓN ═══ -->
           <div id="editPanel">
             <div class="preview-actions-top">
               <label for="mainImageGallery" class="quick-action">Elegir foto</label>
@@ -740,7 +719,7 @@
               <label for="logoImage" class="quick-action secondary">Subir logo</label>
             </div>
 
-            <button class="btn-ia" id="btnGenerar" type="button">✦ Generar flyer + contenido IA</button>
+            <button class="btn-ia" id="btnGenerar" type="button">Generar flyer + contenido</button>
 
             <div class="card form-card">
               <div class="section-head">
@@ -787,45 +766,41 @@
               </details>
             </div>
 
-            <!-- PIPER (configuración) -->
             <div class="piper-card">
               <div class="piper-header">
                 <div class="piper-title-wrap">
-                  <div class="piper-title">Piper</div>
-                  <div class="piper-sub">agente · veterinaria demo</div>
+                  <div class="piper-title">Editor</div>
+                  <div class="piper-sub">configuración de contenido</div>
                 </div>
-                <span class="openai-badge">⬡ OpenAI</span>
+                <span class="openai-badge">Texto</span>
               </div>
 
               <div class="piper-body">
-                <div class="field">
-                  <label class="piper-label" for="apiKey">API key de OpenAI</label>
-                  <input class="piper-api-input" type="password" id="apiKey" placeholder="sk-...">
-                </div>
+                
 
                 <div class="field">
                   <label class="piper-label" for="videoDesc">Descripción del contenido</label>
-                  <textarea class="piper-textarea" id="videoDesc" placeholder="Ej: Foto de Toto, un golden retriever de 3 años, después de su vacuna antirrábica. Está tranquilo y contento con su dueña."></textarea>
+                  <textarea class="piper-textarea" id="videoDesc" placeholder="Describí la imagen, el momento, la mascota o la situación para generar el texto."></textarea>
                 </div>
 
                 <div class="field">
-                  <div class="piper-label">Tipo de contenido</div>
+                  <div class="piper-label">Formato</div>
                   <div class="chips-row">
-                    <div class="chip active" data-type="reel">Reel / TikTok</div>
+                    <div class="chip" data-type="reel">Reel</div>
                     <div class="chip" data-type="carrusel">Carrusel</div>
                     <div class="chip" data-type="historia">Historia</div>
-                    <div class="chip" data-type="post">Post estático</div>
+                    <div class="chip active" data-type="post">Post estático</div>
                   </div>
                 </div>
 
                 <div class="field">
-                  <div class="piper-label">Tono de la clínica</div>
+                  <div class="piper-label">Tono</div>
                   <div class="tone-grid">
-                    <button class="tone-btn active" type="button" data-tone="cercano"><span class="tone-emoji">🤝</span>Cercano</button>
+                    <button class="tone-btn" type="button" data-tone="cercano"><span class="tone-emoji">🤝</span>Cercano</button>
                     <button class="tone-btn" type="button" data-tone="educativo"><span class="tone-emoji">🎓</span>Educativo</button>
-                    <button class="tone-btn" type="button" data-tone="divertido"><span class="tone-emoji">😄</span>Divertido</button>
-                    <button class="tone-btn" type="button" data-tone="profesional"><span class="tone-emoji">🏥</span>Profesional</button>
-                    <button class="tone-btn" type="button" data-tone="emotivo"><span class="tone-emoji">❤️</span>Emotivo</button>
+                    <button class="tone-btn" type="button" data-tone="divertido"><span class="tone-emoji">😄</span>Claro</button>
+                    <button class="tone-btn active" type="button" data-tone="profesional"><span class="tone-emoji">🏥</span>Profesional</button>
+                    <button class="tone-btn" type="button" data-tone="emotivo"><span class="tone-emoji">❤️</span>Humano</button>
                     <button class="tone-btn" type="button" data-tone="urgente"><span class="tone-emoji">⚡</span>Urgente</button>
                   </div>
                 </div>
@@ -837,59 +812,46 @@
               </div>
             </div>
           </div>
-          <!-- fin editPanel -->
 
-          <!-- ═══ PANEL RESULTADOS (oculto hasta generar) ═══ -->
           <div id="resultPanel" class="u-hidden">
-
-            <!-- 3 botones acción -->
             <div class="result-actions-top">
               <button class="btn-result" id="btnNuevo" type="button">← Nuevo</button>
               <button class="btn-result primary" id="btnDescargar" type="button">Descargar</button>
               <button class="btn-result" id="btnCompartir" type="button">Compartir</button>
             </div>
 
-            <!-- Tarjeta contenido IA -->
             <div class="ia-content-card" id="iaContentCard">
-              <!-- Estado: cargando -->
               <div id="iaLoading" class="ia-loading">
                 <div class="ia-loading-spinner"></div>
-                <p>Piper está generando el contenido...</p>
+                <p>Generando texto...</p>
               </div>
 
-              <!-- Estado: contenido listo (oculto hasta que llega la respuesta) -->
               <div id="iaReady" class="u-hidden">
                 <div class="ia-content-header">
-                  <h3>Contenido generado por IA</h3>
-                  <span class="badge-ia">Piper</span>
+                  <h3>Texto generado</h3>
+                  <span class="badge-ia">Editor</span>
                 </div>
 
-                <!-- Bloque caption + hashtags + tip (todo junto para copiar) -->
                 <div class="ia-copy-block">
-                  <div class="ia-copy-label">Caption + hashtags + tip</div>
+                  <div class="ia-copy-label">Texto + hashtags + sugerencia</div>
                   <div class="ia-copy-text" id="outCaption"></div>
                   <div class="ia-hashtags-text" id="outHashtags"></div>
                   <div class="ia-tip-text" id="outTip"></div>
                   <button class="btn-copy-all" id="btnCopyAll" type="button">Copiar todo</button>
                 </div>
 
-                <!-- Bloque horario -->
                 <div class="ia-schedule-block">
                   <div class="ia-schedule-label">Horario sugerido</div>
                   <div class="ia-schedule-text" id="outHorario"></div>
                 </div>
               </div>
 
-              <!-- Estado: error -->
               <div id="iaError" class="u-hidden" style="padding: 16px;">
                 <div class="error-box" id="iaErrorMsg"></div>
               </div>
             </div>
-
           </div>
-          <!-- fin resultPanel -->
 
-          <!-- Campos ocultos requeridos por app1.js -->
           <div class="u-hidden">
             <img id="previewMain" alt="">
             <img id="previewLogo" alt="">
@@ -899,185 +861,15 @@
           </div>
 
         </div>
-        <!-- fin right-col -->
       </section>
     </div>
   </div>
 
-  <script src="./app1.js?v=merge1"></script>
-
   <script>
-    // ── Selección de chips y tonos ──────────────────────────────
-    let selectedType = 'reel';
-    let selectedTone = 'cercano';
-    let piperUltimoResultado = null;
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbyVS35VZ8GmXFUsq787A23ec74wnYKhK07_eRO7BQp5zVT_Jv_DJijt41VHthVXbZzdVQ/exec';
+</script>
+<script src="./app1.js?v=merge1"></script>
+<script src="./appia.js?v=1"></script>
 
-    document.querySelectorAll('.chip[data-type]').forEach(el => {
-      el.addEventListener('click', () => {
-        document.querySelectorAll('.chip[data-type]').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        selectedType = el.dataset.type;
-      });
-    });
-
-    document.querySelectorAll('.tone-btn[data-tone]').forEach(el => {
-      el.addEventListener('click', () => {
-        document.querySelectorAll('.tone-btn[data-tone]').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        selectedTone = el.dataset.tone;
-      });
-    });
-
-    // ── Helpers ─────────────────────────────────────────────────
-    function escapeHtml(str) {
-      return String(str || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function mostrarResultPanel() {
-      document.getElementById('editPanel').classList.add('u-hidden');
-      document.getElementById('resultPanel').classList.remove('u-hidden');
-      document.getElementById('iaLoading').style.display = 'flex';
-      document.getElementById('iaReady').classList.add('u-hidden');
-      document.getElementById('iaError').classList.add('u-hidden');
-    }
-
-    function volverAEditar() {
-      document.getElementById('editPanel').classList.remove('u-hidden');
-      document.getElementById('resultPanel').classList.add('u-hidden');
-      piperUltimoResultado = null;
-    }
-
-    // ── Llamada a OpenAI ─────────────────────────────────────────
-    async function generarContenidoPiper() {
-      const apiKey = document.getElementById('apiKey').value.trim();
-      const desc = document.getElementById('videoDesc').value.trim();
-      const ciudad = document.getElementById('ciudad').value.trim() || 'Argentina';
-
-      if (!apiKey) {
-        mostrarError('Falta la API Key de OpenAI.');
-        return;
-      }
-      if (!desc) {
-        mostrarError('Falta la descripción del contenido.');
-        return;
-      }
-
-      const prompt = `Sos Piper, el agente de contenido de una veterinaria en ${ciudad}, Argentina.
-
-El veterinario compartió este contenido y te manda la descripción:
-"${desc}"
-
-Tipo de contenido: ${selectedType}
-Tono de la clínica: ${selectedTone}
-
-Generá el siguiente contenido en JSON con exactamente estas claves:
-{
-  "caption": "El texto completo del post para Instagram. Máximo 300 caracteres. Incluí un call-to-action al final. Usá el tono indicado. En español rioplatense.",
-  "hashtags": "Entre 15 y 20 hashtags relevantes separados por espacios. Mezclar: temáticos de animales, locales de ${ciudad}, de veterinaria, de la mascota específica del contenido.",
-  "horario": "El mejor día y hora para publicar este tipo de contenido, con una explicación breve de por qué.",
-  "tip_extra": "Un tip corto (1 oración) que podría agregar como texto superpuesto o en la primera pantalla para generar más engagement."
-}
-
-Respondé SOLO con el JSON válido, sin texto extra, sin markdown, sin backticks.`;
-
-      try {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            max_tokens: 1000,
-            response_format: { type: 'json_object' },
-            messages: [
-              { role: 'system', content: 'Debes responder únicamente con JSON válido.' },
-              { role: 'user', content: prompt }
-            ]
-          })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data?.error?.message || `Error ${res.status}`);
-
-        const raw = data?.choices?.[0]?.message?.content || '';
-        let result;
-        try { result = JSON.parse(raw); }
-        catch (_) { result = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
-
-        piperUltimoResultado = result;
-        mostrarResultados(result);
-
-      } catch (err) {
-        mostrarError(err.message);
-      }
-    }
-
-    function mostrarResultados(r) {
-      document.getElementById('iaLoading').style.display = 'none';
-      document.getElementById('iaReady').classList.remove('u-hidden');
-
-      document.getElementById('outCaption').textContent = r.caption || '';
-      document.getElementById('outHashtags').textContent = r.hashtags || '';
-      document.getElementById('outTip').textContent = r.tip_extra ? '💡 ' + r.tip_extra : '';
-      document.getElementById('outHorario').textContent = r.horario || '';
-    }
-
-    function mostrarError(msg) {
-      document.getElementById('iaLoading').style.display = 'none';
-      document.getElementById('iaError').classList.remove('u-hidden');
-      document.getElementById('iaErrorMsg').innerHTML =
-        '<strong>Error:</strong> ' + escapeHtml(msg) + '<br><br>Verificá la API Key y que tenga créditos disponibles.';
-    }
-
-    // ── Copiar todo ──────────────────────────────────────────────
-    function copiarTodo() {
-      if (!piperUltimoResultado) return;
-      const r = piperUltimoResultado;
-      const texto = [r.caption, '', r.hashtags, '', '💡 ' + r.tip_extra].filter(Boolean).join('\n');
-      navigator.clipboard.writeText(texto).then(() => {
-        const btn = document.getElementById('btnCopyAll');
-        btn.textContent = '✓ Copiado';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = 'Copiar todo';
-          btn.classList.remove('copied');
-        }, 1800);
-      }).catch(() => alert('No se pudo copiar'));
-    }
-
-    // ── Init ─────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
-      const btnGenerar = document.getElementById('btnGenerar');
-      const btnNuevo = document.getElementById('btnNuevo');
-      const btnCopyAll = document.getElementById('btnCopyAll');
-      const btnDescargar = document.getElementById('btnDescargar');
-      const btnCompartir = document.getElementById('btnCompartir');
-
-      btnGenerar?.addEventListener('click', () => {
-        mostrarResultPanel();
-        generarContenidoPiper();
-      });
-
-      btnNuevo?.addEventListener('click', volverAEditar);
-
-      btnCopyAll?.addEventListener('click', copiarTodo);
-
-      // Descargar y Compartir: delegado a app1.js vía eventos personalizados
-      btnDescargar?.addEventListener('click', () => {
-        document.dispatchEvent(new CustomEvent('piper:descargar'));
-      });
-      btnCompartir?.addEventListener('click', () => {
-        document.dispatchEvent(new CustomEvent('piper:compartir'));
-      });
-    });
-  </script>
 </body>
 </html>
