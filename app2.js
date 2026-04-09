@@ -963,7 +963,7 @@ else {
     try {
       const arr = dataUrl.split(',');
       if (arr.length < 2) {
-        reject(new Error('DataURL inválido'));
+        reject(new Error('No vas a subir una foto?'));
         return;
       }
 
