@@ -102,33 +102,26 @@
       '<strong>Error:</strong> ' + escapeHtml(msg);
   }
 
-  function copiarTodo() {
-    if (!ultimoResultado) return;
+function copiarTodo() {
+  if (!piperUltimoResultado) return;
 
-    const texto = [
-      ultimoResultado.caption || '',
-      '',
-      ultimoResultado.hashtags || '',
-      '',
-      ultimoResultado.tip_extra ? 'Sugerencia: ' + ultimoResultado.tip_extra : '',
-      '',
-      ultimoResultado.horario ? 'Horario sugerido: ' + ultimoResultado.horario : ''
-    ].filter(Boolean).join('\n');
+  const r = piperUltimoResultado;
+  const texto = [
+    r.caption?.trim(),
+    r.hashtags?.trim()
+  ].filter(Boolean).join('\n\n');
 
-    navigator.clipboard.writeText(texto).then(() => {
-      const btn = $('btnCopyAll');
-      if (!btn) return;
-      btn.textContent = '✓ Copiado';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'Copiar todo';
-        btn.classList.remove('copied');
-      }, 1800);
-    }).catch(() => {
-      alert('No se pudo copiar');
-    });
-  }
+  navigator.clipboard.writeText(texto).then(() => {
+    const btn = document.getElementById('btnCopyAll');
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copied');
 
+    setTimeout(() => {
+      btn.textContent = 'Copiar texto';
+      btn.classList.remove('copied');
+    }, 1800);
+  }).catch(() => alert('No se pudo copiar'));
+}
   async function generarContenido() {
     if (!API_URL) {
       mostrarError('Falta configurar API_URL');
