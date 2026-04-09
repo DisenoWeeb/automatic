@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editor Video IG</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --pink:#c42685;
+      --pink-soft:#fde7f3;
+      --violet:#362a6f;
+      --violet-soft:#ece8ff;
+      --text:#241f3a;
+      --text-soft:#6d6786;
+      --bg:#f0edf8;
+      --glass:rgba(255,255,255,.76);
+      --glass-strong:rgba(255,255,255,.86);
+      --border:rgba(110,95,160,.18);
+      --border-soft:rgba(110,95,160,.10);
+      --shadow-soft:0 12px 30px rgba(43,32,88,.10);
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --btn-h:46px;
+      --btn-h-main:54px;
+      --btn-font:13px;
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      min-height:100%;
+      font-family:'DM Sans',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(ellipse 700px 600px at 90% -10%, rgba(196,38,133,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at -5% 90%, rgba(54,42,111,.17) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 400px at 50% 50%, rgba(196,38,133,.07) 0%, transparent 70%);
+      z-index:0;
+    }
+
+    .wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+    .app-shell{display:flex;flex-direction:column;flex:1}
+
+    .app-header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      height:64px;
+      display:flex;
+      align-items:center;
+      padding:0 clamp(14px,3vw,32px);
+      background:rgba(240,237,248,.75);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border-soft);
+    }
+
+    .app-header-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      width:100%;
+    }
+
+    .brand-text{display:flex;flex-direction:column;gap:1px}
+    .brand-name{
+      font-family:'Syne',sans-serif;
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:-.03em;
+      line-height:1;
+    }
+    .brand-tag{
+      font-size:10px;
+      font-weight:700;
+      color:var(--text-soft);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .user-badge{
+      margin-left:auto;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 14px;
+      border-radius:999px;
+      background:var(--glass);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow-soft);
+      font-size:11px;
+      font-weight:600;
+      color:var(--text-soft);
+      white-space:nowrap;
+    }
+    .user-badge span{font-weight:800;color:var(--text)}
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 420px;
+      gap:20px;
+      padding:18px;
+      flex:1;
+      align-items:start;
+    }
+    @media (max-width:980px){
+      .layout{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:var(--glass-strong);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow-soft);
+      backdrop-filter:blur(18px);
+      overflow:hidden;
+    }
+
+    .preview-card{
+      position:sticky;
+      top:82px;
+    }
+
+    .preview-stage-wrap{padding:16px}
+    .preview-stage{
+      width:100%;
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      background:linear-gradient(160deg,var(--pink-soft),var(--violet-soft));
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);
+      position:relative;
+    }
+
+    canvas{
+      width:100%;
+      height:auto;
+      display:block;
+      background:#000;
+    }
+
+    .right-col{display:flex;flex-direction:column;gap:14px}
+    #editPanel,#resultPanel{display:flex;flex-direction:column;gap:14px}
+    .u-hidden{display:none!important}
+
+    .preview-actions-top,.result-actions-top{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+
+    .quick-action,.btn-result,.btn-copy-all{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:var(--btn-h);
+      border-radius:var(--radius-md);
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+      text-align:center;
+      padding:0 10px;
+      border:1px solid var(--border);
+      background:var(--glass);
+      color:var(--text);
+      box-shadow:var(--shadow-soft);
+      text-decoration:none;
+    }
+
+    .quick-action:not(.secondary){
+      background:linear-gradient(135deg,var(--pink),var(--violet));
+      color:#fff;
+      border:none;
+      box-shadow:0 8px 20px rgba(196,38,133,.28);
+    }
+
+    .btn-result.primary{
+      background:linear-gradient(135deg,var(--pink),var(--violet));
+      color:#fff;
+      border:none;
+      box-shadow:0 8px 20px rgba(196,38,133,.28);
+    }
+
+    .quick-action:hover,.btn-result:hover,.btn-copy-all:hover{transform:translateY(-1px)}
+
+    .btn-ia{
+      width:100%;
+      height:var(--btn-h-main);
+      border-radius:var(--radius-md);
+      border:none;
+      font-family:'Syne',sans-serif;
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:-.01em;
+      color:#fff;
+      background:linear-gradient(135deg,var(--pink),var(--violet));
+      box-shadow:0 10px 28px rgba(196,38,133,.34);
+      cursor:pointer;
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .btn-ia:hover{transform:translateY(-2px)}
+    .btn-ia:disabled{opacity:.7;cursor:wait}
+
+    .form-card,.ia-content-card,.piper-card{
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .section-head h2,.piper-title,.ia-content-header h3{
+      font-family:'Syne',sans-serif;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .section-head p,.piper-sub{
+      font-size:12px;
+      color:var(--text-soft);
+      font-weight:600;
+    }
+
+    .details-card{
+      border-radius:var(--radius-md);
+      background:rgba(255,255,255,.55);
+      border:1px solid var(--border);
+      overflow:hidden;
+    }
+
+    .details-card summary{
+      padding:13px 16px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      list-style:none;
+    }
+
+    .details-body{
+      padding:14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      border-top:1px solid var(--border-soft);
+    }
+
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label,.piper-label,.ia-copy-label,.ia-schedule-label{
+      font-size:11px;
+      font-weight:700;
+      color:var(--text-soft);
+      text-transform:uppercase;
+      letter-spacing:.07em;
+    }
+
+    .field input,.field textarea,.piper-input,.piper-textarea{
+      width:100%;
+      padding:11px 13px;
+      border-radius:var(--radius-md);
+      border:1px solid var(--border-soft);
+      background:rgba(255,255,255,.78);
+      font-family:'DM Sans',sans-serif;
+      font-size:13px;
+      color:var(--text);
+      outline:none;
+      resize:none;
+    }
+
+    .field input:focus,.field textarea:focus,.piper-input:focus,.piper-textarea:focus{
+      border-color:rgba(196,38,133,.35);
+      box-shadow:0 0 0 3px rgba(196,38,133,.10);
+    }
+
+    .field textarea,.piper-textarea{min-height:96px}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    .piper-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--border-soft);
+    }
+
+    .openai-badge,.badge-ia{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--violet-soft);
+      border:1px solid rgba(54,42,111,.12);
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:10px;
+      font-weight:700;
+      color:var(--violet);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+
+    .chips-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .chip,.tone-btn{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--border-soft);
+      background:rgba(255,255,255,.72);
+      font-size:12px;
+      font-weight:700;
+      color:var(--text);
+      cursor:pointer;
+      transition:all .15s;
+      font-family:'DM Sans',sans-serif;
+    }
+
+    .tone-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+
+    .tone-btn{
+      border-radius:14px;
+      text-align:center;
+      padding:10px 8px;
+    }
+
+    .chip.active,.tone-btn.active{
+      background:linear-gradient(135deg,var(--pink),var(--violet));
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 8px 20px rgba(196,38,133,.20);
+    }
+
+    .tone-emoji{
+      display:block;
+      font-size:16px;
+      margin-bottom:3px;
+    }
+
+    .ia-loading{
+      padding:28px 0 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+    .ia-loading-spinner{
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      border:2.5px solid rgba(196,38,133,.2);
+      border-top-color:var(--pink);
+      animation:spin .7s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .ia-copy-text,.ia-hashtags-text,.ia-schedule-text,.ia-tip-text{
+      font-size:13px;
+      line-height:1.65;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .ia-hashtags-text{color:var(--violet);font-weight:700}
+    .ia-tip-text{
+      padding:10px 12px;
+      background:var(--pink-soft);
+      border-radius:var(--radius-md);
+      border-left:3px solid var(--pink);
+    }
+
+    .error-box{
+      background:rgba(255,238,241,.95);
+      border:1px solid rgba(184,50,50,.18);
+      border-radius:14px;
+      padding:1rem;
+      font-size:13px;
+      color:#b83232;
+      line-height:1.6;
+    }
+
+    .video-note{
+      font-size:12px;
+      color:var(--text-soft);
+      line-height:1.5;
+      background:rgba(255,255,255,.6);
+      border:1px solid var(--border-soft);
+      border-radius:14px;
+      padding:12px 14px;
+    }
+
+    .small-status{
+      font-size:12px;
+      color:var(--text-soft);
+      line-height:1.5;
+      min-height:18px;
+    }
+
+    @media (max-width:600px){
+      .preview-actions-top,
+      .result-actions-top{grid-template-columns:1fr 1fr}
+      .preview-actions-top > *:last-child,
+      .result-actions-top > *:last-child{grid-column:1 / -1}
+      .two{grid-template-columns:1fr}
+      .tone-grid{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="app-shell">
+
+      <header class="app-header">
+        <div class="app-header-left">
+          <div class="brand-text">
+            <div class="brand-name">By Weeb</div>
+            <div class="brand-tag">Editor Video</div>
+          </div>
+          <div class="user-badge">Usuario: <span id="userIdBox">---</span></div>
+        </div>
+      </header>
+
+      <section class="layout">
+
+        <div class="card preview-card">
+          <div class="preview-stage-wrap">
+            <div class="preview-stage">
+              <canvas id="videoCanvas" width="1080" height="1350"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-col">
+
+          <div id="editPanel">
+            <div class="preview-actions-top">
+              <label for="videoFile" class="quick-action">Elegir video</label>
+              <label for="videoFileCamera" class="quick-action secondary">Grabar video</label>
+              <label for="logoFile" class="quick-action secondary">Subir logo</label>
+            </div>
+
+            <button class="btn-ia" id="btnGenerar" type="button">Generar video + contenido</button>
+
+            <div class="card form-card">
+              <div class="section-head">
+                <h2>Datos del video</h2>
+                <p>Solo video + logo. Sin título ni texto dentro del video.</p>
+              </div>
+
+              <input type="file" id="videoFile" accept="video/*" hidden>
+              <input type="file" id="videoFileCamera" accept="video/*" capture="environment" hidden>
+              <input type="file" id="logoFile" accept="image/*" hidden>
+
+              <details class="details-card" open>
+                <summary>Contacto para el texto IA</summary>
+                <div class="details-body">
+                  <div class="two">
+                    <div class="field">
+                      <label for="instagram">Instagram</label>
+                      <input type="text" id="instagram" value="@drabruzera">
+                    </div>
+                    <div class="field">
+                      <label for="whatsapp">WhatsApp</label>
+                      <input type="tel" id="whatsapp" value="3435303848">
+                    </div>
+                  </div>
+                  <div class="two">
+                    <div class="field">
+                      <label for="web">Web</label>
+                      <input type="text" id="web" value="www.bruzera.turnox.pro">
+                    </div>
+                    <div class="field">
+                      <label for="ubicacion">Ubicación</label>
+                      <input type="text" id="ubicacion" value="José Venturino 1239">
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="brandName">Marca</label>
+                    <input type="text" id="brandName" value="Veterinaria Dra. Bruzera">
+                  </div>
+                </div>
+              </details>
+
+              <div class="video-note">
+                El video final sale en 1080x1350. El logo se superpone arriba a la derecha.
+                El texto IA y hashtags salen aparte para Instagram, no dentro del video.
+              </div>
+
+              <div class="small-status" id="uploadStatus"></div>
+            </div>
+
+            <div class="piper-card">
+              <div class="piper-header">
+                <div>
+                  <div class="piper-title">Creador IA</div>
+                  <div class="piper-sub">texto para el post del video</div>
+                </div>
+                <span class="openai-badge">Texto</span>
+              </div>
+
+              <div class="field">
+                <label class="piper-label" for="videoDesc">Descripción del contenido</label>
+                <textarea class="piper-textarea" id="videoDesc" placeholder="Ej: perro saliendo feliz de la consulta, plano corto, tono cálido, video breve para Instagram..."></textarea>
+              </div>
+
+              <div class="field">
+                <div class="piper-label">Formato</div>
+                <div class="chips-row">
+                  <button class="chip active" type="button" data-type="reel">Reel</button>
+                  <button class="chip" type="button" data-type="post">Post video</button>
+                  <button class="chip" type="button" data-type="historia">Historia</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="piper-label">Tono</div>
+                <div class="tone-grid">
+                  <button class="tone-btn" type="button" data-tone="cercano"><span class="tone-emoji">🤝</span>Cercano</button>
+                  <button class="tone-btn" type="button" data-tone="educativo"><span class="tone-emoji">🎓</span>Educativo</button>
+                  <button class="tone-btn" type="button" data-tone="claro"><span class="tone-emoji">💬</span>Claro</button>
+                  <button class="tone-btn active" type="button" data-tone="profesional"><span class="tone-emoji">🏥</span>Profesional</button>
+                  <button class="tone-btn" type="button" data-tone="emocional"><span class="tone-emoji">❤️</span>Humano</button>
+                  <button class="tone-btn" type="button" data-tone="urgente"><span class="tone-emoji">⚡</span>Urgente</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="piper-label" for="ciudad">Ciudad / zona</label>
+                <input class="piper-input" type="text" id="ciudad" value="Paraná">
+              </div>
+            </div>
+          </div>
+
+          <div id="resultPanel" class="u-hidden">
+            <div class="result-actions-top">
+              <button class="btn-result" id="btnNuevo" type="button">← Nuevo</button>
+              <button class="btn-result primary" id="btnDescargar" type="button">Descargar video</button>
+              <button class="btn-result" id="btnCompartir" type="button">Compartir</button>
+            </div>
+
+            <div class="ia-content-card">
+              <div id="iaLoading" class="ia-loading">
+                <div class="ia-loading-spinner"></div>
+                <p>Subiendo y generando contenido...</p>
+              </div>
+
+              <div id="iaReady" class="u-hidden">
+                <div class="piper-header" style="padding:0 0 12px 0">
+                  <h3>Texto generado</h3>
+                  <span class="badge-ia">Editor</span>
+                </div>
+
+                <div class="field">
+                  <div class="ia-copy-label">Texto</div>
+                  <div class="ia-copy-text" id="outCaption"></div>
+                </div>
+
+                <div class="field">
+                  <div class="ia-copy-label">Hashtags</div>
+                  <div class="ia-hashtags-text" id="outHashtags"></div>
+                </div>
+
+                <div class="field">
+                  <div class="ia-copy-label">Tip</div>
+                  <div class="ia-tip-text" id="outTip"></div>
+                </div>
+
+                <div class="field">
+                  <div class="ia-schedule-label">Horario sugerido</div>
+                  <div class="ia-schedule-text" id="outHorario"></div>
+                </div>
+
+                <button class="btn-copy-all" id="btnCopyAll" type="button">Copiar todo</button>
+              </div>
+
+              <div id="iaError" class="u-hidden">
+                <div class="error-box" id="iaErrorMsg"></div>
+              </div>
+            </div>
+
+            <div class="card form-card">
+              <div class="section-head">
+                <h2>Video final</h2>
+                <p>URL final transformada en Cloudinary</p>
+              </div>
+              <div class="field">
+                <textarea id="finalVideoUrl" readonly style="min-height:92px"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <video id="sourceVideo" playsinline muted class="u-hidden"></video>
+  <img id="logoPreviewImg" alt="" class="u-hidden">
+
+  <script>
+    window.API_URL = 'https://script.google.com/macros/s/AKfycbyVS35VZ8GmXFUsq787A23ec74wnYKhK07_eRO7BQp5zVT_Jv_DJijt41VHthVXbZzdVQ/exec';
+
+    const CONFIG = {
+      OUTPUT_WIDTH: 1080,
+      OUTPUT_HEIGHT: 1350,
+      FPS: 30,
+      LOGO_WIDTH: 170,
+      LOGO_MARGIN: 34,
+      MAX_VIDEO_MB: 100,
+      CLOUDINARY_FOLDER: 'dra_bruzera/videos',
+      ACTIONS: {
+        init: 'init',
+        texto: 'generarContenidoVideo' // si en tu GAS se llama distinto, cambiá solo esto
+      }
+    };
+
+    const state = {
+      userId: '---',
+      videoFile: null,
+      logoFile: null,
+      videoObjectUrl: '',
+      logoObjectUrl: '',
+      videoPublicId: '',
+      logoPublicId: '',
+      finalVideoUrl: '',
+      cloudName: '',
+      uploadPreset: '',
+      folder: CONFIG.CLOUDINARY_FOLDER,
+      selectedType: 'reel',
+      selectedTone: 'profesional',
+      rendering: false,
+      rafId: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+      canvas: $('videoCanvas'),
+      ctx: $('videoCanvas').getContext('2d'),
+      sourceVideo: $('sourceVideo'),
+      logoImg: $('logoPreviewImg'),
+      userIdBox: $('userIdBox'),
+      videoFile: $('videoFile'),
+      videoFileCamera: $('videoFileCamera'),
+      logoFile: $('logoFile'),
+      btnGenerar: $('btnGenerar'),
+      btnNuevo: $('btnNuevo'),
+      btnDescargar: $('btnDescargar'),
+      btnCompartir: $('btnCompartir'),
+      btnCopyAll: $('btnCopyAll'),
+      editPanel: $('editPanel'),
+      resultPanel: $('resultPanel'),
+      iaLoading: $('iaLoading'),
+      iaReady: $('iaReady'),
+      iaError: $('iaError'),
+      iaErrorMsg: $('iaErrorMsg'),
+      outCaption: $('outCaption'),
+      outHashtags: $('outHashtags'),
+      outTip: $('outTip'),
+      outHorario: $('outHorario'),
+      finalVideoUrl: $('finalVideoUrl'),
+      uploadStatus: $('uploadStatus'),
+      instagram: $('instagram'),
+      whatsapp: $('whatsapp'),
+      web: $('web'),
+      ubicacion: $('ubicacion'),
+      brandName: $('brandName'),
+      videoDesc: $('videoDesc'),
+      ciudad: $('ciudad')
+    };
+
+    function jsonpRequest(params = {}, timeout = 45000) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const script = document.createElement('script');
+        const query = new URLSearchParams({
+          ...params,
+          callback: callbackName,
+          _: Date.now()
+        });
+
+        let done = false;
+        const clean = () => {
+          done = true;
+          if (script.parentNode) script.parentNode.removeChild(script);
+          try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+        };
+
+        const timer = setTimeout(() => {
+          if (done) return;
+          clean();
+          reject(new Error('Timeout en JSONP'));
+        }, timeout);
+
+        window[callbackName] = (data) => {
+          clearTimeout(timer);
+          clean();
+          resolve(data);
+        };
+
+        script.onerror = () => {
+          clearTimeout(timer);
+          clean();
+          reject(new Error('Error de carga JSONP'));
+        };
+
+        script.src = window.API_URL + '?' + query.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    async function initBackend() {
+      try {
+        const res = await jsonpRequest({ action: CONFIG.ACTIONS.init }, 20000);
+        const data = res && (res.data || res.result || res.config || res);
+
+        state.userId = data.userId || data.user_id || localStorage.getItem('flyerVideoUserId') || ('user_' + Date.now());
+        state.cloudName = data.cloudName || data.cloud_name || '';
+        state.uploadPreset = data.uploadPreset || data.upload_preset || '';
+        state.folder = data.folder || data.cloudinaryFolder || CONFIG.CLOUDINARY_FOLDER;
+
+        localStorage.setItem('flyerVideoUserId', state.userId);
+        els.userIdBox.textContent = state.userId;
+
+        if (!state.cloudName || !state.uploadPreset) {
+          throw new Error('Init sin cloudName/uploadPreset');
+        }
+      } catch (err) {
+        console.warn('initBackend falló:', err);
+        state.userId = localStorage.getItem('flyerVideoUserId') || ('user_' + Date.now());
+        els.userIdBox.textContent = state.userId;
+        showError('No pude leer la configuración desde Apps Script. Revisá action=init.');
+      }
+    }
+
+    function setStatus(text = '') {
+      els.uploadStatus.textContent = text;
+    }
+
+    function setLoading(isLoading, text = 'Procesando...') {
+      els.btnGenerar.disabled = isLoading;
+      els.btnGenerar.textContent = isLoading ? text : 'Generar video + contenido';
+    }
+
+    function showError(message) {
+      els.iaLoading.classList.add('u-hidden');
+      els.iaReady.classList.add('u-hidden');
+      els.iaError.classList.remove('u-hidden');
+      els.iaErrorMsg.textContent = message;
+      els.resultPanel.classList.remove('u-hidden');
+    }
+
+    function resetResult() {
+      els.iaError.classList.add('u-hidden');
+      els.iaReady.classList.add('u-hidden');
+      els.iaLoading.classList.remove('u-hidden');
+      els.outCaption.textContent = '';
+      els.outHashtags.textContent = '';
+      els.outTip.textContent = '';
+      els.outHorario.textContent = '';
+      els.finalVideoUrl.value = '';
+    }
+
+    function activateChip(groupSelector, activeEl, activeClass = 'active') {
+      document.querySelectorAll(groupSelector).forEach(el => el.classList.remove(activeClass));
+      activeEl.classList.add(activeClass);
+    }
+
+    document.querySelectorAll('.chip[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.selectedType = btn.dataset.type;
+        activateChip('.chip[data-type]', btn);
+      });
+    });
+
+    document.querySelectorAll('.tone-btn[data-tone]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.selectedTone = btn.dataset.tone;
+        activateChip('.tone-btn[data-tone]', btn);
+      });
+    });
+
+    function revokeIfNeeded(url) {
+      if (url) URL.revokeObjectURL(url);
+    }
+
+    async function handleVideoFile(file) {
+      if (!file) return;
+      if (!file.type.startsWith('video/')) {
+        alert('Subí un archivo de video.');
+        return;
+      }
+
+      const sizeMb = file.size / 1024 / 1024;
+      if (sizeMb > CONFIG.MAX_VIDEO_MB) {
+        alert('El video supera ' + CONFIG.MAX_VIDEO_MB + ' MB.');
+        return;
+      }
+
+      state.videoFile = file;
+      revokeIfNeeded(state.videoObjectUrl);
+      state.videoObjectUrl = URL.createObjectURL(file);
+      els.sourceVideo.src = state.videoObjectUrl;
+      els.sourceVideo.load();
+
+      await waitForVideoMetadata(els.sourceVideo);
+      startCanvasPreview();
+      setStatus('Video cargado: ' + file.name);
+    }
+
+    async function handleLogoFile(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Subí un archivo de imagen para el logo.');
+        return;
+      }
+
+      state.logoFile = file;
+      revokeIfNeeded(state.logoObjectUrl);
+      state.logoObjectUrl = URL.createObjectURL(file);
+      els.logoImg.src = state.logoObjectUrl;
+
+      await waitForImage(els.logoImg);
+      drawFrame();
+      setStatus('Logo cargado: ' + file.name);
+    }
+
+    function waitForVideoMetadata(video) {
+      return new Promise((resolve, reject) => {
+        if (video.readyState >= 1 && video.videoWidth && video.videoHeight) return resolve();
+        const ok = () => {
+          cleanup();
+          resolve();
+        };
+        const fail = () => {
+          cleanup();
+          reject(new Error('No se pudo leer el video.'));
+        };
+        const cleanup = () => {
+          video.removeEventListener('loadedmetadata', ok);
+          video.removeEventListener('error', fail);
+        };
+        video.addEventListener('loadedmetadata', ok);
+        video.addEventListener('error', fail);
+      });
+    }
+
+    function waitForImage(img) {
+      return new Promise((resolve, reject) => {
+        if (img.complete && img.naturalWidth) return resolve();
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('No se pudo cargar el logo.'));
+      });
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.arcTo(x + w, y, x + w, y + h, radius);
+      ctx.arcTo(x + w, y + h, x, y + h, radius);
+      ctx.arcTo(x, y + h, x, y, radius);
+      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.closePath();
+    }
+
+    function getVideoCoverRect(videoW, videoH, canvasW, canvasH) {
+      const videoRatio = videoW / videoH;
+      const canvasRatio = canvasW / canvasH;
+
+      let drawW, drawH, dx, dy;
+      if (videoRatio > canvasRatio) {
+        drawH = canvasH;
+        drawW = drawH * videoRatio;
+        dx = (canvasW - drawW) / 2;
+        dy = 0;
+      } else {
+        drawW = canvasW;
+        drawH = drawW / videoRatio;
+        dx = 0;
+        dy = (canvasH - drawH) / 2;
+      }
+      return { dx, dy, drawW, drawH };
+    }
+
+    function drawBackground() {
+      const { ctx } = els;
+      const w = CONFIG.OUTPUT_WIDTH;
+      const h = CONFIG.OUTPUT_HEIGHT;
+
+      const gradient = ctx.createLinearGradient(0, 0, w, h);
+      gradient.addColorStop(0, '#f6edf8');
+      gradient.addColorStop(.45, '#f2e5f3');
+      gradient.addColorStop(1, '#ebe9fb');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawLogo() {
+      if (!state.logoFile || !els.logoImg.naturalWidth) return;
+
+      const { ctx } = els;
+      const size = CONFIG.LOGO_WIDTH;
+      const x = CONFIG.OUTPUT_WIDTH - size - CONFIG.LOGO_MARGIN;
+      const y = CONFIG.LOGO_MARGIN;
+
+      ctx.save();
+      roundRect(ctx, x - 10, y - 10, size + 20, size + 20, 24);
+      ctx.fillStyle = 'rgba(255,255,255,.18)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(els.logoImg, x, y, size, size);
+      ctx.restore();
+    }
+
+    function drawVideoFrame() {
+      const v = els.sourceVideo;
+      if (!state.videoFile || !v.videoWidth || !v.videoHeight) return drawEmptyState();
+
+      drawBackground();
+
+      const { ctx } = els;
+      const rect = getVideoCoverRect(v.videoWidth, v.videoHeight, CONFIG.OUTPUT_WIDTH, CONFIG.OUTPUT_HEIGHT);
+
+      ctx.save();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, CONFIG.OUTPUT_WIDTH, CONFIG.OUTPUT_HEIGHT);
+      ctx.drawImage(v, rect.dx, rect.dy, rect.drawW, rect.drawH);
+      ctx.restore();
+
+      const grd = ctx.createLinearGradient(0, 0, 0, CONFIG.OUTPUT_HEIGHT);
+      grd.addColorStop(0, 'rgba(0,0,0,.06)');
+      grd.addColorStop(.55, 'rgba(0,0,0,0)');
+      grd.addColorStop(1, 'rgba(0,0,0,.18)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, CONFIG.OUTPUT_WIDTH, CONFIG.OUTPUT_HEIGHT);
+
+      drawLogo();
+    }
+
+    function drawEmptyState() {
+      drawBackground();
+      const { ctx } = els;
+      ctx.fillStyle = 'rgba(54,42,111,.12)';
+      roundRect(ctx, 110, 130, 860, 1090, 42);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(54,42,111,.20)';
+      roundRect(ctx, 150, 170, 780, 1010, 30);
+      ctx.strokeStyle = 'rgba(54,42,111,.18)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = '#362a6f';
+      ctx.font = '800 60px Syne, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('VIDEO 1080 × 1350', CONFIG.OUTPUT_WIDTH / 2, 610);
+
+      ctx.fillStyle = '#6d6786';
+      ctx.font = '500 32px DM Sans, sans-serif';
+      ctx.fillText('Subí un video y opcionalmente un logo', CONFIG.OUTPUT_WIDTH / 2, 670);
+    }
+
+    function drawFrame() {
+      if (state.videoFile && els.sourceVideo.readyState >= 2) {
+        drawVideoFrame();
+      } else {
+        drawEmptyState();
+      }
+    }
+
+    function startCanvasPreview() {
+      stopCanvasPreview();
+
+      const video = els.sourceVideo;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+
+      video.play().catch(() => {});
+
+      const tick = () => {
+        drawFrame();
+        state.rafId = requestAnimationFrame(tick);
+      };
+      tick();
+    }
+
+    function stopCanvasPreview() {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.rafId = 0;
+    }
+
+    async function uploadToCloudinary(file, resourceType = 'image') {
+      if (!state.cloudName || !state.uploadPreset) {
+        throw new Error('Falta cloudName o uploadPreset.');
+      }
+
+      const form = new FormData();
+      form.append('file', file);
+      form.append('upload_preset', state.uploadPreset);
+      form.append('folder', state.folder);
+
+      const endpoint = `https://api.cloudinary.com/v1_1/${state.cloudName}/${resourceType}/upload`;
+      const res = await fetch(endpoint, { method: 'POST', body: form });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data?.error?.message || 'Error subiendo a Cloudinary.');
+      }
+
+      return data;
+    }
+
+    function buildCloudinaryFinalVideoUrl(videoPublicId, logoPublicId = '') {
+      const base = `https://res.cloudinary.com/${state.cloudName}/video/upload`;
+      const steps = [
+        `c_fill,w_${CONFIG.OUTPUT_WIDTH},h_${CONFIG.OUTPUT_HEIGHT},g_auto,q_auto,f_mp4`
+      ];
+
+      if (logoPublicId) {
+        const encodedLogo = logoPublicId.replace(/\//g, ':');
+        steps.push(`l_${encodedLogo}/w_${CONFIG.LOGO_WIDTH},g_north_east,x_${CONFIG.LOGO_MARGIN},y_${CONFIG.LOGO_MARGIN},fl_layer_apply`);
+      }
+
+      return `${base}/${steps.join('/')}/${videoPublicId}.mp4`;
+    }
+
+    async function generarTextoIA(payload) {
+      const res = await jsonpRequest({
+        action: CONFIG.ACTIONS.texto,
+        userId: state.userId,
+        tipo: payload.tipo,
+        tono: payload.tono,
+        ciudad: payload.ciudad,
+        descripcion: payload.descripcion,
+        marca: payload.marca,
+        instagram: payload.instagram,
+        whatsapp: payload.whatsapp,
+        web: payload.web,
+        ubicacion: payload.ubicacion,
+        videoUrl: payload.videoUrl
+      }, 60000);
+
+      return res && (res.data || res.result || res);
+    }
+
+    function normalizeTextoIA(data) {
+      return {
+        caption: data.caption || data.texto || data.copy || data.descripcion || '',
+        hashtags: data.hashtags || '',
+        tip: data.tip || data.sugerencia || data.tipPublicacion || '',
+        horario: data.horario || data.horarioSugerido || data.schedule || ''
+      };
+    }
+
+    async function generarTodo() {
+      if (!state.videoFile) {
+        alert('Primero subí un video.');
+        return;
+      }
+
+      try {
+        setLoading(true, 'Generando...');
+        resetResult();
+        els.editPanel.classList.add('u-hidden');
+        els.resultPanel.classList.remove('u-hidden');
+
+        setStatus('Subiendo video a Cloudinary...');
+        const videoUpload = await uploadToCloudinary(state.videoFile, 'video');
+        state.videoPublicId = videoUpload.public_id;
+
+        if (state.logoFile) {
+          setStatus('Subiendo logo a Cloudinary...');
+          const logoUpload = await uploadToCloudinary(state.logoFile, 'image');
+          state.logoPublicId = logoUpload.public_id;
+        } else {
+          state.logoPublicId = '';
+        }
+
+        state.finalVideoUrl = buildCloudinaryFinalVideoUrl(state.videoPublicId, state.logoPublicId);
+        els.finalVideoUrl.value = state.finalVideoUrl;
+
+        setStatus('Generando texto IA...');
+        const textoRaw = await generarTextoIA({
+          tipo: state.selectedType,
+          tono: state.selectedTone,
+          ciudad: els.ciudad.value.trim(),
+          descripcion: els.videoDesc.value.trim(),
+          marca: els.brandName.value.trim(),
+          instagram: els.instagram.value.trim(),
+          whatsapp: els.whatsapp.value.trim(),
+          web: els.web.value.trim(),
+          ubicacion: els.ubicacion.value.trim(),
+          videoUrl: state.finalVideoUrl
+        });
+
+        const texto = normalizeTextoIA(textoRaw || {});
+
+        els.outCaption.textContent = texto.caption || 'Sin texto devuelto por el backend.';
+        els.outHashtags.textContent = texto.hashtags || 'Sin hashtags.';
+        els.outTip.textContent = texto.tip || 'Sin sugerencia.';
+        els.outHorario.textContent = texto.horario || 'Sin horario sugerido.';
+
+        els.iaLoading.classList.add('u-hidden');
+        els.iaError.classList.add('u-hidden');
+        els.iaReady.classList.remove('u-hidden');
+        setStatus('Listo.');
+      } catch (err) {
+        console.error('generarTodo error:', err);
+        showError(err.message || 'Ocurrió un error generando el video.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function downloadFromUrl(url, filename = 'video-instagram.mp4') {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    async function shareResult() {
+      if (!state.finalVideoUrl) {
+        alert('Todavía no hay video final.');
+        return;
+      }
+
+      const text = [
+        els.outCaption.textContent.trim(),
+        '',
+        els.outHashtags.textContent.trim(),
+        '',
+        state.finalVideoUrl
+      ].join('\n');
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Video Instagram',
+            text
+          });
+          return;
+        } catch (_) {}
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Copiado al portapapeles.');
+      } catch (_) {
+        alert('No se pudo compartir automáticamente.');
+      }
+    }
+
+    async function copyAll() {
+      const text = [
+        els.outCaption.textContent.trim(),
+        '',
+        els.outHashtags.textContent.trim(),
+        '',
+        'Tip: ' + els.outTip.textContent.trim(),
+        '',
+        'Horario sugerido: ' + els.outHorario.textContent.trim(),
+        '',
+        state.finalVideoUrl ? ('Video: ' + state.finalVideoUrl) : ''
+      ].filter(Boolean).join('\n');
+
+      await navigator.clipboard.writeText(text);
+      els.btnCopyAll.textContent = 'Copiado';
+      setTimeout(() => els.btnCopyAll.textContent = 'Copiar todo', 1200);
+    }
+
+    function resetAll() {
+      stopCanvasPreview();
+
+      revokeIfNeeded(state.videoObjectUrl);
+      revokeIfNeeded(state.logoObjectUrl);
+
+      state.videoFile = null;
+      state.logoFile = null;
+      state.videoObjectUrl = '';
+      state.logoObjectUrl = '';
+      state.videoPublicId = '';
+      state.logoPublicId = '';
+      state.finalVideoUrl = '';
+
+      els.videoFile.value = '';
+      els.videoFileCamera.value = '';
+      els.logoFile.value = '';
+      els.sourceVideo.removeAttribute('src');
+      els.sourceVideo.load();
+      els.logoImg.removeAttribute('src');
+      els.finalVideoUrl.value = '';
+
+      els.editPanel.classList.remove('u-hidden');
+      els.resultPanel.classList.add('u-hidden');
+
+      setStatus('');
+      drawEmptyState();
+    }
+
+    els.videoFile.addEventListener('change', (e) => handleVideoFile(e.target.files[0]));
+    els.videoFileCamera.addEventListener('change', (e) => handleVideoFile(e.target.files[0]));
+    els.logoFile.addEventListener('change', (e) => handleLogoFile(e.target.files[0]));
+
+    els.btnGenerar.addEventListener('click', generarTodo);
+    els.btnNuevo.addEventListener('click', resetAll);
+    els.btnDescargar.addEventListener('click', () => {
+      if (!state.finalVideoUrl) return alert('Todavía no hay video final.');
+      downloadFromUrl(state.finalVideoUrl);
+    });
+    els.btnCompartir.addEventListener('click', shareResult);
+    els.btnCopyAll.addEventListener('click', copyAll);
+
+    window.addEventListener('beforeunload', () => {
+      stopCanvasPreview();
+      revokeIfNeeded(state.videoObjectUrl);
+      revokeIfNeeded(state.logoObjectUrl);
+    });
+
+    (async function init() {
+      drawEmptyState();
+      await initBackend();
+    })();
+  </script>
+</body>
+</html>
