@@ -379,12 +379,13 @@
       gap: 18px;
       overflow-x: auto;
       overflow-y: visible;
-      padding: 8px var(--page-pad) 20px;
+      
       scroll-snap-type: x proximity;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
       scrollbar-color: rgba(196, 38, 133, .22) transparent;
-      align-items: stretch;
+      padding: 0 var(--page-pad) 20px; /* 🔥 sacamos el padding top */
+  align-items: flex-start;
     }
 
     .flyers-strip::-webkit-scrollbar {
