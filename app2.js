@@ -379,8 +379,8 @@ const nextScale = this.state.editor.scale + (rawNextScale - this.state.editor.sc
   getFormData() {
     const e = this.elements;
     return {
-      titulo: (e.titulo && e.titulo.value.trim()) || 'Flyer',
-      texto: (e.texto && e.texto.value.trim()) || '',
+      titulo: (e.titulo && e.titulo.value.trim()) || 'Titulo',
+      texto: (e.texto && e.texto.value.trim()) || 'Descripción corta',
       instagram: (e.instagram && e.instagram.value.trim()) || '@drabruzera',
       web: (e.web && e.web.value.trim()) || 'www.bruzera.turnox.pro',
       whatsapp: (e.whatsapp && e.whatsapp.value.trim()) || '343 5303848',
