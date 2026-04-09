@@ -806,10 +806,7 @@ drawLogo(ctx, img, width, panelY) {
   },
 
  async generarFlyer() {
-  if (!this.state.editor.img || !this.state.mainImageData) {
-    this.showError('Primero subí una imagen');
-    return;
-  }
+ 
 
   try {
     this.setLoading(true, 'Preparando imagen...');
@@ -818,22 +815,34 @@ drawLogo(ctx, img, width, panelY) {
     console.log('mainImageData tipo:', typeof this.state.mainImageData);
     console.log('mainImageData inicio:', String(this.state.mainImageData).slice(0, 80));
 
-    const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
+    let originalUrl = '';
 
-    console.log('mainFile:', mainFile);
-    console.log('mainFile.size:', mainFile.size);
-    console.log('mainFile.type:', mainFile.type);
+// CASO 1: usuario subió imagen (base64)
+if (this.state.mainImageData && this.state.mainImageData.startsWith('data:image/')) {
 
-    this.setLoading(true, 'Subiendo imagen...');
+  const mainFile = await this.dataURLtoFile(this.state.mainImageData, 'main.jpg');
 
-    const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
+  this.setLoading(true, 'Subiendo imagen...');
 
-    console.log('uploadRes:', uploadRes);
-    console.log('public_id real:', uploadRes.public_id);
-    console.log('secure_url real:', uploadRes.secure_url);
+  const uploadRes = await CloudinaryUpload.upload(mainFile, CONFIG.CLOUDINARY_FOLDER);
+  originalUrl = uploadRes.secure_url;
 
-    const originalUrl = uploadRes.secure_url;
-    let aiUrl = originalUrl;
+}
+
+// CASO 2: hay imagen default (URL)
+else if (this.state.mainImageData && this.state.mainImageData.startsWith('http')) {
+
+  originalUrl = this.state.mainImageData;
+
+}
+
+// CASO 3: NO hay nada → fallback seguro
+else {
+
+  originalUrl = CONFIG.DEFAULT_MAIN_IMAGE;
+
+}
+     let aiUrl = originalUrl;
 
     if (CONFIG.USE_CLOUDINARY_AI) {
       this.setLoading(true, 'Aplicando optimización Cloudinary...');
