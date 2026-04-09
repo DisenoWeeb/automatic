@@ -25,6 +25,7 @@ const App = {
     mainImageData: null,
     logoImageData: null,
     generatedImage: null,
+     piperResultado: null,
     editor: {
       img: null,
       logoImg: null,
